@@ -528,6 +528,7 @@ interface State {
   setUser: (id: string | null) => void;
   signIn: (userId: string) => void;
   signOut: () => void;
+  syncUser: (sessionUser: any) => void;
   addToCart: (productId: string, qty?: number, opt?: PaymentOption) => void;
   removeFromCart: (productId: string) => void;
   updateCartQty: (productId: string, qty: number) => void;
@@ -643,6 +644,60 @@ export const useNaflis = create<State>()(
       },
       signOut: () => {
         set({ currentUserId: null, role: "guest" });
+      },
+      syncUser: (sessionUser) => {
+        if (!sessionUser) {
+          set({ currentUserId: null, role: "guest" });
+          return;
+        }
+
+        const id = sessionUser.id;
+        const email = sessionUser.email || "";
+        const role = (sessionUser.user_metadata?.role || "buyer") as any;
+        const name = sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || email.split("@")[0];
+        const phone = sessionUser.user_metadata?.phone || sessionUser.phone || "";
+
+        set((state) => {
+          const exists = state.users.find((u) => u.id === id);
+          const updatedUsers = exists
+            ? state.users.map((u) => u.id === id ? { ...u, name, email, phone, role } : u)
+            : [
+                ...state.users,
+                {
+                  id,
+                  name,
+                  email,
+                  phone,
+                  region: "Greater Accra",
+                  role,
+                  avatar: `https://api.dicebear.com/9.x/notionists/svg?seed=${id}`,
+                  verified: true,
+                  creditScore: 700,
+                  creditLimit: role === "buyer" ? 5000 : 0,
+                  tags: ["verified"],
+                },
+              ];
+
+          // Initialize wallet for new users if they don't have one
+          const wallets = { ...state.wallets };
+          if (!wallets[id]) {
+            wallets[id] = {
+              userId: id,
+              balance: 1000, // Pre-fund real user with GHS 1,000 for demo shopping
+              escrowed: 0,
+              autoFunding: false,
+              threshold: 100,
+              fundAmount: 500,
+            };
+          }
+
+          return {
+            currentUserId: id,
+            role,
+            users: updatedUsers,
+            wallets,
+          };
+        });
       },
       addToCart: (productId, qty = 1, opt) =>
         set((s) => {

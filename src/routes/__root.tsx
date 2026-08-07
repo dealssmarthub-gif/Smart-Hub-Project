@@ -11,6 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
+import { supabase } from "@/lib/supabase";
+import { useNaflis } from "@/lib/naflis/store";
 
 function NotFoundComponent() {
   return (
@@ -124,6 +126,27 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const syncUser = useNaflis((s) => s.syncUser);
+
+  useEffect(() => {
+    if (supabase) {
+      // 1. Initial check
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        syncUser(session?.user ?? null);
+      });
+
+      // 2. Auth state listener
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        syncUser(session?.user ?? null);
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [syncUser]);
 
   return (
     <QueryClientProvider client={queryClient}>
