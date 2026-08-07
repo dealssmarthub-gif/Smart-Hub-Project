@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState, useEffect, useMemo } from "react";
 import { ShieldCheck, Wallet, Zap, Sparkles, TrendingUp, Clock, Users, Package,
   ArrowRight, Store, Truck, LineChart, BadgePercent, ChevronRight,
 } from "lucide-react";
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -29,7 +31,47 @@ function Metric({ icon: Icon, label, value }: { icon: any; label: string; value:
 }
 
 function Landing() {
-  const products = useNaflis((s) => s.products);
+  const initialProducts = useNaflis((s) => s.products);
+  const [products, setProducts] = useState<any[]>(initialProducts);
+
+  useEffect(() => {
+    const fetchApprovedProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("*, vendors!inner(status, store_name, logo_url, description)")
+          .eq("vendors.status", "approved");
+
+        if (data && data.length > 0) {
+          const mapped = data.map((p) => ({
+            id: p.id,
+            storeId: p.vendor_id,
+            name: p.title,
+            image: p.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
+            gallery: p.images || [],
+            description: p.description || "",
+            price: p.price,
+            originalPrice: p.price * 1.2,
+            stock: p.stock,
+            demand: 75,
+            category: p.category,
+            flashSale: true,
+            priceHistory: [
+              { date: "2026-07-01", price: Math.round(p.price * 1.15) },
+              { date: "2026-07-05", price: Math.round(p.price * 1.10) },
+              { date: "2026-07-10", price: Math.round(p.price * 1.05) },
+              { date: "2026-07-15", price: p.price },
+            ]
+          }));
+          setProducts(mapped);
+          useNaflis.setState({ products: mapped });
+        }
+      } catch (err) {
+        console.error("Error fetching homepage products:", err);
+      }
+    };
+    fetchApprovedProducts();
+  }, []);
   const users = useNaflis((s) => s.users);
   const stores = useNaflis((s) => s.stores);
   const requests = useNaflis((s) => s.productRequests);

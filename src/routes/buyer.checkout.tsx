@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNaflis, useWallet, type PaymentOption } from "@/lib/naflis/store";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/buyer/checkout")({
   component: CheckoutPage,
@@ -55,25 +56,152 @@ function CheckoutPage() {
     else toast.error(r.message);
   };
 
-  const placeOrder = async () => {
-    if (payment === "wallet" && wallet && wallet.balance < total) {
-      toast.error(`Wallet is short by ${GHS(total - wallet.balance)}. Top up first.`);
-      return;
-    }
-    setPlacing(true);
-    await new Promise((r) => setTimeout(r, 700));
-    const order = createOrder({
-      items: items.map(({ productId, qty, price }) => ({ productId, qty, price })),
-      promoCode: promoState.code,
-      discount: promoState.discount,
-      delivery: deliveryFee,
-      escrowFee,
-      paymentOption: payment,
-      address,
+  const loadPaystack = () => {
+    return new Promise((resolve) => {
+      if ((window as any).PaystackPop) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://js.paystack.co/v1/inline.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      document.body.appendChild(script);
     });
-    setPlacing(false);
-    toast.success("Payment secured in escrow");
-    navigate({ to: "/buyer/orders/$orderId", params: { orderId: order.id } });
+  };
+
+  const saveOrderToDb = async (reference: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Please log in to place an order.");
+
+    // 1. Save to orders table in Supabase
+    const { data: orderData, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        buyer_id: user.id,
+        total_amount: total,
+        status: "paid",
+        paystack_reference: reference,
+      })
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // 2. Save to order_items table in Supabase
+    const itemsPayload = items.map((i) => ({
+      order_id: orderData.id,
+      product_id: i.productId,
+      vendor_id: i.product.storeId,
+      quantity: i.qty,
+      price: i.price,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .insert(itemsPayload);
+
+    if (itemsError) throw itemsError;
+
+    // 3. Sync order and clear cart in Zustand state
+    const mappedOrder = {
+      id: orderData.id,
+      buyerId: user.id,
+      total: total,
+      status: "escrow-secured" as any,
+      items: items.map((i) => ({
+        productId: i.productId,
+        qty: i.qty,
+        price: i.price,
+      })),
+      createdAt: Date.now(),
+      address: address,
+      paystackReference: reference,
+    };
+
+    useNaflis.setState((s) => ({
+      orders: [mappedOrder, ...s.orders],
+      cart: [],
+    }));
+
+    return orderData.id;
+  };
+
+  const placeOrder = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please log in to complete checkout.");
+        return;
+      }
+
+      setPlacing(true);
+
+      if (payment === "wallet") {
+        if (wallet && wallet.balance < total) {
+          toast.error(`Wallet is short by ${GHS(total - wallet.balance)}. Top up first.`);
+          setPlacing(false);
+          return;
+        }
+
+        // Deduct from local wallet
+        useNaflis.setState((s) => {
+          const w = s.wallets[user.id] || { balance: 0, escrowed: 0 };
+          return {
+            wallets: {
+              ...s.wallets,
+              [user.id]: {
+                ...w,
+                balance: w.balance - total,
+              },
+            },
+          };
+        });
+
+        const reference = `wallet_${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+        const orderId = await saveOrderToDb(reference);
+        
+        toast.success("Payment secured in escrow from wallet!");
+        navigate({ to: "/buyer/orders/$orderId", params: { orderId } });
+      } else {
+        // Paystack inline integration
+        await loadPaystack();
+        
+        const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+        if (!paystackPublicKey) {
+          throw new Error("Paystack public key is not configured in environment variables (VITE_PAYSTACK_PUBLIC_KEY).");
+        }
+
+        const reference = `pay_${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+
+        const paystack = (window as any).PaystackPop.setup({
+          key: paystackPublicKey,
+          email: user.email,
+          amount: Math.round(total * 100), // amount in GHS pesewas
+          currency: "GHS",
+          ref: reference,
+          callback: async (response: any) => {
+            try {
+              const orderId = await saveOrderToDb(response.reference);
+              toast.success("Payment secured in escrow!");
+              navigate({ to: "/buyer/orders/$orderId", params: { orderId } });
+            } catch (err: any) {
+              toast.error(err.message || "Failed to finalize order details in database.");
+              setPlacing(false);
+            }
+          },
+          onClose: () => {
+            toast.error("Payment window closed.");
+            setPlacing(false);
+          },
+        });
+
+        paystack.openIframe();
+      }
+    } catch (err: any) {
+      toast.error(err.message || "An unexpected error occurred during checkout.");
+      setPlacing(false);
+    }
   };
 
   return (

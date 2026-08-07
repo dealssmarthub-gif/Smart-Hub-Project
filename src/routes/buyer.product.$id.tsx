@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Heart, Share2, Bell, MessageSquare, ShieldCheck, Truck, Clock, TrendingUp,
-  Zap, AlertTriangle, Eye, Users, Star,
+  Zap, AlertTriangle, Eye, Users, Star, Loader2,
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/buyer/product/$id")({
   component: ProductDetail,
@@ -25,21 +26,102 @@ export const Route = createFileRoute("/buyer/product/$id")({
 
 function ProductDetail() {
   const { id } = Route.useParams();
-  const product = useNaflis((s) => s.products.find((p) => p.id === id));
-  const store = useNaflis((s) => s.stores.find((st) => st.id === product?.storeId));
+  const navigate = useNavigate();
+
   const wishlist = useNaflis((s) => s.wishlist);
   const toggleWishlist = useNaflis((s) => s.toggleWishlist);
   const addToCart = useNaflis((s) => s.addToCart);
   const setPriceAlert = useNaflis((s) => s.setPriceAlert);
   const products = useNaflis((s) => s.products);
-  const navigate = useNavigate();
 
+  const [dbProduct, setDbProduct] = useState<any>(null);
+  const [dbStore, setDbStore] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
 
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("products")
+          .select("*, vendors(*)")
+          .eq("id", id)
+          .single();
+
+        if (data) {
+          const mapped = {
+            id: data.id,
+            storeId: data.vendor_id,
+            name: data.title,
+            image: data.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
+            gallery: data.images || [],
+            description: data.description || "",
+            price: data.price,
+            originalPrice: data.price * 1.2,
+            stock: data.stock,
+            demand: 75,
+            category: data.category,
+            priceHistory: [
+              { date: "2026-07-01", price: Math.round(data.price * 1.15) },
+              { date: "2026-07-05", price: Math.round(data.price * 1.10) },
+              { date: "2026-07-10", price: Math.round(data.price * 1.05) },
+              { date: "2026-07-15", price: data.price },
+            ]
+          };
+          setDbProduct(mapped);
+
+          // Sync product to Zustand store if not already present
+          useNaflis.setState((s) => {
+            const exists = s.products.find((p) => p.id === mapped.id);
+            return {
+              products: exists ? s.products.map((p) => p.id === mapped.id ? { ...p, ...mapped } : p) : [...s.products, mapped]
+            };
+          });
+
+          if (data.vendors) {
+            setDbStore({
+              id: data.vendors.id,
+              name: data.vendors.store_name,
+              ownerId: data.vendors.user_id,
+              logo: data.vendors.logo_url || `https://api.dicebear.com/9.x/notionists/svg?seed=${data.vendors.store_name}`,
+              tagline: data.vendors.description || "Verified Seller",
+              rating: 5.0,
+              reviews: 0,
+              verified: data.vendors.status === "approved",
+              followers: 0,
+              location: "Accra",
+              categories: [data.category],
+              subscription: "starter"
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error loading product details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
   const related = useMemo(
-    () => product ? products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4) : [],
-    [products, product],
+    () => dbProduct ? products.filter((p) => p.category === dbProduct.category && p.id !== dbProduct.id).slice(0, 4) : [],
+    [products, dbProduct],
   );
+
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center py-20 min-h-[50vh]">
+        <Loader2 className="h-10 w-10 text-violet animate-spin" />
+        <p className="mt-3 text-sm text-muted-foreground font-semibold">Loading product specifications...</p>
+      </div>
+    );
+  }
+
+  const product = dbProduct;
+  const store = dbStore;
 
   if (!product) {
     return (
@@ -52,7 +134,7 @@ function ProductDetail() {
 
   const off = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
   const inWishlist = wishlist.includes(product.id);
-  const chart = product.priceHistory.map((h) => ({ ...h, date: h.date.slice(5) }));
+  const chart = product.priceHistory.map((h: any) => ({ ...h, date: h.date.slice(5) }));
 
   return (
     <div className="space-y-6">

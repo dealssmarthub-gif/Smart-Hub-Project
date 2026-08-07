@@ -1,18 +1,59 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Flame, Zap, Package, BadgePercent, Bell, Clock, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/naflis/ProductCard";
 import { CATEGORIES, useNaflis } from "@/lib/naflis/store";
 import { GHS } from "@/lib/naflis/format";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/buyer/")({
   component: BuyerHome,
 });
 
 function BuyerHome() {
-  const products = useNaflis((s) => s.products);
+  const initialProducts = useNaflis((s) => s.products);
+  const [products, setProducts] = useState<any[]>(initialProducts);
+
+  useEffect(() => {
+    const fetchApprovedProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("*, vendors!inner(status, store_name, logo_url, description)")
+          .eq("vendors.status", "approved");
+
+        if (data && data.length > 0) {
+          const mapped = data.map((p) => ({
+            id: p.id,
+            storeId: p.vendor_id,
+            name: p.title,
+            image: p.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
+            gallery: p.images || [],
+            description: p.description || "",
+            price: p.price,
+            originalPrice: p.price * 1.2,
+            stock: p.stock,
+            demand: 75,
+            category: p.category,
+            flashSale: true,
+            priceHistory: [
+              { date: "2026-07-01", price: Math.round(p.price * 1.15) },
+              { date: "2026-07-05", price: Math.round(p.price * 1.10) },
+              { date: "2026-07-10", price: Math.round(p.price * 1.05) },
+              { date: "2026-07-15", price: p.price },
+            ]
+          }));
+          setProducts(mapped);
+          useNaflis.setState({ products: mapped });
+        }
+      } catch (err) {
+        console.error("Error fetching buyer products:", err);
+      }
+    };
+    fetchApprovedProducts();
+  }, []);
   const promos = useNaflis((s) => s.promos);
   const user = useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
 
