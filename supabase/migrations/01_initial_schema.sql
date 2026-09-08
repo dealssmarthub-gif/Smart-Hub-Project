@@ -67,7 +67,7 @@ BEGIN
         new.id,
         new.email,
         coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', ''),
-        coalesce(new.raw_user_meta_data->>'phone', new.phone, ''),
+        coalesce(new.raw_user_meta_data->>'phone', new.raw_user_meta_data->>'phone_number', new.phone, ''),
         coalesce((new.raw_user_meta_data->>'role')::public.user_role, 'buyer'::public.user_role)
     );
     RETURN new;

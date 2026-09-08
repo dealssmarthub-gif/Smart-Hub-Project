@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { ArrowLeft, Mail, Lock, User, Store, Phone, Sparkles, Eye, EyeOff } from "lucide-react";
@@ -32,6 +32,19 @@ function LoginPage() {
   const [selectedRole, setSelectedRole] = useState<"buyer" | "seller">("buyer");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Auto-redirect if user is already logged in
+  useEffect(() => {
+    if (supabase) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          const userRole = session.user.user_metadata?.role || "buyer";
+          const dest = search.redirect || `/${userRole}`;
+          navigate({ to: dest });
+        }
+      });
+    }
+  }, [navigate, search.redirect]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) {
@@ -54,7 +67,13 @@ function LoginPage() {
         });
 
         if (error) {
-          toast.error(error.message);
+          if (error.message.toLowerCase().includes("email not confirmed")) {
+            toast.error("Email not confirmed. Please check your inbox for the verification link.");
+          } else if (error.message.toLowerCase().includes("invalid login credentials")) {
+            toast.error("Invalid email or password. Please check your credentials and try again.");
+          } else {
+            toast.error(error.message);
+          }
         } else {
           toast.success("Successfully logged in!");
           const userRole = data.user?.user_metadata?.role || "buyer";
@@ -76,12 +95,18 @@ function LoginPage() {
               role: selectedRole,
               full_name: fullName,
               phone: phone,
+              phone_number: phone,
             },
           },
         });
 
         if (error) {
-          toast.error(error.message);
+          if (error.message.toLowerCase().includes("user already registered")) {
+            toast.error("An account with this email already exists. Switching to Sign In.");
+            setMode("signin");
+          } else {
+            toast.error(error.message);
+          }
         } else {
           if (data.session) {
             toast.success("Account created and signed in!");
@@ -94,7 +119,7 @@ function LoginPage() {
         }
       }
     } catch (err: any) {
-      toast.error(err.message || "An unexpected error occurred.");
+      toast.error(err?.message || "An unexpected error occurred during authentication.");
     } finally {
       setIsLoading(false);
     }
