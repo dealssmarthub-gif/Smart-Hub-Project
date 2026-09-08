@@ -10,7 +10,7 @@ export function Logo({ className = "" }: { className?: string }) {
       <span className="flex flex-col leading-none">
         <span className="text-sm font-black tracking-tight">
           <span className="text-foreground">NAFLIS</span>{" "}
-          <span className="text-gradient-violet">Mall</span>
+          <span className="text-gradient-sea">Mall</span>
         </span>
         <span className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
           Buy Smarter · Sell Smarter

@@ -76,7 +76,7 @@ function AdminDashboard() {
         <TabsContent value="overview" className="mt-4 grid gap-3 md:grid-cols-2">
           <div className="rounded-xl border bg-card p-4">
             <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-violet" />
+              <Package className="h-4 w-4 text-sky-500" />
               <p className="font-semibold">Catalog distribution</p>
             </div>
             <ul className="mt-3 space-y-2">
@@ -91,7 +91,7 @@ function AdminDashboard() {
           </div>
           <div className="rounded-xl border bg-card p-4">
             <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-violet" />
+              <Activity className="h-4 w-4 text-sky-500" />
               <p className="font-semibold">Order pipeline</p>
             </div>
             <ul className="mt-3 space-y-2 text-sm">

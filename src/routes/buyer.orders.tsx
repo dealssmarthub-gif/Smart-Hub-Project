@@ -32,7 +32,7 @@ function OrdersPage() {
           key={o.id}
           to="/buyer/orders/$orderId"
           params={{ orderId: o.id }}
-          className="block rounded-2xl border bg-card p-5 transition hover:border-violet"
+          className="block rounded-2xl border bg-card p-5 transition hover:border-sky-500"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>

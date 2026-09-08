@@ -15,7 +15,7 @@ function ReservePage() {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border bg-card p-6">
-        <div className="flex items-center gap-2 text-violet">
+        <div className="flex items-center gap-2 text-sky-500">
           <Clock className="h-5 w-5" />
           <span className="text-xs font-semibold uppercase tracking-widest">Reserve & Pay</span>
         </div>

@@ -57,7 +57,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
           <Link
             to="/buyer/product/$id"
             params={{ id: product.id }}
-            className="line-clamp-2 text-sm font-semibold leading-snug hover:text-violet"
+            className="line-clamp-2 text-sm font-semibold leading-snug hover:text-sky-500"
           >
             {product.name}
           </Link>

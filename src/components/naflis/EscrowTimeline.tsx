@@ -11,7 +11,7 @@ export function EscrowTimeline({ events }: { events: OrderEvent[] }) {
             <div className="flex flex-col items-center">
               <span
                 className={`grid h-7 w-7 place-items-center rounded-full ${
-                  last ? "bg-violet text-violet-foreground" : "bg-success text-success-foreground"
+                  last ? "bg-sky-500 text-white" : "bg-success text-success-foreground"
                 }`}
               >
                 {last ? <Circle className="h-3 w-3 fill-current" /> : <Check className="h-3.5 w-3.5" />}

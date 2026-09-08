@@ -30,17 +30,17 @@ function NotifPage() {
               key={n.id}
               onClick={() => markRead(n.id)}
               className={`flex w-full items-start gap-3 rounded-xl border p-4 text-left transition ${
-                n.read ? "bg-card" : "border-violet/40 bg-accent"
+                n.read ? "bg-card" : "border-sky-500/40 bg-accent"
               }`}
             >
-              <div className={`grid h-9 w-9 place-items-center rounded-full ${n.read ? "bg-muted" : "bg-violet text-violet-foreground"}`}>
+              <div className={`grid h-9 w-9 place-items-center rounded-full ${n.read ? "bg-muted" : "bg-sky-500 text-white"}`}>
                 <Bell className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold">{n.title}</p>
                 <p className="text-xs text-muted-foreground">{n.body}</p>
               </div>
-              {!n.read && <span className="h-2 w-2 shrink-0 rounded-full bg-violet" />}
+              {!n.read && <span className="h-2 w-2 shrink-0 rounded-full bg-sky-500" />}
             </button>
           ))}
         </div>

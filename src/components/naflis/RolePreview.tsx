@@ -78,7 +78,7 @@ export function RolePreview({
             <ul className="grid gap-2 sm:grid-cols-2">
               {features.map((f) => (
                 <li key={f} className="flex items-start gap-2 rounded-lg border bg-background p-3 text-sm">
-                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-violet" />
+                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-sky-500" />
                   {f}
                 </li>
               ))}

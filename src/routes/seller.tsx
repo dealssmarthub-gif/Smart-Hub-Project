@@ -349,7 +349,7 @@ function SellerDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col justify-center items-center">
-        <Loader2 className="h-10 w-10 text-violet animate-spin" />
+        <Loader2 className="h-10 w-10 text-sky-500 animate-spin" />
         <p className="mt-3 text-sm text-muted-foreground font-semibold">Loading command center...</p>
       </div>
     );
@@ -373,8 +373,8 @@ function SellerDashboard() {
         <main className="flex-1 flex items-center justify-center p-4 py-12">
           <div className="max-w-md w-full space-y-6">
             <div className="text-center space-y-2">
-              <div className="p-3 bg-violet/10 rounded-full w-fit mx-auto">
-                <Store className="h-10 w-10 text-violet" />
+              <div className="p-3 bg-sky-500/10 rounded-full w-fit mx-auto">
+                <Store className="h-10 w-10 text-sky-500" />
               </div>
               <h1 className="text-3xl font-black tracking-tight">Onboard as Seller</h1>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -418,7 +418,7 @@ function SellerDashboard() {
                 />
               </div>
 
-              <Button type="submit" className="w-full bg-violet hover:bg-violet/90 text-white font-bold" disabled={submittingOnboarding}>
+              <Button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold" disabled={submittingOnboarding}>
                 {submittingOnboarding ? (
                   <>
                     <Loader2 className="animate-spin mr-2 h-4 w-4" />
@@ -475,7 +475,7 @@ function SellerDashboard() {
               <div className="border-t pt-6 space-y-4">
                 <div className="p-4 bg-muted/50 rounded-xl border text-left text-xs space-y-2">
                   <div className="flex items-center gap-1.5 font-bold text-foreground">
-                    <AlertCircle className="h-4 w-4 text-violet" />
+                    <AlertCircle className="h-4 w-4 text-sky-500" />
                     <span>Demo Simulation Tool</span>
                   </div>
                   <p className="text-muted-foreground leading-relaxed">
@@ -483,7 +483,7 @@ function SellerDashboard() {
                   </p>
                 </div>
 
-                <Button onClick={handleSimulateApproval} className="w-full bg-violet hover:bg-violet/90 text-white font-bold">
+                <Button onClick={handleSimulateApproval} className="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold">
                   Simulate Admin Approval
                 </Button>
               </div>
@@ -679,12 +679,12 @@ function SellerDashboard() {
                   >
                     {uploadingImage ? (
                       <>
-                        <Loader2 className="h-8 w-8 text-violet animate-spin mb-2" />
+                        <Loader2 className="h-8 w-8 text-sky-500 animate-spin mb-2" />
                         <p className="text-xs font-bold text-muted-foreground">Uploading files to Supabase...</p>
                       </>
                     ) : (
                       <>
-                        <Upload className="h-8 w-8 text-violet mb-2" />
+                        <Upload className="h-8 w-8 text-sky-500 mb-2" />
                         <p className="text-xs font-bold text-foreground">Click to upload files</p>
                         <p className="text-[10px] text-muted-foreground mt-0.5">JPEG, PNG, WEBP, or SVG up to 5MB</p>
                       </>
@@ -697,7 +697,7 @@ function SellerDashboard() {
                 <Button type="button" variant="ghost" onClick={() => setShowProductModal(false)} disabled={savingProduct}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-violet hover:bg-violet/90 text-white font-bold" disabled={savingProduct}>
+                <Button type="submit" className="bg-sky-500 hover:bg-sky-600 text-white font-bold" disabled={savingProduct}>
                   {savingProduct ? (
                     <>
                       <Loader2 className="animate-spin mr-1.5 h-4 w-4" />
@@ -824,7 +824,7 @@ function ProductsTab({
           <h2 className="text-lg font-black">My Products</h2>
           <p className="text-xs text-muted-foreground">Manage your storefront listings and inventory stock level.</p>
         </div>
-        <Button onClick={openAddProduct} size="sm" className="bg-violet hover:bg-violet/90 text-white gap-1.5">
+        <Button onClick={openAddProduct} size="sm" className="bg-sky-500 hover:bg-sky-600 text-white gap-1.5">
           <Plus className="h-4 w-4" /> Add Product
         </Button>
       </div>
@@ -892,7 +892,7 @@ function ProductsTab({
                           size="icon"
                           className="h-8 w-8 hover:bg-muted"
                         >
-                          <Edit className="h-4 w-4 text-violet" />
+                          <Edit className="h-4 w-4 text-sky-500" />
                         </Button>
                         <Button
                           onClick={() => setProductToDelete(p)}
@@ -922,7 +922,7 @@ function IntelligenceTab({ searchEvents, products }: { searchEvents: any[]; prod
     <div className="grid gap-3 md:grid-cols-2 animate-fade-in">
       <div className="rounded-xl border bg-card p-4">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-violet" />
+          <TrendingUp className="h-4 w-4 text-sky-500" />
           <p className="font-semibold">Hottest products in your catalog</p>
         </div>
         {hottest.length === 0 ? (
@@ -997,7 +997,7 @@ function PricingTab({ products }: { products: any[] }) {
             <p className="text-sm font-semibold">{p.title}</p>
             <div className="mt-2 flex items-baseline gap-2 text-sm">
               <span className="text-muted-foreground line-through">{GHS(p.price)}</span>
-              <span className="text-lg font-bold text-violet">{GHS(newPrice)}</span>
+              <span className="text-lg font-bold text-sky-500">{GHS(newPrice)}</span>
               <Badge className="ml-auto bg-success text-success-foreground">−{pct(suggestedExtra * 100)}</Badge>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
@@ -1028,7 +1028,7 @@ function RequestsTab({ requests }: { requests: any[] }) {
       {requests.map((r) => (
         <div key={r.id} className="rounded-xl border bg-card p-4">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-violet" />
+            <Users className="h-4 w-4 text-sky-500" />
             <p className="text-xs text-muted-foreground">{r.interestedBuyers.toLocaleString()} buyers waiting</p>
           </div>
           <p className="mt-2 font-semibold">{r.name}</p>

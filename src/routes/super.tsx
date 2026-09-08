@@ -79,7 +79,7 @@ function SuperDashboard() {
             <div key={f.key} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Flag className="h-4 w-4 text-violet" />
+                  <Flag className="h-4 w-4 text-sky-500" />
                   <p className="font-semibold">{f.label}</p>
                   <Badge variant={f.on ? "default" : "outline"}>{f.on ? "ON" : "OFF"}</Badge>
                 </div>
@@ -101,7 +101,7 @@ function SuperDashboard() {
           {regionState.map((r) => (
             <div key={r.name} className="flex items-center justify-between gap-2 rounded-xl border bg-card p-4">
               <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-violet" />
+                <Globe className="h-4 w-4 text-sky-500" />
                 <div>
                   <p className="font-semibold">{r.name}</p>
                   <p className="text-xs text-muted-foreground">GMV 30d: {r.gmv}</p>

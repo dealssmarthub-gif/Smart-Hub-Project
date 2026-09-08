@@ -225,7 +225,7 @@ function CheckoutPage() {
               value="wallet"
               title={`NAFLIS Wallet · ${GHS(wallet?.balance ?? 0)} available`}
               subtitle="Instant, zero fees"
-              icon={<Wallet className="h-5 w-5 text-violet" />}
+              icon={<Wallet className="h-5 w-5 text-sky-500" />}
               active={payment === "wallet"}
             />
             <RadioTile
@@ -305,7 +305,7 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   return (
     <section className="rounded-2xl border bg-card p-5">
       <div className="mb-3 flex items-center gap-2">
-        <span className="grid h-6 w-6 place-items-center rounded-full bg-violet text-xs font-bold text-violet-foreground">{n}</span>
+        <span className="grid h-6 w-6 place-items-center rounded-full bg-sky-500 text-xs font-bold text-white">{n}</span>
         <h2 className="font-semibold">{title}</h2>
       </div>
       {children}
@@ -317,7 +317,7 @@ function RadioTile({ value, title, subtitle, icon, active }: {
   value: string; title: string; subtitle?: string; icon?: React.ReactNode; active: boolean;
 }) {
   return (
-    <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${active ? "border-violet bg-accent" : "hover:bg-muted"}`}>
+    <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${active ? "border-sky-500 bg-accent" : "hover:bg-muted"}`}>
       <RadioGroupItem value={value} />
       {icon}
       <div className="flex-1">

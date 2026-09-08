@@ -207,7 +207,7 @@ function LoginPage() {
                       onClick={() => setSelectedRole("buyer")}
                       className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition hover:-translate-y-0.5 ${
                         selectedRole === "buyer"
-                          ? "border-violet bg-violet/5 text-violet shadow-sm"
+                          ? "border-sky-500 bg-sky-500/5 text-sky-500 shadow-sm"
                           : "border-border bg-background hover:bg-muted"
                       }`}
                     >

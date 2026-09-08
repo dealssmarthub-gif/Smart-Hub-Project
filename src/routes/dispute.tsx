@@ -131,7 +131,7 @@ function DisputeCard({ dispute, order, buyerName }: { dispute: ReturnType<typeof
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Evidence</p>
           <ul className="mt-1 space-y-1 text-sm">
             {dispute.evidence.map((e) => (
-              <li key={e} className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-violet" />{e}</li>
+              <li key={e} className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-sky-500" />{e}</li>
             ))}
           </ul>
         </div>
@@ -149,7 +149,7 @@ function DisputeCard({ dispute, order, buyerName }: { dispute: ReturnType<typeof
             <Button size="sm" variant="outline" onClick={() => resolve("full-refund")}>Full refund to buyer</Button>
             <Button size="sm" variant="outline" onClick={() => resolve("release")}>Release to seller</Button>
             <div className="flex items-center gap-2 rounded-lg border px-3 py-1">
-              <Split className="h-4 w-4 text-violet" />
+              <Split className="h-4 w-4 text-sky-500" />
               <input type="range" min={10} max={90} step={5} value={splitPct} onChange={(e) => setSplitPct(Number(e.target.value))} />
               <span className="w-16 text-xs font-semibold">Buyer {splitPct}%</span>
               <Button size="sm" onClick={() => resolve("split")}>Split escrow</Button>

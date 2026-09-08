@@ -63,7 +63,7 @@ function MessagesPage() {
         <div className="flex-1 space-y-2 overflow-y-auto p-4">
           {(msgs[active] ?? []).map((m, i) => (
             <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${m.from === "me" ? "bg-violet text-violet-foreground" : "bg-muted"}`}>
+              <div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${m.from === "me" ? "bg-sky-500 text-white" : "bg-muted"}`}>
                 {m.body}
                 <p className="mt-0.5 text-[10px] opacity-60">{fmtTime(m.at)}</p>
               </div>

@@ -178,16 +178,16 @@ function Landing() {
       <section className="mx-auto max-w-7xl px-4 py-10">
         <div className="mb-4 flex items-end justify-between">
           <h2 className="text-2xl font-bold">Popular categories</h2>
-          <Link to="/buyer" className="text-sm text-violet hover:underline">Browse all →</Link>
+          <Link to="/buyer" className="text-sm text-sky-500 hover:underline">Browse all →</Link>
         </div>
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
           {CATEGORIES.slice(0, 8).map((c) => (
             <Link
               key={c}
               to="/buyer"
-              className="rounded-xl border bg-card p-3 text-center text-sm font-medium transition hover:border-violet hover:shadow-premium"
+              className="rounded-xl border bg-card p-3 text-center text-sm font-medium transition hover:border-sky-500 hover:shadow-premium"
             >
-              <Package className="mx-auto mb-1 h-5 w-5 text-violet" />
+              <Package className="mx-auto mb-1 h-5 w-5 text-sky-500" />
               {c}
             </Link>
           ))}
@@ -226,7 +226,7 @@ function Landing() {
         <h2 className="mb-8 text-center text-3xl font-bold">Buy any way you can afford</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl border bg-card p-6">
-            <ShieldCheck className="mb-3 h-8 w-8 text-violet" />
+            <ShieldCheck className="mb-3 h-8 w-8 text-sky-500" />
             <h3 className="text-lg font-semibold">Escrow-protected checkout</h3>
             <p className="mt-1 text-sm text-muted-foreground">Funds sit safely in NAFLIS escrow until you confirm delivery. No lost payments, ever.</p>
           </div>
@@ -247,17 +247,17 @@ function Landing() {
       <section id="sellers" className="border-y bg-secondary">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center">
           <div>
-            <Badge variant="secondary" className="mb-3 bg-violet/10 text-violet">For Sellers</Badge>
+            <Badge variant="secondary" className="mb-3 bg-sky-500/10 text-sky-500">For Sellers</Badge>
             <h2 className="text-3xl font-bold">Sell what buyers actually want</h2>
             <p className="mt-3 text-muted-foreground">
               See what shoppers are searching for, what price they'll pay, and which discount will convert
               — before you list a single product.
             </p>
             <ul className="mt-6 space-y-3 text-sm">
-              <li className="flex gap-2"><LineChart className="h-4 w-4 text-violet" /> Demand intelligence & regional heatmaps</li>
-              <li className="flex gap-2"><BadgePercent className="h-4 w-4 text-violet" /> Pricing recommendations tied to expected sales lift</li>
-              <li className="flex gap-2"><Store className="h-4 w-4 text-violet" /> Automated store branding & catalog generation</li>
-              <li className="flex gap-2"><Truck className="h-4 w-4 text-violet" /> Escrow settlements & platform-wide delivery network</li>
+              <li className="flex gap-2"><LineChart className="h-4 w-4 text-sky-500" /> Demand intelligence & regional heatmaps</li>
+              <li className="flex gap-2"><BadgePercent className="h-4 w-4 text-sky-500" /> Pricing recommendations tied to expected sales lift</li>
+              <li className="flex gap-2"><Store className="h-4 w-4 text-sky-500" /> Automated store branding & catalog generation</li>
+              <li className="flex gap-2"><Truck className="h-4 w-4 text-sky-500" /> Escrow settlements & platform-wide delivery network</li>
             </ul>
             <div className="mt-6 flex gap-3">
               <Button asChild>

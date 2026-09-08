@@ -114,7 +114,7 @@ function ProductDetail() {
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center py-20 min-h-[50vh]">
-        <Loader2 className="h-10 w-10 text-violet animate-spin" />
+        <Loader2 className="h-10 w-10 text-sky-500 animate-spin" />
         <p className="mt-3 text-sm text-muted-foreground font-semibold">Loading product specifications...</p>
       </div>
     );
@@ -166,8 +166,8 @@ function ProductDetail() {
             </span>
             {store && (
               <span className="flex items-center gap-1">
-                <ShieldCheck className="h-4 w-4 text-violet" />
-                {store.name} {store.verified && <span className="text-xs text-violet">(verified)</span>}
+                <ShieldCheck className="h-4 w-4 text-sky-500" />
+                {store.name} {store.verified && <span className="text-xs text-sky-500">(verified)</span>}
               </span>
             )}
             <span className="flex items-center gap-1"><Truck className="h-4 w-4" /> Delivery in {product.deliveryDays} days</span>
@@ -291,7 +291,7 @@ function ProductDetail() {
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} />
                   <YAxis tick={{ fontSize: 10 }} />
                   <Tooltip formatter={(v: any) => GHS(Number(v))} />
-                  <Line type="monotone" dataKey="price" stroke="var(--violet)" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="price" stroke="var(--primary)" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -318,7 +318,7 @@ function ProductDetail() {
 function SignalCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-lg border bg-card p-2 text-center">
-      <div className="mx-auto mb-1 text-violet">{icon}</div>
+      <div className="mx-auto mb-1 text-sky-500">{icon}</div>
       <p className="text-sm font-bold">{value}</p>
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
     </div>

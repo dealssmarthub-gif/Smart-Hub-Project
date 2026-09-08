@@ -131,7 +131,7 @@ export function BuyerShell() {
               key={n.to}
               to={n.to}
               className={`relative flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] ${
-                active ? "text-violet" : "text-muted-foreground"
+                active ? "text-sky-500" : "text-muted-foreground"
               }`}
             >
               <Icon className="h-5 w-5" />

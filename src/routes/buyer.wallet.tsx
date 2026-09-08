@@ -92,7 +92,7 @@ function WalletPage() {
             <div key={tx.id} className="flex items-center gap-3 p-4">
               <div className={`grid h-9 w-9 place-items-center rounded-full ${
                 tx.type === "credit" ? "bg-success/10 text-success" :
-                tx.type === "escrow-in" ? "bg-violet/10 text-violet" :
+                tx.type === "escrow-in" ? "bg-sky-500/10 text-sky-500" :
                 "bg-muted text-muted-foreground"
               }`}>
                 {tx.type === "credit" ? <ArrowDownToLine className="h-4 w-4" /> : <ArrowUpFromLine className="h-4 w-4" />}
