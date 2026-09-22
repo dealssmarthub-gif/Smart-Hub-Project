@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
 import { ShieldCheck, Wallet, Zap, Sparkles, TrendingUp, Clock, Users, Package,
-  ArrowRight, Store, Truck, LineChart, BadgePercent, ChevronRight,
+  ArrowRight, Store, Truck, LineChart, BadgePercent, ChevronRight, GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -100,6 +100,13 @@ function Landing() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4">
           <Logo />
           <nav className="hidden items-center gap-6 md:flex">
+            <Link
+              to="/student-os"
+              className="flex items-center gap-1.5 text-sm font-bold text-sky-500 hover:text-sky-400 transition"
+            >
+              <GraduationCap className="h-4 w-4" />
+              <span>Student OS</span>
+            </Link>
             <a href="#deals" className="text-sm text-muted-foreground hover:text-foreground">Deals</a>
             <a href="#how" className="text-sm text-muted-foreground hover:text-foreground">How it works</a>
             <a href="#sellers" className="text-sm text-muted-foreground hover:text-foreground">For Sellers</a>
@@ -138,10 +145,14 @@ function Landing() {
 
       {/* Hero */}
       <section className="relative overflow-hidden gradient-hero text-white">
-        <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 20% 20%, oklch(0.72 0.18 295 / 0.5), transparent 40%), radial-gradient(circle at 80% 60%, oklch(0.82 0.13 85 / 0.4), transparent 40%)" }} />
+        <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 20% 20%, oklch(0.64 0.17 235 / 0.5), transparent 40%), radial-gradient(circle at 80% 60%, oklch(0.82 0.13 85 / 0.4), transparent 40%)" }} />
         <div className="relative mx-auto max-w-7xl px-4 py-16 md:py-24">
           <div className="grid gap-10 md:grid-cols-2 md:items-center">
             <div>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-400/40 bg-sky-500/20 px-3 py-1 text-xs font-semibold text-sky-200 backdrop-blur">
+                <GraduationCap className="h-3.5 w-3.5 text-sky-300" />
+                <span>Now Live: Open Student OS & Campus Marketplace</span>
+              </div>
               <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
                 The Future of Buying and Selling
               </h1>
@@ -150,14 +161,16 @@ function Landing() {
                 what buyers truly want.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
+                <Button asChild size="lg" className="bg-sky-500 hover:bg-sky-400 text-white font-bold shadow-lg">
+                  <Link to="/student-os">
+                    <GraduationCap className="mr-2 h-5 w-5" /> Open Student OS
+                  </Link>
+                </Button>
                 <Button asChild size="lg" className="bg-white text-navy hover:bg-white/90">
                   <Link to="/buyer">Start Shopping <ArrowRight className="ml-1 h-4 w-4" /></Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="border-white/40 bg-white/10 text-white hover:bg-white/20">
                   <Link to="/seller">Open a Store</Link>
-                </Button>
-                <Button asChild size="lg" variant="ghost" className="text-white hover:bg-white/10">
-                  <a href="#deals">Explore Live Deals</a>
                 </Button>
               </div>
             </div>
@@ -170,6 +183,33 @@ function Landing() {
               <Metric icon={TrendingUp} label="Products requested" value={compact(productsRequestedCount)} />
               <Metric icon={ShieldCheck} label="In escrow" value={GHS(inEscrowAmount)} />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Student OS Highlight Callout Banner */}
+      <section className="border-b bg-card py-6">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-sky-500/20 bg-sky-500/5 p-5 shadow-sm">
+            <div className="flex items-center gap-3.5">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sky-500 text-white shadow-md">
+                <GraduationCap className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                  Campus Marketplace & Student Toolkits
+                  <Badge className="bg-sky-500/20 text-sky-500 border-sky-500/30 text-[10px]">
+                    UG · KNUST · UCC & More
+                  </Badge>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Trade textbooks, dorm appliances & thrift wear peer-to-peer. Access verified past exam solutions and group discount drops.
+                </p>
+              </div>
+            </div>
+            <Button asChild size="sm" className="bg-sky-500 hover:bg-sky-600 text-white text-xs shrink-0 shadow-sm">
+              <Link to="/student-os">Launch Student OS →</Link>
+            </Button>
           </div>
         </div>
       </section>

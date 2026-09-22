@@ -17,6 +17,7 @@ import { Route as DisputeRouteImport } from './routes/dispute'
 import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SellerRouteImport } from './routes/seller'
+import { Route as StudentOsRouteImport } from './routes/student-os'
 import { Route as SuperRouteImport } from './routes/super'
 import { Route as BuyerIndexRouteImport } from './routes/buyer.index'
 import { Route as BuyerCartRouteImport } from './routes/buyer.cart'
@@ -29,6 +30,10 @@ import { Route as BuyerReserveRouteImport } from './routes/buyer.reserve'
 import { Route as BuyerSearchRouteImport } from './routes/buyer.search'
 import { Route as BuyerWalletRouteImport } from './routes/buyer.wallet'
 import { Route as BuyerWishlistRouteImport } from './routes/buyer.wishlist'
+import { Route as StudentOsIndexRouteImport } from './routes/student-os.index'
+import { Route as StudentOsDealsRouteImport } from './routes/student-os.deals'
+import { Route as StudentOsMarketplaceRouteImport } from './routes/student-os.marketplace'
+import { Route as StudentOsResourcesRouteImport } from './routes/student-os.resources'
 import { Route as BuyerOrdersOrderIdRouteImport } from './routes/buyer.orders.$orderId'
 import { Route as BuyerProductIdRouteImport } from './routes/buyer.product.$id'
 
@@ -70,6 +75,11 @@ const LoginRoute = LoginRouteImport.update({
 const SellerRoute = SellerRouteImport.update({
   id: '/seller',
   path: '/seller',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentOsRoute = StudentOsRouteImport.update({
+  id: '/student-os',
+  path: '/student-os',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuperRoute = SuperRouteImport.update({
@@ -132,6 +142,26 @@ const BuyerWishlistRoute = BuyerWishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => BuyerRoute,
 } as any)
+const StudentOsIndexRoute = StudentOsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StudentOsRoute,
+} as any)
+const StudentOsDealsRoute = StudentOsDealsRouteImport.update({
+  id: '/deals',
+  path: '/deals',
+  getParentRoute: () => StudentOsRoute,
+} as any)
+const StudentOsMarketplaceRoute = StudentOsMarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => StudentOsRoute,
+} as any)
+const StudentOsResourcesRoute = StudentOsResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => StudentOsRoute,
+} as any)
 const BuyerOrdersOrderIdRoute = BuyerOrdersOrderIdRouteImport.update({
   id: '/$orderId',
   path: '/$orderId',
@@ -152,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/finance': typeof FinanceRoute
   '/login': typeof LoginRoute
   '/seller': typeof SellerRoute
+  '/student-os': typeof StudentOsRouteWithChildren
   '/super': typeof SuperRoute
   '/buyer/cart': typeof BuyerCartRoute
   '/buyer/checkout': typeof BuyerCheckoutRoute
@@ -163,7 +194,11 @@ export interface FileRoutesByFullPath {
   '/buyer/search': typeof BuyerSearchRoute
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
+  '/student-os/deals': typeof StudentOsDealsRoute
+  '/student-os/marketplace': typeof StudentOsMarketplaceRoute
+  '/student-os/resources': typeof StudentOsResourcesRoute
   '/buyer/': typeof BuyerIndexRoute
+  '/student-os/': typeof StudentOsIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
   '/buyer/product/$id': typeof BuyerProductIdRoute
 }
@@ -186,7 +221,11 @@ export interface FileRoutesByTo {
   '/buyer/search': typeof BuyerSearchRoute
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
+  '/student-os/deals': typeof StudentOsDealsRoute
+  '/student-os/marketplace': typeof StudentOsMarketplaceRoute
+  '/student-os/resources': typeof StudentOsResourcesRoute
   '/buyer': typeof BuyerIndexRoute
+  '/student-os': typeof StudentOsIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
   '/buyer/product/$id': typeof BuyerProductIdRoute
 }
@@ -200,6 +239,7 @@ export interface FileRoutesById {
   '/finance': typeof FinanceRoute
   '/login': typeof LoginRoute
   '/seller': typeof SellerRoute
+  '/student-os': typeof StudentOsRouteWithChildren
   '/super': typeof SuperRoute
   '/buyer/cart': typeof BuyerCartRoute
   '/buyer/checkout': typeof BuyerCheckoutRoute
@@ -211,7 +251,11 @@ export interface FileRoutesById {
   '/buyer/search': typeof BuyerSearchRoute
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
+  '/student-os/deals': typeof StudentOsDealsRoute
+  '/student-os/marketplace': typeof StudentOsMarketplaceRoute
+  '/student-os/resources': typeof StudentOsResourcesRoute
   '/buyer/': typeof BuyerIndexRoute
+  '/student-os/': typeof StudentOsIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
   '/buyer/product/$id': typeof BuyerProductIdRoute
 }
@@ -226,6 +270,7 @@ export interface FileRouteTypes {
     | '/finance'
     | '/login'
     | '/seller'
+    | '/student-os'
     | '/super'
     | '/buyer/cart'
     | '/buyer/checkout'
@@ -237,7 +282,11 @@ export interface FileRouteTypes {
     | '/buyer/search'
     | '/buyer/wallet'
     | '/buyer/wishlist'
+    | '/student-os/deals'
+    | '/student-os/marketplace'
+    | '/student-os/resources'
     | '/buyer/'
+    | '/student-os/'
     | '/buyer/orders/$orderId'
     | '/buyer/product/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -260,7 +309,11 @@ export interface FileRouteTypes {
     | '/buyer/search'
     | '/buyer/wallet'
     | '/buyer/wishlist'
+    | '/student-os/deals'
+    | '/student-os/marketplace'
+    | '/student-os/resources'
     | '/buyer'
+    | '/student-os'
     | '/buyer/orders/$orderId'
     | '/buyer/product/$id'
   id:
@@ -273,6 +326,7 @@ export interface FileRouteTypes {
     | '/finance'
     | '/login'
     | '/seller'
+    | '/student-os'
     | '/super'
     | '/buyer/cart'
     | '/buyer/checkout'
@@ -284,7 +338,11 @@ export interface FileRouteTypes {
     | '/buyer/search'
     | '/buyer/wallet'
     | '/buyer/wishlist'
+    | '/student-os/deals'
+    | '/student-os/marketplace'
+    | '/student-os/resources'
     | '/buyer/'
+    | '/student-os/'
     | '/buyer/orders/$orderId'
     | '/buyer/product/$id'
   fileRoutesById: FileRoutesById
@@ -298,6 +356,7 @@ export interface RootRouteChildren {
   FinanceRoute: typeof FinanceRoute
   LoginRoute: typeof LoginRoute
   SellerRoute: typeof SellerRoute
+  StudentOsRoute: typeof StudentOsRouteWithChildren
   SuperRoute: typeof SuperRoute
 }
 
@@ -357,6 +416,13 @@ declare module '@tanstack/react-router' {
       path: '/seller'
       fullPath: '/seller'
       preLoaderRoute: typeof SellerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student-os': {
+      id: '/student-os'
+      path: '/student-os'
+      fullPath: '/student-os'
+      preLoaderRoute: typeof StudentOsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/super': {
@@ -443,6 +509,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BuyerWishlistRouteImport
       parentRoute: typeof BuyerRoute
     }
+    '/student-os/': {
+      id: '/student-os/'
+      path: '/'
+      fullPath: '/student-os/'
+      preLoaderRoute: typeof StudentOsIndexRouteImport
+      parentRoute: typeof StudentOsRoute
+    }
+    '/student-os/deals': {
+      id: '/student-os/deals'
+      path: '/deals'
+      fullPath: '/student-os/deals'
+      preLoaderRoute: typeof StudentOsDealsRouteImport
+      parentRoute: typeof StudentOsRoute
+    }
+    '/student-os/marketplace': {
+      id: '/student-os/marketplace'
+      path: '/marketplace'
+      fullPath: '/student-os/marketplace'
+      preLoaderRoute: typeof StudentOsMarketplaceRouteImport
+      parentRoute: typeof StudentOsRoute
+    }
+    '/student-os/resources': {
+      id: '/student-os/resources'
+      path: '/resources'
+      fullPath: '/student-os/resources'
+      preLoaderRoute: typeof StudentOsResourcesRouteImport
+      parentRoute: typeof StudentOsRoute
+    }
     '/buyer/orders/$orderId': {
       id: '/buyer/orders/$orderId'
       path: '/$orderId'
@@ -504,6 +598,24 @@ const BuyerRouteChildren: BuyerRouteChildren = {
 
 const BuyerRouteWithChildren = BuyerRoute._addFileChildren(BuyerRouteChildren)
 
+interface StudentOsRouteChildren {
+  StudentOsDealsRoute: typeof StudentOsDealsRoute
+  StudentOsMarketplaceRoute: typeof StudentOsMarketplaceRoute
+  StudentOsResourcesRoute: typeof StudentOsResourcesRoute
+  StudentOsIndexRoute: typeof StudentOsIndexRoute
+}
+
+const StudentOsRouteChildren: StudentOsRouteChildren = {
+  StudentOsDealsRoute: StudentOsDealsRoute,
+  StudentOsMarketplaceRoute: StudentOsMarketplaceRoute,
+  StudentOsResourcesRoute: StudentOsResourcesRoute,
+  StudentOsIndexRoute: StudentOsIndexRoute,
+}
+
+const StudentOsRouteWithChildren = StudentOsRoute._addFileChildren(
+  StudentOsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -513,6 +625,7 @@ const rootRouteChildren: RootRouteChildren = {
   FinanceRoute: FinanceRoute,
   LoginRoute: LoginRoute,
   SellerRoute: SellerRoute,
+  StudentOsRoute: StudentOsRouteWithChildren,
   SuperRoute: SuperRoute,
 }
 export const routeTree = rootRouteImport

@@ -291,6 +291,79 @@ export interface Message {
   read: boolean;
 }
 
+export type StudentItemCondition = "Brand New" | "Like New" | "Used - Good" | "Used - Fair";
+
+export interface StudentListing {
+  id: string;
+  title: string;
+  category: string;
+  price: number;
+  originalPrice?: number;
+  campus: string;
+  condition: StudentItemCondition;
+  sellerName: string;
+  sellerId: string;
+  sellerPhone?: string;
+  sellerAvatar?: string;
+  image: string;
+  images?: string[];
+  description: string;
+  hostelLocation?: string;
+  isVerifiedStudent: boolean;
+  isGroupDeal?: boolean;
+  groupDealTarget?: number;
+  groupDealJoined?: number;
+  groupDiscountPrice?: number;
+  resourceType?: "Past Questions" | "Lecture Notes" | "Summary / Cheatsheet" | "Lab Manual" | "Campus Guide" | "Other";
+  fileUrl?: string;
+  courseCode?: string;
+  academicYear?: string;
+  downloads?: number;
+  createdAt: number;
+}
+
+export interface StudentVerification {
+  isVerified: boolean;
+  studentId?: string;
+  institution?: string;
+  course?: string;
+  level?: string;
+  verifiedAt?: number;
+}
+
+export const CAMPUSES = [
+  "All Campuses",
+  "UG - Legon",
+  "KNUST - Kumasi",
+  "UCC - Cape Coast",
+  "UPSA - Accra",
+  "ATU - Accra",
+  "Ashesi University",
+  "GIMPA",
+  "UMaT - Tarkwa",
+  "Ho Technical University",
+] as const;
+
+export const STUDENT_CATEGORIES = [
+  "All",
+  "Textbooks & Course Notes",
+  "Laptops & Tech Gadgets",
+  "Hostel & Room Essentials",
+  "Campus Thrift & Fashion",
+  "Electronics & Accessories",
+  "Bikes & Commuting",
+  "Services & Tutoring",
+] as const;
+
+export const RESOURCE_TYPES = [
+  "All Types",
+  "Past Questions",
+  "Lecture Notes",
+  "Summary / Cheatsheet",
+  "Lab Manual",
+  "Campus Guide",
+] as const;
+
 // ============================================================================
 // SEED
 // ============================================================================
@@ -494,6 +567,283 @@ const seedProductRequests: ProductRequest[] = [
   { id: "pr_" + uid(), buyerId: "u_buyer3", buyerName: "Efua Boateng", name: "iPhone 16 Pro Max 512GB", category: "Phones", brand: "Apple", region: "Accra", priceMin: 18000, priceMax: 21000, wantsReserve: false, wantsInstallment: true, interestedBuyers: 4380, createdAt: SEED_EPOCH - 86400000 },
 ];
 
+const seedStudentListings: StudentListing[] = [
+  {
+    id: "sl_textbook1",
+    title: "Fundamentals of Physics (10th Edition Extended) - Halliday & Resnick",
+    category: "Textbooks & Course Notes",
+    price: 180,
+    originalPrice: 380,
+    campus: "UG - Legon",
+    condition: "Used - Good",
+    sellerName: "Ama Mensah",
+    sellerId: "u_buyer1",
+    sellerPhone: "+233 24 555 1201",
+    sellerAvatar: AVATARS[0],
+    image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800&q=80",
+    description: "Required for Level 100 & 200 Physics / Engineering students at Legon. Minor highlighter marks in chapter 3, otherwise pages are crisp.",
+    hostelLocation: "Commonwealth Hall / Night Market Meetup",
+    isVerifiedStudent: true,
+    courseCode: "PHYS 101",
+    academicYear: "2024/2025",
+    createdAt: SEED_EPOCH - 3 * 86400000,
+  },
+  {
+    id: "sl_laptop1",
+    title: "MacBook Air M1 2020 (8GB RAM / 256GB SSD) Space Gray",
+    category: "Laptops & Tech Gadgets",
+    price: 6400,
+    originalPrice: 7900,
+    campus: "KNUST - Kumasi",
+    condition: "Like New",
+    sellerName: "Kwame Addo",
+    sellerId: "u_buyer2",
+    sellerPhone: "+233 20 444 8821",
+    sellerAvatar: AVATARS[1],
+    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80",
+    description: "Clean laptop, 92% battery health, original 30W USB-C brick & cable included. Upgrading to M3 for senior capstone project.",
+    hostelLocation: "Unity Hall (Conti) Quad",
+    isVerifiedStudent: true,
+    createdAt: SEED_EPOCH - 5 * 86400000,
+  },
+  {
+    id: "sl_fridge1",
+    title: "Hisense 93L Bedside Hostel Refrigerator (Low Noise)",
+    category: "Hostel & Room Essentials",
+    price: 1150,
+    originalPrice: 1650,
+    campus: "UG - Legon",
+    condition: "Used - Good",
+    sellerName: "Efua Boateng",
+    sellerId: "u_buyer3",
+    sellerPhone: "+233 55 999 4120",
+    sellerAvatar: AVATARS[2],
+    image: "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=800&q=80",
+    description: "Compact dorm fridge with ice compartment. Energy efficient (A+), cooled drinks and groceries during last academic year. Clean and tested.",
+    hostelLocation: "Pent Hall (Block B, Room 314)",
+    isVerifiedStudent: true,
+    createdAt: SEED_EPOCH - 2 * 86400000,
+  },
+  {
+    id: "sl_calc1",
+    title: "Casio FX-991EX ClassWiz Scientific Calculator (Original)",
+    category: "Electronics & Accessories",
+    price: 190,
+    originalPrice: 280,
+    campus: "KNUST - Kumasi",
+    condition: "Like New",
+    sellerName: "Yaw Antwi",
+    sellerId: "u_buyer4",
+    sellerPhone: "+233 24 111 9090",
+    sellerAvatar: AVATARS[3],
+    image: "https://images.unsplash.com/photo-1587145820266-a5951ee6f620?w=800&q=80",
+    description: "Original Casio ClassWiz with QR code verification and solar panel. Perfect for engineering, math, and business exam calculations.",
+    hostelLocation: "Brunei Complex / Engineering Gate",
+    isVerifiedStudent: true,
+    createdAt: SEED_EPOCH - 6 * 86400000,
+  },
+  {
+    id: "sl_thrift1",
+    title: "Vintage Heavyweight KNUST Tech Crest Hoodie (Burgundy)",
+    category: "Campus Thrift & Fashion",
+    price: 140,
+    originalPrice: 240,
+    campus: "KNUST - Kumasi",
+    condition: "Used - Good",
+    sellerName: "Kofi Owusu",
+    sellerId: "u_seller2",
+    sellerAvatar: AVATARS[5],
+    image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&q=80",
+    description: "Authentic university tech fleece hoodie. Fits oversized M/L. Freshly laundered and ready for chilly evening study sessions in library.",
+    hostelLocation: "Commercial Area / Tech Junction",
+    isVerifiedStudent: true,
+    createdAt: SEED_EPOCH - 8 * 86400000,
+  },
+  {
+    id: "sl_fan1",
+    title: "Binatone 16\" Rechargeable Oscillating Stand Fan (12hr Battery)",
+    category: "Hostel & Room Essentials",
+    price: 360,
+    originalPrice: 520,
+    campus: "UCC - Cape Coast",
+    condition: "Like New",
+    sellerName: "Adjoa Serwaa",
+    sellerId: "u_buyer1",
+    sellerAvatar: AVATARS[6],
+    image: "https://images.unsplash.com/photo-1618220252344-8ec99ec624b1?w=800&q=80",
+    description: "Lifesaver during campus power fluctuations. Built-in LED nightlight and USB output to charge your phone during lights-out.",
+    hostelLocation: "Valco Hall / Old Site Library",
+    isVerifiedStudent: true,
+    createdAt: SEED_EPOCH - 1 * 86400000,
+  },
+  {
+    id: "sl_group1",
+    title: "Group Buy: MTN 50GB Student Campus High-Speed Bundle (90-Day Validity)",
+    category: "Electronics & Accessories",
+    price: 120,
+    originalPrice: 200,
+    groupDiscountPrice: 120,
+    groupDealTarget: 10,
+    groupDealJoined: 8,
+    isGroupDeal: true,
+    campus: "All Campuses",
+    condition: "Brand New",
+    sellerName: "Campus Telecom Pool",
+    sellerId: "u_seller1",
+    sellerAvatar: AVATARS[4],
+    image: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&q=80",
+    description: "Join with fellow students to unlock bulk discounted MTN 50GB data. Automated activation to student SIM upon reaching target group count.",
+    hostelLocation: "Instant Electronic Delivery via MoMo / SIM",
+    isVerifiedStudent: true,
+    createdAt: SEED_EPOCH - 1 * 86400000,
+  },
+  {
+    id: "sl_group2",
+    title: "Group Buy: Apple & Windows Student Ergonomic Study Kit (Laptop Stand + Wireless Mouse + Hub)",
+    category: "Laptops & Tech Gadgets",
+    price: 185,
+    originalPrice: 320,
+    groupDiscountPrice: 185,
+    groupDealTarget: 6,
+    groupDealJoined: 5,
+    isGroupDeal: true,
+    campus: "All Campuses",
+    condition: "Brand New",
+    sellerName: "TrendTech Ghana Campus Hub",
+    sellerId: "u_seller1",
+    sellerAvatar: AVATARS[4],
+    image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&q=80",
+    description: "Aluminum folding laptop stand, silent Bluetooth optical mouse, and 4-in-1 USB-C expansion hub. Guaranteed 1 spot remaining to unlock!",
+    hostelLocation: "Central Campus Pickup Station",
+    isVerifiedStudent: true,
+    createdAt: SEED_EPOCH - 2 * 86400000,
+  },
+  {
+    id: "sl_group3",
+    title: "Group Buy: Hostel Induction Cooker + 3-Piece Non-Stick Cooking Pots",
+    category: "Hostel & Room Essentials",
+    price: 310,
+    originalPrice: 460,
+    groupDiscountPrice: 310,
+    groupDealTarget: 5,
+    groupDealJoined: 3,
+    isGroupDeal: true,
+    campus: "UG - Legon",
+    condition: "Brand New",
+    sellerName: "Dorm Essentials Direct",
+    sellerId: "u_seller3",
+    sellerAvatar: AVATARS[5],
+    image: "https://images.unsplash.com/photo-1585659722983-3a681d0e1e2f?w=800&q=80",
+    description: "Hostel compliant electric induction cooker (auto cut-off) with 3 non-stick soup and stew pans. 2 more students needed for group price drop.",
+    hostelLocation: "Legon Hall Annex / Evandy Hostel",
+    isVerifiedStudent: true,
+    createdAt: SEED_EPOCH - 4 * 86400000,
+  },
+  {
+    id: "sl_res1",
+    title: "DCIT 101 & 103: Intro to Computer Science Past Exam Solutions (2018-2025)",
+    category: "Textbooks & Course Notes",
+    price: 0,
+    originalPrice: 60,
+    campus: "UG - Legon",
+    condition: "Brand New",
+    sellerName: "CS Department Honors Guild",
+    sellerId: "u_admin1",
+    sellerAvatar: AVATARS[10],
+    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
+    description: "Complete worked step-by-step solutions for binary arithmetic, Boolean algebra, basic C/Python snippets, and end-of-semester past exams.",
+    hostelLocation: "Digital Resource · Instant Download",
+    isVerifiedStudent: true,
+    resourceType: "Past Questions",
+    courseCode: "DCIT 101",
+    academicYear: "2024/2025",
+    downloads: 489,
+    createdAt: SEED_EPOCH - 10 * 86400000,
+  },
+  {
+    id: "sl_res2",
+    title: "MATH 121: Single Variable Calculus & Algebra Master Revision Cheatsheet",
+    category: "Textbooks & Course Notes",
+    price: 0,
+    originalPrice: 45,
+    campus: "UG - Legon",
+    condition: "Brand New",
+    sellerName: "Legon Math Society",
+    sellerId: "u_admin1",
+    sellerAvatar: AVATARS[0],
+    image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&q=80",
+    description: "High-yield formulas, integration by parts shortcuts, Taylor series summaries, and common exam traps compiled by TAs.",
+    hostelLocation: "Digital Resource · Instant Download",
+    isVerifiedStudent: true,
+    resourceType: "Summary / Cheatsheet",
+    courseCode: "MATH 121",
+    academicYear: "2024/2025",
+    downloads: 612,
+    createdAt: SEED_EPOCH - 8 * 86400000,
+  },
+  {
+    id: "sl_res3",
+    title: "COE 251: Digital Electronics & Logic Gates KNUST Question Pack & Circuit Diagrams",
+    category: "Textbooks & Course Notes",
+    price: 0,
+    originalPrice: 50,
+    campus: "KNUST - Kumasi",
+    condition: "Brand New",
+    sellerName: "KNUST Electrical & Computer Union",
+    sellerId: "u_seller1",
+    sellerAvatar: AVATARS[4],
+    image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80",
+    description: "Karnaugh mapping techniques, sequential circuit flip-flops, state diagram reductions, and 7 years of past midterm and final questions.",
+    hostelLocation: "Digital Resource · Instant Download",
+    isVerifiedStudent: true,
+    resourceType: "Past Questions",
+    courseCode: "COE 251",
+    academicYear: "2023/2024",
+    downloads: 345,
+    createdAt: SEED_EPOCH - 12 * 86400000,
+  },
+  {
+    id: "sl_res4",
+    title: "BUSS 204: Managerial Accounting & Budgeting Comprehensive Notes",
+    category: "Textbooks & Course Notes",
+    price: 0,
+    originalPrice: 55,
+    campus: "UCC - Cape Coast",
+    condition: "Brand New",
+    sellerName: "UCC Business Students Association",
+    sellerId: "u_buyer3",
+    sellerAvatar: AVATARS[2],
+    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80",
+    description: "Covers standard costing, variance analysis, CVP analysis, and operating leverage with practical exam questions and marking criteria.",
+    hostelLocation: "Digital Resource · Instant Download",
+    isVerifiedStudent: true,
+    resourceType: "Lecture Notes",
+    courseCode: "BUSS 204",
+    academicYear: "2024/2025",
+    downloads: 278,
+    createdAt: SEED_EPOCH - 5 * 86400000,
+  },
+  {
+    id: "sl_res5",
+    title: "Campus Guide: Hostel Rent Secrets, Verified Roommates & Budgeting in Ghana",
+    category: "Services & Tutoring",
+    price: 0,
+    originalPrice: 35,
+    campus: "All Campuses",
+    condition: "Brand New",
+    sellerName: "Open Student OS Guild",
+    sellerId: "u_super1",
+    sellerAvatar: AVATARS[11],
+    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80",
+    description: "Step-by-step campus survival guide: tenancy agreements, escrow payment safety, utility bill splits, and discount food hubs near every campus.",
+    hostelLocation: "Digital Guidebook · Instant Access",
+    isVerifiedStudent: true,
+    resourceType: "Campus Guide",
+    downloads: 1240,
+    createdAt: SEED_EPOCH - 15 * 86400000,
+  },
+];
+
 // ============================================================================
 // STATE
 // ============================================================================
@@ -522,6 +872,14 @@ interface State {
   escrowLedger: EscrowRecord[];
   featureFlags: Record<string, boolean>;
   demoStep: number;
+
+  // Student OS state
+  selectedCampus: string;
+  studentProfile: StudentVerification;
+  studentListings: StudentListing[];
+  studentModalOpen: boolean;
+  verifyModalOpen: boolean;
+  resourceDownloads: Record<string, number>;
 
   // actions
   setRole: (r: Role) => void;
@@ -574,6 +932,15 @@ interface State {
   audit: (action: string, target?: string) => void;
   resetDemo: () => void;
   setDemoStep: (n: number) => void;
+
+  // Student OS actions
+  setSelectedCampus: (campus: string) => void;
+  verifyStudent: (data: { studentId: string; institution: string; course?: string; level?: string }) => void;
+  addStudentListing: (listing: Omit<StudentListing, "id" | "createdAt">) => StudentListing;
+  joinGroupDeal: (dealId: string) => { ok: boolean; message: string };
+  setStudentModalOpen: (open: boolean) => void;
+  setVerifyModalOpen: (open: boolean) => void;
+  incrementResourceDownload: (resourceId: string) => void;
 }
 
 function initialState() {
@@ -619,6 +986,21 @@ function initialState() {
       fraudHardBlock: false,
     } as Record<string, boolean>,
     demoStep: 0,
+
+    // Student OS state
+    selectedCampus: "All Campuses",
+    studentProfile: {
+      isVerified: true,
+      studentId: "10984523",
+      institution: "UG - Legon",
+      course: "BSc. Computer Science",
+      level: "Level 300",
+      verifiedAt: SEED_EPOCH - 15 * 86400000,
+    },
+    studentListings: seedStudentListings,
+    studentModalOpen: false,
+    verifyModalOpen: false,
+    resourceDownloads: {} as Record<string, number>,
   };
 }
 
@@ -1266,6 +1648,68 @@ export const useNaflis = create<State>()(
         })),
       resetDemo: () => set({ ...initialState() }),
       setDemoStep: (n) => set({ demoStep: n }),
+
+      // Student OS actions
+      setSelectedCampus: (campus) => set({ selectedCampus: campus }),
+      verifyStudent: (data) =>
+        set((s) => ({
+          studentProfile: {
+            isVerified: true,
+            studentId: data.studentId,
+            institution: data.institution,
+            course: data.course || "General Studies",
+            level: data.level || "Level 200",
+            verifiedAt: Date.now(),
+          },
+          auditLog: [
+            { id: uid(), at: Date.now(), actor: s.currentUserId || "student", action: "student.verify", target: data.studentId },
+            ...s.auditLog,
+          ],
+        })),
+      addStudentListing: (listing) => {
+        const s = get();
+        const id = "sl_" + uid();
+        const newListing: StudentListing = {
+          ...listing,
+          id,
+          createdAt: Date.now(),
+        };
+        set({
+          studentListings: [newListing, ...s.studentListings],
+          auditLog: [
+            { id: uid(), at: Date.now(), actor: s.currentUserId || "student", action: "student_listing.create", target: id },
+            ...s.auditLog,
+          ],
+        });
+        return newListing;
+      },
+      joinGroupDeal: (dealId) => {
+        const s = get();
+        const deal = s.studentListings.find((l) => l.id === dealId);
+        if (!deal) return { ok: false, message: "Deal not found" };
+        const currentJoined = deal.groupDealJoined || 0;
+        const target = deal.groupDealTarget || 10;
+        const updatedJoined = Math.min(target, currentJoined + 1);
+
+        set({
+          studentListings: s.studentListings.map((l) =>
+            l.id === dealId ? { ...l, groupDealJoined: updatedJoined } : l,
+          ),
+        });
+        return { ok: true, message: `Joined group deal! (${updatedJoined}/${target} spots filled)` };
+      },
+      setStudentModalOpen: (open) => set({ studentModalOpen: open }),
+      setVerifyModalOpen: (open) => set({ verifyModalOpen: open }),
+      incrementResourceDownload: (resourceId) =>
+        set((s) => ({
+          studentListings: s.studentListings.map((l) =>
+            l.id === resourceId ? { ...l, downloads: (l.downloads || 0) + 1 } : l,
+          ),
+          resourceDownloads: {
+            ...s.resourceDownloads,
+            [resourceId]: (s.resourceDownloads[resourceId] || 0) + 1,
+          },
+        })),
     }),
     { name: "naflis-store-v2" },
   ),

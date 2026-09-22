@@ -1,6 +1,6 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  Home, Search, ShoppingCart, Heart, Wallet, Bell, Package, MessageSquare, User, TrendingUp, Clock,
+  Home, Search, ShoppingCart, Heart, Wallet, Bell, Package, MessageSquare, User, TrendingUp, Clock, GraduationCap,
 } from "lucide-react";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 const NAV = [
   { to: "/buyer", label: "Home", icon: Home, exact: true },
+  { to: "/student-os", label: "Student OS", icon: GraduationCap },
   { to: "/buyer/search", label: "Search", icon: Search },
   { to: "/buyer/wishlist", label: "Wishlist", icon: Heart },
   { to: "/buyer/cart", label: "Cart", icon: ShoppingCart },
