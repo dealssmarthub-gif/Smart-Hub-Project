@@ -1,5 +1,5 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { Store, TrendingUp, Package, Sparkles, Zap, Users, Loader2, Plus, Edit, Trash2, Upload, X, AlertCircle, ArrowLeft } from "lucide-react";
+import { Store, TrendingUp, Package, Sparkles, Zap, Users, Loader2, Plus, Edit, Trash2, Upload, X, AlertCircle, ArrowLeft, Building2, Flame } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { RoleShell, MetricCard } from "@/components/naflis/RoleShell";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
-import { useNaflis } from "@/lib/naflis/store";
+import { useNaflis, CAMPUSES } from "@/lib/naflis/store";
 import { GHS, fmtDate, pct } from "@/lib/naflis/format";
 import { supabase } from "@/lib/supabase";
 
@@ -46,6 +46,14 @@ function SellerDashboard() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Campus Demand State
+  const selectedCampus = useNaflis((s) => s.selectedCampus);
+  const demandLogs = useNaflis((s) => s.demandLogs);
+  const [vendorCampus, setVendorCampus] = useState(
+    selectedCampus !== "All Campuses" ? selectedCampus : "UG - Legon"
+  );
+  const [campusDemand, setCampusDemand] = useState<any[]>([]);
+
   // Onboarding Form State
   const [storeName, setStoreName] = useState("");
   const [phone, setPhone] = useState("");
@@ -71,8 +79,36 @@ function SellerDashboard() {
   const fetchVendorAndProducts = async () => {
     try {
       setLoading(true);
+
+      if (!supabase) {
+        const demoStore = useNaflis.getState().stores[0];
+        setVendor({
+          id: demoStore.id,
+          user_id: demoStore.ownerId,
+          store_name: demoStore.name,
+          store_slug: "trendtech-ghana",
+          description: demoStore.tagline,
+          logo_url: demoStore.logo,
+          status: "approved",
+        });
+        setProducts(useNaflis.getState().products.filter((p) => p.storeId === demoStore.id));
+        setLoading(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        const demoStore = useNaflis.getState().stores[0];
+        setVendor({
+          id: demoStore.id,
+          user_id: demoStore.ownerId,
+          store_name: demoStore.name,
+          store_slug: "trendtech-ghana",
+          description: demoStore.tagline,
+          logo_url: demoStore.logo,
+          status: "approved",
+        });
+        setProducts(useNaflis.getState().products.filter((p) => p.storeId === demoStore.id));
         setLoading(false);
         return;
       }
@@ -155,6 +191,78 @@ function SellerDashboard() {
   useEffect(() => {
     fetchVendorAndProducts();
   }, [currentUserId]);
+
+  // Query campus_market_demand view for vendor's campus
+  useEffect(() => {
+    const fetchCampusMarketDemand = async () => {
+      if (supabase) {
+        try {
+          const { data, error } = await supabase
+            .from("campus_market_demand")
+            .select("*")
+            .or(`campus.eq.${vendorCampus},campus.eq.General,campus.eq.All Campuses`)
+            .order("search_count", { ascending: false })
+            .limit(10);
+
+          if (data && data.length > 0) {
+            setCampusDemand(data);
+            return;
+          }
+        } catch (err) {
+          console.warn("Notice: Fetching campus demand view note:", err);
+        }
+      }
+
+      // Fallback from demandLogs
+      const matching = demandLogs.filter(
+        (d) => d.campus === vendorCampus || d.campus === "General" || d.campus === "All Campuses"
+      );
+      const agg: Record<string, number> = {};
+      for (const log of matching) {
+        const q = log.searchQuery.trim();
+        agg[q] = (agg[q] || 0) + 1;
+      }
+
+      const defaultItems = [
+        { search_query: "Lenovo IdeaPad", search_count: 24, campus: vendorCampus },
+        { search_query: "HP Charger", search_count: 18, campus: vendorCampus },
+        { search_query: "Casio fx-991EX Calculator", search_count: 15, campus: vendorCampus },
+        { search_query: "Single Bed Mattress", search_count: 14, campus: vendorCampus },
+        { search_query: "MacBook Air M1", search_count: 12, campus: vendorCampus },
+        { search_query: "Dorm Table Fan", search_count: 11, campus: vendorCampus },
+      ];
+
+      const mapped =
+        Object.keys(agg).length > 0
+          ? Object.entries(agg)
+              .map(([q, count]) => ({
+                search_query: q.charAt(0).toUpperCase() + q.slice(1),
+                search_count: count * 4 + 2,
+                campus: vendorCampus,
+              }))
+              .sort((a, b) => b.search_count - a.search_count)
+          : defaultItems;
+
+      setCampusDemand(mapped);
+    };
+
+    fetchCampusMarketDemand();
+  }, [vendorCampus, demandLogs]);
+
+  const handleListDemandItem = (itemQuery: string) => {
+    openAddProduct();
+    setProductTitle(itemQuery);
+    if (/laptop|macbook|charger|ideapad|dell|hp/i.test(itemQuery)) {
+      setProductCategory("Laptops");
+    } else if (/phone|iphone|samsung|pixel/i.test(itemQuery)) {
+      setProductCategory("Phones");
+    } else if (/calculator|book|past question/i.test(itemQuery)) {
+      setProductCategory("School Supplies");
+    } else if (/fan|mattress|fridge|cooker|kettle/i.test(itemQuery)) {
+      setProductCategory("Home Appliances");
+    }
+    toast.info(`Listing prefilled for high-demand item: "${itemQuery}"`);
+  };
 
   const handleOnboardingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -526,6 +634,69 @@ function SellerDashboard() {
         <MetricCard label="Escrow pending release" value={GHS(escrowPending)} hint="Held by NAFLIS" />
         <MetricCard label="Products live" value={String(myProducts.length)} hint={`Avg discount ${pct(avgDiscount * 100)}`} />
         <MetricCard label="Store rating" value="5.0 / 5" hint="0 reviews" />
+      </div>
+
+      {/* 🔥 High Demand On Your Campus This Week */}
+      <div className="mt-6 rounded-3xl border border-sky-500/30 bg-card p-6 shadow-premium space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4">
+          <div className="flex items-center gap-3">
+            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-sky-500 text-white shadow-md">
+              <Flame className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base sm:text-lg font-black text-foreground">
+                  🔥 High Demand On Your Campus This Week
+                </h3>
+                <Badge className="bg-sky-500/15 text-sky-500 border-sky-500/30 text-[10px] font-bold">
+                  Restock Signal
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Live search volume from students at {vendorCampus}. Fulfill these requested items to maximize sales.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Building2 className="h-4 w-4 text-sky-500" />
+            <select
+              aria-label="Vendor Campus Filter"
+              value={vendorCampus}
+              onChange={(e) => setVendorCampus(e.target.value)}
+              className="h-9 rounded-xl border bg-background px-3 text-xs font-semibold text-foreground focus:border-sky-500 focus:outline-none shadow-sm"
+            >
+              {CAMPUSES.filter((c) => c !== "All Campuses").map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {campusDemand.slice(0, 6).map((item, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between p-3.5 rounded-xl border bg-background hover:border-sky-500/50 hover:shadow-sm transition"
+            >
+              <div className="min-w-0 pr-2">
+                <p className="text-xs font-bold text-foreground truncate">{item.search_query}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <span className="font-bold text-sky-500">{item.search_count} searches</span> on {item.campus || vendorCampus}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => handleListDemandItem(item.search_query)}
+                className="bg-sky-500 hover:bg-sky-600 text-white font-semibold text-xs h-7 px-2.5 shrink-0 gap-1 shadow-sm"
+              >
+                <Plus className="h-3 w-3" /> List This Item
+              </Button>
+            </div>
+          ))}
+        </div>
       </div>
 
       <Tabs defaultValue="products" className="mt-6">

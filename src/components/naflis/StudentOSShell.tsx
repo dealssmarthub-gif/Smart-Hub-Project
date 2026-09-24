@@ -24,6 +24,7 @@ const TABS = [
   { to: "/student-os/marketplace", label: "Campus Marketplace", icon: Store },
   { to: "/student-os/deals", label: "Student Deals", icon: BadgePercent },
   { to: "/student-os/resources", label: "Resource Hub & Notes", icon: BookOpen },
+  { to: "/campus-admin", label: "Institutional / SRC Access", icon: Building2 },
 ];
 
 export function StudentOSShell() {

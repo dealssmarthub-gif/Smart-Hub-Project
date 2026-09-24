@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BuyerRouteImport } from './routes/buyer'
+import { Route as CampusAdminRouteImport } from './routes/campus-admin'
 import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as DisputeRouteImport } from './routes/dispute'
 import { Route as FinanceRouteImport } from './routes/finance'
@@ -30,6 +31,7 @@ import { Route as BuyerReserveRouteImport } from './routes/buyer.reserve'
 import { Route as BuyerSearchRouteImport } from './routes/buyer.search'
 import { Route as BuyerWalletRouteImport } from './routes/buyer.wallet'
 import { Route as BuyerWishlistRouteImport } from './routes/buyer.wishlist'
+import { Route as CampusAdminDashboardRouteImport } from './routes/campus-admin.dashboard'
 import { Route as StudentOsIndexRouteImport } from './routes/student-os.index'
 import { Route as StudentOsDealsRouteImport } from './routes/student-os.deals'
 import { Route as StudentOsMarketplaceRouteImport } from './routes/student-os.marketplace'
@@ -50,6 +52,11 @@ const AdminRoute = AdminRouteImport.update({
 const BuyerRoute = BuyerRouteImport.update({
   id: '/buyer',
   path: '/buyer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampusAdminRoute = CampusAdminRouteImport.update({
+  id: '/campus-admin',
+  path: '/campus-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeliveryRoute = DeliveryRouteImport.update({
@@ -142,6 +149,11 @@ const BuyerWishlistRoute = BuyerWishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => BuyerRoute,
 } as any)
+const CampusAdminDashboardRoute = CampusAdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => CampusAdminRoute,
+} as any)
 const StudentOsIndexRoute = StudentOsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -177,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/buyer': typeof BuyerRouteWithChildren
+  '/campus-admin': typeof CampusAdminRouteWithChildren
   '/delivery': typeof DeliveryRoute
   '/dispute': typeof DisputeRoute
   '/finance': typeof FinanceRoute
@@ -194,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/buyer/search': typeof BuyerSearchRoute
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
+  '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
   '/student-os/deals': typeof StudentOsDealsRoute
   '/student-os/marketplace': typeof StudentOsMarketplaceRoute
   '/student-os/resources': typeof StudentOsResourcesRoute
@@ -205,6 +219,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/campus-admin': typeof CampusAdminRouteWithChildren
   '/delivery': typeof DeliveryRoute
   '/dispute': typeof DisputeRoute
   '/finance': typeof FinanceRoute
@@ -221,6 +236,7 @@ export interface FileRoutesByTo {
   '/buyer/search': typeof BuyerSearchRoute
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
+  '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
   '/student-os/deals': typeof StudentOsDealsRoute
   '/student-os/marketplace': typeof StudentOsMarketplaceRoute
   '/student-os/resources': typeof StudentOsResourcesRoute
@@ -234,6 +250,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/buyer': typeof BuyerRouteWithChildren
+  '/campus-admin': typeof CampusAdminRouteWithChildren
   '/delivery': typeof DeliveryRoute
   '/dispute': typeof DisputeRoute
   '/finance': typeof FinanceRoute
@@ -251,6 +268,7 @@ export interface FileRoutesById {
   '/buyer/search': typeof BuyerSearchRoute
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
+  '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
   '/student-os/deals': typeof StudentOsDealsRoute
   '/student-os/marketplace': typeof StudentOsMarketplaceRoute
   '/student-os/resources': typeof StudentOsResourcesRoute
@@ -265,6 +283,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/buyer'
+    | '/campus-admin'
     | '/delivery'
     | '/dispute'
     | '/finance'
@@ -282,6 +301,7 @@ export interface FileRouteTypes {
     | '/buyer/search'
     | '/buyer/wallet'
     | '/buyer/wishlist'
+    | '/campus-admin/dashboard'
     | '/student-os/deals'
     | '/student-os/marketplace'
     | '/student-os/resources'
@@ -293,6 +313,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/campus-admin'
     | '/delivery'
     | '/dispute'
     | '/finance'
@@ -309,6 +330,7 @@ export interface FileRouteTypes {
     | '/buyer/search'
     | '/buyer/wallet'
     | '/buyer/wishlist'
+    | '/campus-admin/dashboard'
     | '/student-os/deals'
     | '/student-os/marketplace'
     | '/student-os/resources'
@@ -321,6 +343,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/buyer'
+    | '/campus-admin'
     | '/delivery'
     | '/dispute'
     | '/finance'
@@ -338,6 +361,7 @@ export interface FileRouteTypes {
     | '/buyer/search'
     | '/buyer/wallet'
     | '/buyer/wishlist'
+    | '/campus-admin/dashboard'
     | '/student-os/deals'
     | '/student-os/marketplace'
     | '/student-os/resources'
@@ -351,6 +375,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   BuyerRoute: typeof BuyerRouteWithChildren
+  CampusAdminRoute: typeof CampusAdminRouteWithChildren
   DeliveryRoute: typeof DeliveryRoute
   DisputeRoute: typeof DisputeRoute
   FinanceRoute: typeof FinanceRoute
@@ -381,6 +406,13 @@ declare module '@tanstack/react-router' {
       path: '/buyer'
       fullPath: '/buyer'
       preLoaderRoute: typeof BuyerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campus-admin': {
+      id: '/campus-admin'
+      path: '/campus-admin'
+      fullPath: '/campus-admin'
+      preLoaderRoute: typeof CampusAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/delivery': {
@@ -509,6 +541,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BuyerWishlistRouteImport
       parentRoute: typeof BuyerRoute
     }
+    '/campus-admin/dashboard': {
+      id: '/campus-admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/campus-admin/dashboard'
+      preLoaderRoute: typeof CampusAdminDashboardRouteImport
+      parentRoute: typeof CampusAdminRoute
+    }
     '/student-os/': {
       id: '/student-os/'
       path: '/'
@@ -598,6 +637,18 @@ const BuyerRouteChildren: BuyerRouteChildren = {
 
 const BuyerRouteWithChildren = BuyerRoute._addFileChildren(BuyerRouteChildren)
 
+interface CampusAdminRouteChildren {
+  CampusAdminDashboardRoute: typeof CampusAdminDashboardRoute
+}
+
+const CampusAdminRouteChildren: CampusAdminRouteChildren = {
+  CampusAdminDashboardRoute: CampusAdminDashboardRoute,
+}
+
+const CampusAdminRouteWithChildren = CampusAdminRoute._addFileChildren(
+  CampusAdminRouteChildren,
+)
+
 interface StudentOsRouteChildren {
   StudentOsDealsRoute: typeof StudentOsDealsRoute
   StudentOsMarketplaceRoute: typeof StudentOsMarketplaceRoute
@@ -620,6 +671,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   BuyerRoute: BuyerRouteWithChildren,
+  CampusAdminRoute: CampusAdminRouteWithChildren,
   DeliveryRoute: DeliveryRoute,
   DisputeRoute: DisputeRoute,
   FinanceRoute: FinanceRoute,

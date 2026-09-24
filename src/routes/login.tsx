@@ -37,6 +37,7 @@ function LoginPage() {
     if (supabase) {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
+          useNaflis.getState().syncUser(session.user);
           const userRole = session.user.user_metadata?.role || "buyer";
           const dest = search.redirect || `/${userRole}`;
           navigate({ to: dest });
@@ -45,10 +46,18 @@ function LoginPage() {
     }
   }, [navigate, search.redirect]);
 
+  const handleDemoLogin = (role: "buyer" | "seller" | "admin") => {
+    useNaflis.getState().switchRole(role);
+    toast.success(`Logged in as demo ${role}!`);
+    const dest = search.redirect || (role === "admin" ? "/admin" : `/${role}`);
+    navigate({ to: dest });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) {
-      toast.error("Supabase client is not configured. Please check your environment variables.");
+      // Fallback demo signin if Supabase is not configured
+      handleDemoLogin(selectedRole);
       return;
     }
 
@@ -74,8 +83,9 @@ function LoginPage() {
           } else {
             toast.error(error.message);
           }
-        } else {
+        } else if (data.user) {
           toast.success("Successfully logged in!");
+          useNaflis.getState().syncUser(data.user);
           const userRole = data.user?.user_metadata?.role || "buyer";
           const dest = search.redirect || `/${userRole}`;
           navigate({ to: dest });
@@ -108,8 +118,9 @@ function LoginPage() {
             toast.error(error.message);
           }
         } else {
-          if (data.session) {
+          if (data.session && data.user) {
             toast.success("Account created and signed in!");
+            useNaflis.getState().syncUser(data.user);
             const dest = search.redirect || `/${selectedRole}`;
             navigate({ to: dest });
           } else {
@@ -305,7 +316,7 @@ function LoginPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Sparkles className="animate-spin mr-2 h-4 w-4" />
@@ -318,6 +329,37 @@ function LoginPage() {
               )}
             </Button>
           </form>
+
+          {/* Quick Demo Role Navigation */}
+          <div className="rounded-xl border bg-card/60 p-4 text-center backdrop-blur shadow-sm space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground">Demo / Instant Role Access</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-8"
+                onClick={() => handleDemoLogin("buyer")}
+              >
+                Demo Buyer
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-8"
+                onClick={() => handleDemoLogin("seller")}
+              >
+                Demo Seller
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-8"
+                onClick={() => handleDemoLogin("admin")}
+              >
+                Demo Admin
+              </Button>
+            </div>
+          </div>
         </div>
       </main>
 

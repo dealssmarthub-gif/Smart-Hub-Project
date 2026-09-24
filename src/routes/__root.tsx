@@ -132,14 +132,20 @@ function RootComponent() {
     if (supabase) {
       // 1. Initial check
       supabase.auth.getSession().then(({ data: { session } }) => {
-        syncUser(session?.user ?? null);
+        if (session?.user) {
+          syncUser(session.user);
+        }
       });
 
       // 2. Auth state listener
       const {
         data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
-        syncUser(session?.user ?? null);
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_OUT") {
+          syncUser(null);
+        } else if (session?.user) {
+          syncUser(session.user);
+        }
       });
 
       return () => {

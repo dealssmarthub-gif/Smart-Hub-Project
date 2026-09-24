@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   GraduationCap,
   Sparkles,
@@ -37,6 +37,7 @@ function StudentOSDashboard() {
   const setStudentModalOpen = useNaflis((s) => s.setStudentModalOpen);
   const setVerifyModalOpen = useNaflis((s) => s.setVerifyModalOpen);
   const joinGroupDeal = useNaflis((s) => s.joinGroupDeal);
+  const logDemandSearch = useNaflis((s) => s.logDemandSearch);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -61,6 +62,15 @@ function StudentOSDashboard() {
       return matchCampus && matchCategory && matchSearch;
     });
   }, [studentListings, selectedCampus, selectedCategory, searchQuery]);
+
+  useEffect(() => {
+    if (searchQuery.trim().length > 2) {
+      const t = setTimeout(() => {
+        logDemandSearch(searchQuery.trim(), selectedCampus, filteredListings.length);
+      }, 500);
+      return () => clearTimeout(t);
+    }
+  }, [searchQuery, selectedCampus, filteredListings.length, logDemandSearch]);
 
   const groupDeals = useMemo(
     () => studentListings.filter((l) => l.isGroupDeal).slice(0, 3),

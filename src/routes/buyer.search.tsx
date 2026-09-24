@@ -27,6 +27,8 @@ function SearchPage() {
   const search = Route.useSearch();
   const products = useNaflis((s) => s.products);
   const recordSearch = useNaflis((s) => s.recordSearch);
+  const logDemandSearch = useNaflis((s) => s.logDemandSearch);
+  const selectedCampus = useNaflis((s) => s.selectedCampus);
   const setPriceAlert = useNaflis((s) => s.setPriceAlert);
   const createRequest = useNaflis((s) => s.createProductRequest);
   const pushNotif = useNaflis((s) => s.pushNotif);
@@ -71,10 +73,13 @@ function SearchPage() {
 
   useEffect(() => {
     if (q.trim().length > 2) {
-      const t = setTimeout(() => recordSearch(q.trim(), filtered.length), 500);
+      const t = setTimeout(() => {
+        recordSearch(q.trim(), filtered.length);
+        logDemandSearch(q.trim(), selectedCampus || "General", filtered.length);
+      }, 500);
       return () => clearTimeout(t);
     }
-  }, [q, filtered.length, recordSearch]);
+  }, [q, filtered.length, recordSearch, logDemandSearch, selectedCampus]);
 
   return (
     <div className="space-y-4">

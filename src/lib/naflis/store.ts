@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { uid } from "./format";
+import { supabase } from "../supabase";
 
 // ============================================================================
 // TYPES
@@ -363,6 +364,168 @@ export const RESOURCE_TYPES = [
   "Lab Manual",
   "Campus Guide",
 ] as const;
+
+export interface CampusEvent {
+  id: string;
+  title: string;
+  description: string;
+  eventDate: string;
+  venue: string;
+  bannerUrl?: string;
+  campus: string;
+  pinned: boolean;
+  organizer: string;
+  createdBy?: string;
+  createdAt: number;
+}
+
+export interface CampusResource {
+  id: string;
+  title: string;
+  description: string;
+  resourceType: string;
+  courseCode: string;
+  department: string;
+  campus: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: string;
+  downloads: number;
+  createdBy?: string;
+  createdAt: number;
+}
+
+export interface DemandLog {
+  id: string;
+  searchQuery: string;
+  campus: string;
+  resultsCount: number;
+  userId?: string | null;
+  createdAt: number;
+}
+
+export const SEED_CAMPUS_EVENTS: CampusEvent[] = [
+  {
+    id: "ce_1",
+    title: "Official UG SRC General Assembly & Student Welfare Grant Notice",
+    description: "The 67th Student Representative Council announces emergency disbursement of campus welfare subsidies and book allowance grants. Apply via student portal.",
+    eventDate: "2026-10-02T10:00:00Z",
+    venue: "R.S. Amegashie Auditorium, Legon",
+    bannerUrl: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&q=80",
+    campus: "UG - Legon",
+    pinned: true,
+    organizer: "UG SRC Executives",
+    createdAt: Date.now() - 3600000,
+  },
+  {
+    id: "ce_2",
+    title: "KNUST Annual Tech & Innovation Trade Fair: Pitch & Student Market",
+    description: "Annual entrepreneurship exhibition. Over 100 student booths, live developer demo day, and startup angel grant pitches.",
+    eventDate: "2026-10-08T09:00:00Z",
+    venue: "Great Hall Grounds, KNUST Kumasi",
+    bannerUrl: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&q=80",
+    campus: "KNUST - Kumasi",
+    pinned: true,
+    organizer: "KNUST SRC & Innovation Center",
+    createdAt: Date.now() - 7200000,
+  },
+  {
+    id: "ce_3",
+    title: "UCC 24/7 Library Night Shuttles & Examination Support Desk",
+    description: "Campus security and SRC transport committee inaugurates extended night shuttles across Sasakawa, Casford, and Valco halls for revision week.",
+    eventDate: "2026-10-05T18:00:00Z",
+    venue: "Main University Library Quadrangle",
+    bannerUrl: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=1200&q=80",
+    campus: "UCC - Cape Coast",
+    pinned: true,
+    organizer: "UCC SRC Welfare Board",
+    createdAt: Date.now() - 14400000,
+  },
+  {
+    id: "ce_4",
+    title: "UPSA Career Fair & Corporate Banking Apprenticeship Drive",
+    description: "On-campus CV review sessions, interviews with Standard Chartered, Ecobank and PwC for final year and Level 300 business students.",
+    eventDate: "2026-10-12T08:30:00Z",
+    venue: "UPSA Auditorium, Accra",
+    bannerUrl: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=1200&q=80",
+    campus: "UPSA - Accra",
+    pinned: false,
+    organizer: "UPSA Professional Development SRC",
+    createdAt: Date.now() - 28800000,
+  },
+];
+
+export const SEED_CAMPUS_RESOURCES: CampusResource[] = [
+  {
+    id: "cr_1",
+    title: "DCIT 101 & 103: Intro to Computer Science Past Exam Solutions (2018-2025)",
+    description: "Complete worked step-by-step solutions for binary arithmetic, Boolean algebra, basic C/Python snippets, and end-of-semester past exams.",
+    resourceType: "Past Questions",
+    courseCode: "DCIT 101",
+    department: "Computer Science",
+    campus: "UG - Legon",
+    fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    fileName: "DCIT101_Past_Questions_2018_2025.pdf",
+    fileSize: "3.4 MB",
+    downloads: 489,
+    createdAt: Date.now() - 86400000 * 10,
+  },
+  {
+    id: "cr_2",
+    title: "MATH 121: Single Variable Calculus & Algebra Master Revision Cheatsheet",
+    description: "High-yield formulas, integration by parts shortcuts, Taylor series summaries, and common exam traps compiled by TAs.",
+    resourceType: "Summary / Cheatsheet",
+    courseCode: "MATH 121",
+    department: "Mathematics",
+    campus: "UG - Legon",
+    fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    fileName: "MATH121_Calculus_Formula_Cheatsheet.pdf",
+    fileSize: "1.8 MB",
+    downloads: 612,
+    createdAt: Date.now() - 86400000 * 8,
+  },
+  {
+    id: "cr_3",
+    title: "COE 251: Digital Electronics & Logic Gates KNUST Question Pack & Circuit Diagrams",
+    description: "Karnaugh mapping techniques, sequential circuit flip-flops, state diagram reductions, and 7 years of past midterm and final questions.",
+    resourceType: "Past Questions",
+    courseCode: "COE 251",
+    department: "Computer Engineering",
+    campus: "KNUST - Kumasi",
+    fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    fileName: "COE251_KNUST_Logic_Gates_Pack.pdf",
+    fileSize: "4.2 MB",
+    downloads: 345,
+    createdAt: Date.now() - 86400000 * 5,
+  },
+  {
+    id: "cr_4",
+    title: "BUSS 202: Business Law & Company Regulations Slide Decks",
+    description: "Lecture slides covering contract formation, breach remedies, agency relationships, and Ghanaian company regulations.",
+    resourceType: "Lecture Slides",
+    courseCode: "BUSS 202",
+    department: "Business Administration",
+    campus: "UPSA - Accra",
+    fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    fileName: "BUSS202_Business_Law_Lecture_Slides.pdf",
+    fileSize: "5.1 MB",
+    downloads: 278,
+    createdAt: Date.now() - 86400000 * 3,
+  },
+];
+
+export const SEED_DEMAND_LOGS: DemandLog[] = [
+  { id: "dl_1", searchQuery: "Lenovo IdeaPad", campus: "UG - Legon", resultsCount: 2, createdAt: Date.now() - 3600000 },
+  { id: "dl_2", searchQuery: "Lenovo IdeaPad", campus: "UG - Legon", resultsCount: 2, createdAt: Date.now() - 7200000 },
+  { id: "dl_3", searchQuery: "HP Charger", campus: "UG - Legon", resultsCount: 4, createdAt: Date.now() - 10800000 },
+  { id: "dl_4", searchQuery: "Casio fx-991EX Calculator", campus: "KNUST - Kumasi", resultsCount: 1, createdAt: Date.now() - 14400000 },
+  { id: "dl_5", searchQuery: "Lenovo IdeaPad", campus: "UG - Legon", resultsCount: 2, createdAt: Date.now() - 18000000 },
+  { id: "dl_6", searchQuery: "Single Bed Mattress", campus: "UG - Legon", resultsCount: 3, createdAt: Date.now() - 21600000 },
+  { id: "dl_7", searchQuery: "HP Charger", campus: "UG - Legon", resultsCount: 4, createdAt: Date.now() - 25200000 },
+  { id: "dl_8", searchQuery: "Dorm Table Fan", campus: "UCC - Cape Coast", resultsCount: 1, createdAt: Date.now() - 28800000 },
+  { id: "dl_9", searchQuery: "MacBook Air M1", campus: "Ashesi University", resultsCount: 2, createdAt: Date.now() - 32400000 },
+  { id: "dl_10", searchQuery: "Lab Coat & Safety Goggles", campus: "KNUST - Kumasi", resultsCount: 5, createdAt: Date.now() - 36000000 },
+];
 
 // ============================================================================
 // SEED
@@ -941,6 +1104,18 @@ interface State {
   setStudentModalOpen: (open: boolean) => void;
   setVerifyModalOpen: (open: boolean) => void;
   incrementResourceDownload: (resourceId: string) => void;
+
+  // Institutional / SRC & Demand Intelligence
+  campusEvents: CampusEvent[];
+  campusResources: CampusResource[];
+  demandLogs: DemandLog[];
+
+  addCampusEvent: (event: Omit<CampusEvent, "id" | "createdAt">) => CampusEvent;
+  togglePinEvent: (id: string) => void;
+  deleteCampusEvent: (id: string) => void;
+  addCampusResource: (res: Omit<CampusResource, "id" | "createdAt" | "downloads">) => CampusResource;
+  deleteCampusResource: (id: string) => void;
+  logDemandSearch: (query: string, campus?: string, resultsCount?: number) => void;
 }
 
 function initialState() {
@@ -1001,6 +1176,11 @@ function initialState() {
     studentModalOpen: false,
     verifyModalOpen: false,
     resourceDownloads: {} as Record<string, number>,
+
+    // Institutional / SRC & Demand Intelligence
+    campusEvents: SEED_CAMPUS_EVENTS,
+    campusResources: SEED_CAMPUS_RESOURCES,
+    demandLogs: SEED_DEMAND_LOGS,
   };
 }
 
@@ -1705,11 +1885,99 @@ export const useNaflis = create<State>()(
           studentListings: s.studentListings.map((l) =>
             l.id === resourceId ? { ...l, downloads: (l.downloads || 0) + 1 } : l,
           ),
+          campusResources: s.campusResources.map((r) =>
+            r.id === resourceId ? { ...r, downloads: (r.downloads || 0) + 1 } : r,
+          ),
           resourceDownloads: {
             ...s.resourceDownloads,
             [resourceId]: (s.resourceDownloads[resourceId] || 0) + 1,
           },
         })),
+
+      // Institutional / SRC & Demand actions
+      addCampusEvent: (event) => {
+        const id = "ce_" + uid();
+        const newEvent: CampusEvent = {
+          ...event,
+          id,
+          createdAt: Date.now(),
+        };
+        set((s) => ({
+          campusEvents: [newEvent, ...s.campusEvents],
+          auditLog: [
+            { id: uid(), at: Date.now(), actor: s.currentUserId || "src-admin", action: "campus_event.create", target: id },
+            ...s.auditLog,
+          ],
+        }));
+        return newEvent;
+      },
+      togglePinEvent: (id) =>
+        set((s) => ({
+          campusEvents: s.campusEvents.map((e) =>
+            e.id === id ? { ...e, pinned: !e.pinned } : e,
+          ),
+        })),
+      deleteCampusEvent: (id) =>
+        set((s) => ({
+          campusEvents: s.campusEvents.filter((e) => e.id !== id),
+        })),
+      addCampusResource: (res) => {
+        const id = "cr_" + uid();
+        const newRes: CampusResource = {
+          ...res,
+          id,
+          downloads: 0,
+          createdAt: Date.now(),
+        };
+        set((s) => ({
+          campusResources: [newRes, ...s.campusResources],
+          auditLog: [
+            { id: uid(), at: Date.now(), actor: s.currentUserId || "academic-head", action: "campus_resource.upload", target: id },
+            ...s.auditLog,
+          ],
+        }));
+        return newRes;
+      },
+      deleteCampusResource: (id) =>
+        set((s) => ({
+          campusResources: s.campusResources.filter((r) => r.id !== id),
+        })),
+      logDemandSearch: (query, campus = "General", resultsCount = 0) => {
+        const q = query.trim();
+        if (!q) return;
+        const currentUserId = get().currentUserId;
+        const newLog: DemandLog = {
+          id: "dl_" + uid(),
+          searchQuery: q,
+          campus: campus || "General",
+          resultsCount,
+          userId: currentUserId || null,
+          createdAt: Date.now(),
+        };
+        set((s) => ({
+          demandLogs: [newLog, ...s.demandLogs].slice(0, 500),
+          searchEvents: [
+            { id: uid(), buyerId: currentUserId || undefined, query: q, region: campus, matches: resultsCount, createdAt: Date.now() },
+            ...s.searchEvents,
+          ].slice(0, 200),
+        }));
+
+        // Non-blocking passive insert to Supabase demand_logs
+        if (supabase) {
+          try {
+            supabase.from("demand_logs").insert({
+              search_query: q,
+              campus: campus || "General",
+              results_count: resultsCount,
+              user_id: currentUserId || null,
+            }).then(() => {}).catch((err: any) => {
+              console.warn("Supabase passive demand log note:", err);
+            });
+          } catch (e) {
+            // ignore non-blocking
+          }
+        }
+      },
     }),
     { name: "naflis-store-v2" },
   ),
