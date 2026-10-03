@@ -1756,16 +1756,15 @@ export const useNaflis = create<State>()(
             : [...s.wishlist, productId],
         })),
       setPriceAlert: (productId, target) =>
-        set((s) => ({
-          priceAlerts: [
-            ...s.priceAlerts,
-            { id: uid(), buyerId: s.currentUserId, productId, target, createdAt: Date.now(), triggered: false },
-          ],
-        })),
+        set((s) =>
+          s.currentUserId
+            ? { priceAlerts: [...s.priceAlerts, { id: uid(), buyerId: s.currentUserId, productId, target, createdAt: Date.now(), triggered: false }] }
+            : {},
+        ),
       recordSearch: (query, matches) =>
         set((s) => ({
           searchEvents: [
-            { id: uid(), buyerId: s.currentUserId, query, region: "Greater Accra", matches, createdAt: Date.now() },
+            { id: uid(), buyerId: s.currentUserId ?? undefined, query, region: "Greater Accra", matches, createdAt: Date.now() },
             ...s.searchEvents,
           ].slice(0, 200),
         })),
@@ -1775,7 +1774,7 @@ export const useNaflis = create<State>()(
             {
               ...data,
               id: "pr_" + uid(),
-              buyerId: s.currentUserId,
+              buyerId: s.currentUserId ?? "guest",
               buyerName: s.users.find((u) => u.id === s.currentUserId)?.name ?? "Buyer",
               interestedBuyers: 1 + Math.floor(Math.random() * 40),
               createdAt: Date.now(),
@@ -2230,7 +2229,7 @@ export const useNaflis = create<State>()(
               { id: uid(), userId: "u_admin1", type: "dispute", title: "Dispute escalated", body: `Case ${disputeId.slice(0, 8)} needs admin attention.`, createdAt: now, read: false, link: "/admin" },
               ...s.notifications,
             ],
-            auditLog: [{ id: uid(), at: now, actor: s.currentUserId, action: "dispute.escalate", target: disputeId }, ...s.auditLog],
+            auditLog: [{ id: uid(), at: now, actor: s.currentUserId ?? "system", action: "dispute.escalate", target: disputeId }, ...s.auditLog],
           });
           return;
         }
@@ -2304,7 +2303,7 @@ export const useNaflis = create<State>()(
             { id: uid(), userId: "u_finance1", type: "settlement", title: "Dispute settlement processed", body: `Order ${order.id.slice(0, 8)} · ${resolution}`, createdAt: now, read: false, link: "/finance" },
             ...s.notifications,
           ],
-          auditLog: [{ id: uid(), at: now, actor: s.currentUserId, action: `dispute.resolve.${kind}`, target: disputeId }, ...s.auditLog],
+          auditLog: [{ id: uid(), at: now, actor: s.currentUserId ?? "system", action: `dispute.resolve.${kind}`, target: disputeId }, ...s.auditLog],
         });
       },
 
@@ -2318,7 +2317,7 @@ export const useNaflis = create<State>()(
             { id: uid(), userId: order.buyerId, type: "refund", title: "Refund processed", body: `Refund for ${orderId.slice(0, 8)} settled to your wallet.`, createdAt: Date.now(), read: false, link: `/buyer/orders/${orderId}` },
             ...s.notifications,
           ],
-          auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId, action: "finance.refund.process", target: orderId }, ...s.auditLog],
+          auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId ?? "system", action: "finance.refund.process", target: orderId }, ...s.auditLog],
         });
       },
 
@@ -2331,7 +2330,7 @@ export const useNaflis = create<State>()(
             { id: uid(), userId: "u_admin1", type: "credit", title: "Credit approved", body: `${s.users.find((u) => u.id === userId)?.name ?? userId} approved for GHS ${limit.toLocaleString()}.`, createdAt: Date.now(), read: false, link: "/admin" },
             ...s.notifications,
           ],
-          auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId, action: "credit.approve", target: userId }, ...s.auditLog],
+          auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId ?? "system", action: "credit.approve", target: userId }, ...s.auditLog],
         });
       },
 
@@ -2342,31 +2341,33 @@ export const useNaflis = create<State>()(
             { id: uid(), userId, type: "credit", title: "Credit application declined", body: reason ?? "Please try again in 30 days.", createdAt: Date.now(), read: false, link: "/buyer/installments" },
             ...s.notifications,
           ],
-          auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId, action: "credit.decline", target: userId }, ...s.auditLog],
+          auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId ?? "system", action: "credit.decline", target: userId }, ...s.auditLog],
         });
       },
 
       setFeatureFlag: (key, enabled) =>
         set((s) => ({
           featureFlags: { ...s.featureFlags, [key]: enabled },
-          auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId, action: `flag.${enabled ? "on" : "off"}`, target: key }, ...s.auditLog],
+          auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId ?? "system", action: `flag.${enabled ? "on" : "off"}`, target: key }, ...s.auditLog],
         })),
 
       fundWallet: (amount, source) =>
         set((s) => {
-          const w = { ...s.wallets[s.currentUserId] };
+          const id = s.currentUserId;
+          if (!id || !s.wallets[id] || !(amount > 0)) return {};
+          const w = { ...s.wallets[id] };
           w.balance += amount;
           w.transactions = [
             { id: uid(), type: "credit", amount, balanceAfter: w.balance, description: `Top-up via ${source}`, createdAt: Date.now() },
             ...w.transactions,
           ];
-          return { wallets: { ...s.wallets, [s.currentUserId]: w } };
+          return { wallets: { ...s.wallets, [id]: w } };
         }),
       toggleAutoFund: (enabled) =>
         set((s) => {
-          const w = { ...s.wallets[s.currentUserId] };
-          w.autoFund = { ...w.autoFund, enabled };
-          return { wallets: { ...s.wallets, [s.currentUserId]: w } };
+          const id = s.currentUserId;
+          if (!id || !s.wallets[id]) return {};
+          return { wallets: { ...s.wallets, [id]: { ...s.wallets[id], autoFund: { ...s.wallets[id].autoFund, enabled } } } };
         }),
       markNotifRead: (id) =>
         set((s) => ({ notifications: s.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)) })),
@@ -2384,7 +2385,7 @@ export const useNaflis = create<State>()(
         })),
       audit: (action, target) =>
         set((s) => ({
-          auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId, action, target }, ...s.auditLog],
+          auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId ?? "system", action, target }, ...s.auditLog],
         })),
       resetDemo: () => set({ ...initialState() }),
       setDemoStep: (n) => set({ demoStep: n }),
@@ -2882,19 +2883,19 @@ export const useNaflis = create<State>()(
           ].slice(0, 200),
         }));
 
-        // Non-blocking passive insert to Supabase demand_logs
+        // Passive, fire-and-forget insert: failures (offline, RLS, demo ids) are ignored by design.
         if (supabase) {
+          const isUuid = !!currentUserId && /^[0-9a-f-]{36}$/i.test(currentUserId);
           try {
-            supabase.from("demand_logs").insert({
-              search_query: q,
-              campus: campus || "General",
-              results_count: resultsCount,
-              user_id: currentUserId || null,
-            }).then(() => {}).catch((err: any) => {
-              console.warn("Supabase passive demand log note:", err);
-            });
-          } catch (e) {
-            // ignore non-blocking
+            supabase
+              .from("demand_logs")
+              .insert({ search_query: q, campus: campus || "General", results_count: resultsCount, user_id: isUuid ? currentUserId : null })
+              .then(
+                () => undefined,
+                () => undefined,
+              );
+          } catch {
+            // never interrupt search
           }
         }
       },
@@ -2953,10 +2954,8 @@ export const useUserRoles = (): Role[] => {
   return resolveRoles(user, stores);
 };
 
-export const useWallet = () => {
-  const { currentUserId, wallets } = useNaflis();
-  return wallets[currentUserId];
-};
+export const useWallet = (): Wallet | undefined =>
+  useNaflis((s) => (s.currentUserId ? s.wallets[s.currentUserId] : undefined));
 
 export { orderStateLabel };
 

@@ -132,11 +132,14 @@ function RootComponent() {
   useEffect(() => {
     if (supabase) {
       // 1. Initial check
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          syncUser(session.user);
-        }
-      });
+      supabase.auth
+        .getSession()
+        .then(({ data: { session } }) => {
+          if (session?.user) syncUser(session.user);
+        })
+        .catch(() => {
+          // offline / auth service unreachable — stay signed out locally
+        });
 
       // 2. Auth state listener
       const {

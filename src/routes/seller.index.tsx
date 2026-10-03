@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
-import { useNaflis, CAMPUSES } from "@/lib/naflis/store";
+import { useNaflis, CAMPUSES, type Order } from "@/lib/naflis/store";
 import { GHS, fmtDate, pct } from "@/lib/naflis/format";
 import { supabase } from "@/lib/supabase";
 import { useCategories } from "@/services/categories";
@@ -269,6 +269,17 @@ function SellerDashboard() {
 
     setSubmittingOnboarding(true);
     try {
+      // Demo mode: create the shop locally.
+      if (!supabase) {
+        const st = useNaflis.getState();
+        st.openShop();
+        useNaflis.setState((s) => ({
+          stores: s.stores.map((x) => (x.ownerId === s.currentUserId ? { ...x, name: storeName, tagline: description } : x)),
+        }));
+        toast.success("Demo: your shop is ready.");
+        await fetchVendorAndProducts();
+        return;
+      }
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No active user session found.");
 
@@ -304,6 +315,7 @@ function SellerDashboard() {
 
   const handleSimulateApproval = async () => {
     if (!vendor) return;
+    if (!supabase) return; // demo shops are approved already
     try {
       const { error } = await supabase
         .from("vendors")
@@ -326,6 +338,23 @@ function SellerDashboard() {
     setUploadingImage(true);
     try {
       const uploadedUrls: string[] = [];
+
+      // Demo mode: keep images as data URLs.
+      if (!supabase) {
+        for (const file of Array.from(files)) {
+          uploadedUrls.push(
+            await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error("Couldn't read that image."));
+              reader.readAsDataURL(file);
+            }),
+          );
+        }
+        setProductImages((prev) => [...prev, ...uploadedUrls]);
+        toast.success("Image(s) added.");
+        return;
+      }
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -470,6 +499,13 @@ function SellerDashboard() {
     if (!productToDelete) return;
     setDeletingProduct(true);
     try {
+      if (!supabase) {
+        useNaflis.setState((s) => ({ products: s.products.filter((p) => p.id !== productToDelete.id) }));
+        toast.success("Product deleted.");
+        setProductToDelete(null);
+        await fetchVendorAndProducts();
+        return;
+      }
       const { error } = await supabase
         .from("products")
         .delete()
@@ -975,7 +1011,7 @@ function SellerDashboard() {
   );
 }
 
-function OrdersTab({ orders, myProductIds }: { orders: any[]; myProductIds: Set<string> }) {
+function OrdersTab({ orders, myProductIds }: { orders: Order[]; myProductIds: Set<string> }) {
   const acceptOrder = useNaflis((s) => s.sellerAcceptOrder);
   const startPreparing = useNaflis((s) => s.sellerStartPreparing);
   const markReady = useNaflis((s) => s.sellerMarkReady);

@@ -37,7 +37,7 @@ function LoginPage() {
   // Auto-redirect if user is already logged in
   useEffect(() => {
     if (supabase) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      supabase.auth.getSession().catch(() => ({ data: { session: null } })).then(({ data: { session } }) => {
         if (session?.user) {
           useNaflis.getState().syncUser(session.user);
           const dest = search.redirect || roleHome(normalizeRole(session.user.user_metadata?.role));
