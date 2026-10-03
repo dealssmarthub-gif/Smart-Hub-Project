@@ -70,6 +70,22 @@ export function resolveRoles(
   return ROLE_ORDER.filter((r) => held.has(r));
 }
 
+/**
+ * Workspace a fresh sign-in starts in: Student when the account holds it,
+ * otherwise Buyer (every account is a buyer). Seller and staff workspaces are
+ * one switch away in the context switcher — never the default.
+ */
+export function defaultContext(held: Role[]): Role {
+  return held.includes("student") ? "student" : "buyer";
+}
+
+/** Where to go after signing in: a same-site ?redirect wins, else the active workspace's home. */
+export function postSignInPath(role: Role, redirect?: string): string {
+  // Only relative, same-origin paths — "//evil.com" or "https://…" would be an open redirect.
+  if (redirect && redirect.startsWith("/") && !redirect.startsWith("//") && !redirect.startsWith("/\\")) return redirect;
+  return roleHome(role);
+}
+
 export function roleHome(role: Role): RoleMeta["home"] {
   return ROLE_META[role]?.home ?? "/";
 }

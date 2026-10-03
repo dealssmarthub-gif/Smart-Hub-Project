@@ -10,7 +10,7 @@ import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { supabase } from "@/lib/supabase";
 import { useNaflis } from "@/lib/naflis/store";
-import { normalizeRole, roleHome } from "@/lib/naflis/roles";
+import { postSignInPath } from "@/lib/naflis/roles";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -37,11 +37,10 @@ function LoginPage() {
   // Auto-redirect if user is already logged in
   useEffect(() => {
     if (supabase) {
-      supabase.auth.getSession().catch(() => ({ data: { session: null } })).then(({ data: { session } }) => {
+      supabase.auth.getSession().catch(() => ({ data: { session: null } })).then(async ({ data: { session } }) => {
         if (session?.user) {
-          useNaflis.getState().syncUser(session.user);
-          const dest = search.redirect || roleHome(normalizeRole(session.user.user_metadata?.role));
-          navigate({ to: dest });
+          const role = await useNaflis.getState().completeSignIn(session.user);
+          navigate({ to: postSignInPath(role, search.redirect) });
         }
       });
     }
@@ -50,7 +49,8 @@ function LoginPage() {
   const handleDemoLogin = (role: "buyer" | "seller" | "admin" | "src_head" | "super_admin") => {
     useNaflis.getState().setRole(role);
     toast.success(`Logged in as demo ${role}!`);
-    const dest = search.redirect || roleHome(role);
+    // Demo buttons are explicit persona choices ("Demo Seller" means the seller workspace).
+    const dest = postSignInPath(role, search.redirect);
     navigate({ to: dest });
   };
 
@@ -86,9 +86,8 @@ function LoginPage() {
           }
         } else if (data.user) {
           toast.success("Successfully logged in!");
-          useNaflis.getState().syncUser(data.user);
-          const dest = search.redirect || roleHome(normalizeRole(data.user?.user_metadata?.role));
-          navigate({ to: dest });
+          const role = await useNaflis.getState().completeSignIn(data.user);
+          navigate({ to: postSignInPath(role, search.redirect) });
         }
       } else {
         if (!fullName || !phone) {
@@ -120,9 +119,9 @@ function LoginPage() {
         } else {
           if (data.session && data.user) {
             toast.success("Account created and signed in!");
-            useNaflis.getState().syncUser(data.user);
-            const dest = search.redirect || `/${selectedRole}`;
-            navigate({ to: dest });
+            // Sellers start in Buyer like everyone else; the switcher (or "Open a shop") takes them to Seller.
+            const role = await useNaflis.getState().completeSignIn(data.user);
+            navigate({ to: postSignInPath(role, search.redirect) });
           } else {
             toast.success("Signup successful! Please check your email for verification.");
             setMode("signin");

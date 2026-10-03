@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { uid } from "./format";
 import { supabase } from "../supabase";
-import { normalizeRole, resolveRoles, type Role } from "./roles";
+import { defaultContext, normalizeRole, resolveRoles, type Role } from "./roles";
 import { canTransition, orderStateLabel, toOrderState, type OrderActor, type OrderState } from "./orderMachine";
 import { deliveryUnlocked, type DeliveryRule, type Frequency, type PurchaseConfig, type PurchaseMethod } from "./purchase";
 import { maskSensitive, SENSITIVE_LABEL } from "./privacyShield";
@@ -1234,6 +1234,8 @@ interface State {
   signIn: (userId: string) => void;
   signOut: () => void;
   syncUser: (sessionUser: any) => void;
+  /** Sign-in completion: sync the account, load its roles, start in Student or Buyer. Returns the active role. */
+  completeSignIn: (sessionUser: any) => Promise<Role>;
   addToCart: (productId: string, qty?: number, opt?: PaymentOption, method?: PurchaseMethod) => void;
   setCartMethod: (productId: string, method: PurchaseMethod) => void;
   removeFromCart: (productId: string) => void;
@@ -1724,12 +1726,23 @@ export const useNaflis = create<State>()(
 
           return {
             currentUserId: id,
-            role: keepContext ? state.role : role,
+            role: keepContext ? state.role : defaultContext(held),
             users: updatedUsers,
             wallets,
           };
         });
         void get().refreshRoles();
+      },
+      completeSignIn: async (sessionUser) => {
+        const before = get().currentUserId;
+        get().syncUser(sessionUser);
+        // Profile roles (e.g. student) live in Supabase; load them before picking the workspace.
+        await get().refreshRoles();
+        const s = get();
+        if (s.currentUserId && before !== s.currentUserId) {
+          set({ role: defaultContext(resolveRoles(s.users.find((u) => u.id === s.currentUserId), s.stores)) });
+        }
+        return get().role;
       },
       addToCart: (productId, qty = 1, opt, method) =>
         set((s) => {
