@@ -325,7 +325,7 @@ function Landing() {
               className="flex items-center gap-1.5 text-sm font-bold text-sky-500 hover:text-sky-400 transition"
             >
               <GraduationCap className="h-4 w-4" />
-              <span>Campus Hub</span>
+              <span>Student OS</span>
             </Link>
             <Link
               to="/student-os/marketplace"
@@ -513,7 +513,7 @@ function Landing() {
                 className="border-white/40 bg-white/10 text-white hover:bg-white/20 backdrop-blur font-bold text-xs sm:text-sm"
               >
                 <Link to="/student-os">
-                  <GraduationCap className="mr-2 h-4 w-4 text-sky-300" /> Campus Hub
+                  <GraduationCap className="mr-2 h-4 w-4 text-sky-300" /> Student OS
                 </Link>
               </Button>
             </div>
