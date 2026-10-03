@@ -1,31 +1,35 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  Home, Search, ShoppingCart, Heart, Wallet, Bell, Package, MessageSquare, User, TrendingUp, Clock, GraduationCap,
+  Home, Search, ShoppingCart, Heart, Wallet, Bell, Package, MessageSquare, TrendingUp, Clock, GraduationCap,
+  LayoutGrid, BadgePercent,
 } from "lucide-react";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
+import { ContextSwitcher } from "@/components/naflis/ContextSwitcher";
+import { MobileBottomNav } from "@/components/naflis/MobileBottomNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNaflis } from "@/lib/naflis/store";
-import { useState } from "react";
+import { useFeatureFlag } from "@/lib/featureFlags";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const NAV = [
   { to: "/buyer", label: "Home", icon: Home, exact: true },
-  { to: "/student-os", label: "Student OS", icon: GraduationCap },
+  { to: "/student-os", label: "Student OS", icon: GraduationCap, flag: "student_os" },
+  { to: "/buyer/categories", label: "Categories", icon: LayoutGrid },
+  { to: "/buyer/deals", label: "Deals", icon: BadgePercent },
   { to: "/buyer/search", label: "Search", icon: Search },
   { to: "/buyer/wishlist", label: "Wishlist", icon: Heart },
   { to: "/buyer/cart", label: "Cart", icon: ShoppingCart },
   { to: "/buyer/orders", label: "Orders", icon: Package },
   { to: "/buyer/wallet", label: "Wallet", icon: Wallet },
-  { to: "/buyer/reserve", label: "Reserve & Pay", icon: Clock },
-  { to: "/buyer/installments", label: "Installments", icon: TrendingUp },
+  { to: "/buyer/reserve", label: "Reserve & Pay", icon: Clock, flag: "reserve_and_pay" },
+  { to: "/buyer/installments", label: "Installments", icon: TrendingUp, flag: "take_now_pay_later" },
   { to: "/buyer/messages", label: "Messages", icon: MessageSquare },
   { to: "/buyer/notifications", label: "Alerts", icon: Bell },
 ];
-
-const MOBILE_NAV = NAV.slice(0, 5);
 
 export function BuyerShell() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
@@ -36,9 +40,25 @@ export function BuyerShell() {
   const signOut = useNaflis((s) => s.signOut);
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const flags: Record<string, boolean> = {
+    student_os: useFeatureFlag("student_os"),
+    reserve_and_pay: useFeatureFlag("reserve_and_pay"),
+    take_now_pay_later: useFeatureFlag("take_now_pay_later"),
+  };
+  const nav = NAV.filter((n) => !n.flag || flags[n.flag]);
+  const runSchedulers = useNaflis((s) => s.runSchedulers);
+
+  // Demo-mode housekeeping: expire lapsed reservations and flag late installments.
+  // (With Supabase, pg_cron jobs from migration 05 do this server-side.)
+  useEffect(() => {
+    runSchedulers();
+    const t = setInterval(() => runSchedulers(), 30_000);
+    return () => clearInterval(t);
+  }, [runSchedulers]);
+  const cartCount = cart.reduce((a, c) => a + c.qty, 0);
 
   const badges: Record<string, number> = {
-    "/buyer/cart": cart.reduce((a, c) => a + c.qty, 0),
+    "/buyer/cart": cartCount,
     "/buyer/wishlist": wishlist.length,
     "/buyer/notifications": notifs,
   };
@@ -67,7 +87,21 @@ export function BuyerShell() {
             </div>
           </form>
           <div className="ml-auto flex items-center gap-2">
+            <Button asChild variant="ghost" size="icon" className="md:hidden">
+              <Link to="/buyer/search" aria-label="Search"><Search className="h-4 w-4" /></Link>
+            </Button>
+            <Button asChild variant="ghost" size="icon" className="relative md:hidden">
+              <Link to="/buyer/cart" aria-label="Cart">
+                <ShoppingCart className="h-4 w-4" />
+                {cartCount > 0 && (
+                  <span className="absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[9px] text-error-foreground">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            </Button>
             <ThemeToggle />
+            <ContextSwitcher />
             {user && (
               <div className="hidden items-center gap-2 rounded-full border px-2 py-1 sm:flex">
                 <img src={user.avatar} alt="" className="h-6 w-6 rounded-full" />
@@ -77,6 +111,7 @@ export function BuyerShell() {
             <Button
               variant="outline"
               size="sm"
+              className="hidden md:inline-flex"
               onClick={() => {
                 signOut();
                 toast.success("Signed out successfully");
@@ -93,7 +128,7 @@ export function BuyerShell() {
         {/* Sidebar */}
         <aside className="sticky top-24 hidden h-fit w-56 shrink-0 md:block">
           <nav className="space-y-1">
-            {NAV.map((n) => {
+            {nav.map((n) => {
               const Icon = n.icon;
               const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
               const badge = badges[n.to];
@@ -122,30 +157,7 @@ export function BuyerShell() {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-background md:hidden">
-        {MOBILE_NAV.map((n) => {
-          const Icon = n.icon;
-          const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
-          const badge = badges[n.to];
-          return (
-            <Link
-              key={n.to}
-              to={n.to}
-              className={`relative flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] ${
-                active ? "text-sky-500" : "text-muted-foreground"
-              }`}
-            >
-              <Icon className="h-5 w-5" />
-              {n.label}
-              {badge ? (
-                <span className="absolute right-4 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[9px] text-error-foreground">
-                  {badge}
-                </span>
-              ) : null}
-            </Link>
-          );
-        })}
-      </nav>
+      <MobileBottomNav context="buyer" badges={badges} />
     </div>
   );
 }

@@ -18,11 +18,14 @@ import { Route as DisputeRouteImport } from './routes/dispute'
 import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SellerRouteImport } from './routes/seller'
+import { Route as StaffInviteRouteImport } from './routes/staff-invite'
 import { Route as StudentOsRouteImport } from './routes/student-os'
 import { Route as SuperRouteImport } from './routes/super'
 import { Route as BuyerIndexRouteImport } from './routes/buyer.index'
 import { Route as BuyerCartRouteImport } from './routes/buyer.cart'
+import { Route as BuyerCategoriesRouteImport } from './routes/buyer.categories'
 import { Route as BuyerCheckoutRouteImport } from './routes/buyer.checkout'
+import { Route as BuyerDealsRouteImport } from './routes/buyer.deals'
 import { Route as BuyerInstallmentsRouteImport } from './routes/buyer.installments'
 import { Route as BuyerMessagesRouteImport } from './routes/buyer.messages'
 import { Route as BuyerNotificationsRouteImport } from './routes/buyer.notifications'
@@ -32,10 +35,19 @@ import { Route as BuyerSearchRouteImport } from './routes/buyer.search'
 import { Route as BuyerWalletRouteImport } from './routes/buyer.wallet'
 import { Route as BuyerWishlistRouteImport } from './routes/buyer.wishlist'
 import { Route as CampusAdminDashboardRouteImport } from './routes/campus-admin.dashboard'
+import { Route as SellerIndexRouteImport } from './routes/seller.index'
+import { Route as SellerIntelligenceRouteImport } from './routes/seller.intelligence'
 import { Route as StudentOsIndexRouteImport } from './routes/student-os.index'
+import { Route as StudentOsCalendarRouteImport } from './routes/student-os.calendar'
 import { Route as StudentOsDealsRouteImport } from './routes/student-os.deals'
+import { Route as StudentOsEventsRouteImport } from './routes/student-os.events'
+import { Route as StudentOsLostFoundRouteImport } from './routes/student-os.lost-found'
 import { Route as StudentOsMarketplaceRouteImport } from './routes/student-os.marketplace'
+import { Route as StudentOsOpportunitiesRouteImport } from './routes/student-os.opportunities'
 import { Route as StudentOsResourcesRouteImport } from './routes/student-os.resources'
+import { Route as SuperIndexRouteImport } from './routes/super.index'
+import { Route as SuperStaffRouteImport } from './routes/super.staff'
+import { Route as SuperViewAsRouteImport } from './routes/super.view-as'
 import { Route as BuyerOrdersOrderIdRouteImport } from './routes/buyer.orders.$orderId'
 import { Route as BuyerProductIdRouteImport } from './routes/buyer.product.$id'
 
@@ -84,6 +96,11 @@ const SellerRoute = SellerRouteImport.update({
   path: '/seller',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffInviteRoute = StaffInviteRouteImport.update({
+  id: '/staff-invite',
+  path: '/staff-invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StudentOsRoute = StudentOsRouteImport.update({
   id: '/student-os',
   path: '/student-os',
@@ -104,9 +121,19 @@ const BuyerCartRoute = BuyerCartRouteImport.update({
   path: '/cart',
   getParentRoute: () => BuyerRoute,
 } as any)
+const BuyerCategoriesRoute = BuyerCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => BuyerRoute,
+} as any)
 const BuyerCheckoutRoute = BuyerCheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => BuyerRoute,
+} as any)
+const BuyerDealsRoute = BuyerDealsRouteImport.update({
+  id: '/deals',
+  path: '/deals',
   getParentRoute: () => BuyerRoute,
 } as any)
 const BuyerInstallmentsRoute = BuyerInstallmentsRouteImport.update({
@@ -154,9 +181,24 @@ const CampusAdminDashboardRoute = CampusAdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => CampusAdminRoute,
 } as any)
+const SellerIndexRoute = SellerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerIntelligenceRoute = SellerIntelligenceRouteImport.update({
+  id: '/intelligence',
+  path: '/intelligence',
+  getParentRoute: () => SellerRoute,
+} as any)
 const StudentOsIndexRoute = StudentOsIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => StudentOsRoute,
+} as any)
+const StudentOsCalendarRoute = StudentOsCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => StudentOsRoute,
 } as any)
 const StudentOsDealsRoute = StudentOsDealsRouteImport.update({
@@ -164,15 +206,45 @@ const StudentOsDealsRoute = StudentOsDealsRouteImport.update({
   path: '/deals',
   getParentRoute: () => StudentOsRoute,
 } as any)
+const StudentOsEventsRoute = StudentOsEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => StudentOsRoute,
+} as any)
+const StudentOsLostFoundRoute = StudentOsLostFoundRouteImport.update({
+  id: '/lost-found',
+  path: '/lost-found',
+  getParentRoute: () => StudentOsRoute,
+} as any)
 const StudentOsMarketplaceRoute = StudentOsMarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
+  getParentRoute: () => StudentOsRoute,
+} as any)
+const StudentOsOpportunitiesRoute = StudentOsOpportunitiesRouteImport.update({
+  id: '/opportunities',
+  path: '/opportunities',
   getParentRoute: () => StudentOsRoute,
 } as any)
 const StudentOsResourcesRoute = StudentOsResourcesRouteImport.update({
   id: '/resources',
   path: '/resources',
   getParentRoute: () => StudentOsRoute,
+} as any)
+const SuperIndexRoute = SuperIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SuperRoute,
+} as any)
+const SuperStaffRoute = SuperStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => SuperRoute,
+} as any)
+const SuperViewAsRoute = SuperViewAsRouteImport.update({
+  id: '/view-as',
+  path: '/view-as',
+  getParentRoute: () => SuperRoute,
 } as any)
 const BuyerOrdersOrderIdRoute = BuyerOrdersOrderIdRouteImport.update({
   id: '/$orderId',
@@ -194,11 +266,14 @@ export interface FileRoutesByFullPath {
   '/dispute': typeof DisputeRoute
   '/finance': typeof FinanceRoute
   '/login': typeof LoginRoute
-  '/seller': typeof SellerRoute
+  '/seller': typeof SellerRouteWithChildren
+  '/staff-invite': typeof StaffInviteRoute
   '/student-os': typeof StudentOsRouteWithChildren
-  '/super': typeof SuperRoute
+  '/super': typeof SuperRouteWithChildren
   '/buyer/cart': typeof BuyerCartRoute
+  '/buyer/categories': typeof BuyerCategoriesRoute
   '/buyer/checkout': typeof BuyerCheckoutRoute
+  '/buyer/deals': typeof BuyerDealsRoute
   '/buyer/installments': typeof BuyerInstallmentsRoute
   '/buyer/messages': typeof BuyerMessagesRoute
   '/buyer/notifications': typeof BuyerNotificationsRoute
@@ -208,11 +283,20 @@ export interface FileRoutesByFullPath {
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
   '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
+  '/seller/intelligence': typeof SellerIntelligenceRoute
+  '/student-os/calendar': typeof StudentOsCalendarRoute
   '/student-os/deals': typeof StudentOsDealsRoute
+  '/student-os/events': typeof StudentOsEventsRoute
+  '/student-os/lost-found': typeof StudentOsLostFoundRoute
   '/student-os/marketplace': typeof StudentOsMarketplaceRoute
+  '/student-os/opportunities': typeof StudentOsOpportunitiesRoute
   '/student-os/resources': typeof StudentOsResourcesRoute
+  '/super/staff': typeof SuperStaffRoute
+  '/super/view-as': typeof SuperViewAsRoute
   '/buyer/': typeof BuyerIndexRoute
+  '/seller/': typeof SellerIndexRoute
   '/student-os/': typeof StudentOsIndexRoute
+  '/super/': typeof SuperIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
   '/buyer/product/$id': typeof BuyerProductIdRoute
 }
@@ -224,10 +308,11 @@ export interface FileRoutesByTo {
   '/dispute': typeof DisputeRoute
   '/finance': typeof FinanceRoute
   '/login': typeof LoginRoute
-  '/seller': typeof SellerRoute
-  '/super': typeof SuperRoute
+  '/staff-invite': typeof StaffInviteRoute
   '/buyer/cart': typeof BuyerCartRoute
+  '/buyer/categories': typeof BuyerCategoriesRoute
   '/buyer/checkout': typeof BuyerCheckoutRoute
+  '/buyer/deals': typeof BuyerDealsRoute
   '/buyer/installments': typeof BuyerInstallmentsRoute
   '/buyer/messages': typeof BuyerMessagesRoute
   '/buyer/notifications': typeof BuyerNotificationsRoute
@@ -237,11 +322,20 @@ export interface FileRoutesByTo {
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
   '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
+  '/seller/intelligence': typeof SellerIntelligenceRoute
+  '/student-os/calendar': typeof StudentOsCalendarRoute
   '/student-os/deals': typeof StudentOsDealsRoute
+  '/student-os/events': typeof StudentOsEventsRoute
+  '/student-os/lost-found': typeof StudentOsLostFoundRoute
   '/student-os/marketplace': typeof StudentOsMarketplaceRoute
+  '/student-os/opportunities': typeof StudentOsOpportunitiesRoute
   '/student-os/resources': typeof StudentOsResourcesRoute
+  '/super/staff': typeof SuperStaffRoute
+  '/super/view-as': typeof SuperViewAsRoute
   '/buyer': typeof BuyerIndexRoute
+  '/seller': typeof SellerIndexRoute
   '/student-os': typeof StudentOsIndexRoute
+  '/super': typeof SuperIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
   '/buyer/product/$id': typeof BuyerProductIdRoute
 }
@@ -255,11 +349,14 @@ export interface FileRoutesById {
   '/dispute': typeof DisputeRoute
   '/finance': typeof FinanceRoute
   '/login': typeof LoginRoute
-  '/seller': typeof SellerRoute
+  '/seller': typeof SellerRouteWithChildren
+  '/staff-invite': typeof StaffInviteRoute
   '/student-os': typeof StudentOsRouteWithChildren
-  '/super': typeof SuperRoute
+  '/super': typeof SuperRouteWithChildren
   '/buyer/cart': typeof BuyerCartRoute
+  '/buyer/categories': typeof BuyerCategoriesRoute
   '/buyer/checkout': typeof BuyerCheckoutRoute
+  '/buyer/deals': typeof BuyerDealsRoute
   '/buyer/installments': typeof BuyerInstallmentsRoute
   '/buyer/messages': typeof BuyerMessagesRoute
   '/buyer/notifications': typeof BuyerNotificationsRoute
@@ -269,11 +366,20 @@ export interface FileRoutesById {
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
   '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
+  '/seller/intelligence': typeof SellerIntelligenceRoute
+  '/student-os/calendar': typeof StudentOsCalendarRoute
   '/student-os/deals': typeof StudentOsDealsRoute
+  '/student-os/events': typeof StudentOsEventsRoute
+  '/student-os/lost-found': typeof StudentOsLostFoundRoute
   '/student-os/marketplace': typeof StudentOsMarketplaceRoute
+  '/student-os/opportunities': typeof StudentOsOpportunitiesRoute
   '/student-os/resources': typeof StudentOsResourcesRoute
+  '/super/staff': typeof SuperStaffRoute
+  '/super/view-as': typeof SuperViewAsRoute
   '/buyer/': typeof BuyerIndexRoute
+  '/seller/': typeof SellerIndexRoute
   '/student-os/': typeof StudentOsIndexRoute
+  '/super/': typeof SuperIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
   '/buyer/product/$id': typeof BuyerProductIdRoute
 }
@@ -289,10 +395,13 @@ export interface FileRouteTypes {
     | '/finance'
     | '/login'
     | '/seller'
+    | '/staff-invite'
     | '/student-os'
     | '/super'
     | '/buyer/cart'
+    | '/buyer/categories'
     | '/buyer/checkout'
+    | '/buyer/deals'
     | '/buyer/installments'
     | '/buyer/messages'
     | '/buyer/notifications'
@@ -302,11 +411,20 @@ export interface FileRouteTypes {
     | '/buyer/wallet'
     | '/buyer/wishlist'
     | '/campus-admin/dashboard'
+    | '/seller/intelligence'
+    | '/student-os/calendar'
     | '/student-os/deals'
+    | '/student-os/events'
+    | '/student-os/lost-found'
     | '/student-os/marketplace'
+    | '/student-os/opportunities'
     | '/student-os/resources'
+    | '/super/staff'
+    | '/super/view-as'
     | '/buyer/'
+    | '/seller/'
     | '/student-os/'
+    | '/super/'
     | '/buyer/orders/$orderId'
     | '/buyer/product/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -318,10 +436,11 @@ export interface FileRouteTypes {
     | '/dispute'
     | '/finance'
     | '/login'
-    | '/seller'
-    | '/super'
+    | '/staff-invite'
     | '/buyer/cart'
+    | '/buyer/categories'
     | '/buyer/checkout'
+    | '/buyer/deals'
     | '/buyer/installments'
     | '/buyer/messages'
     | '/buyer/notifications'
@@ -331,11 +450,20 @@ export interface FileRouteTypes {
     | '/buyer/wallet'
     | '/buyer/wishlist'
     | '/campus-admin/dashboard'
+    | '/seller/intelligence'
+    | '/student-os/calendar'
     | '/student-os/deals'
+    | '/student-os/events'
+    | '/student-os/lost-found'
     | '/student-os/marketplace'
+    | '/student-os/opportunities'
     | '/student-os/resources'
+    | '/super/staff'
+    | '/super/view-as'
     | '/buyer'
+    | '/seller'
     | '/student-os'
+    | '/super'
     | '/buyer/orders/$orderId'
     | '/buyer/product/$id'
   id:
@@ -349,10 +477,13 @@ export interface FileRouteTypes {
     | '/finance'
     | '/login'
     | '/seller'
+    | '/staff-invite'
     | '/student-os'
     | '/super'
     | '/buyer/cart'
+    | '/buyer/categories'
     | '/buyer/checkout'
+    | '/buyer/deals'
     | '/buyer/installments'
     | '/buyer/messages'
     | '/buyer/notifications'
@@ -362,11 +493,20 @@ export interface FileRouteTypes {
     | '/buyer/wallet'
     | '/buyer/wishlist'
     | '/campus-admin/dashboard'
+    | '/seller/intelligence'
+    | '/student-os/calendar'
     | '/student-os/deals'
+    | '/student-os/events'
+    | '/student-os/lost-found'
     | '/student-os/marketplace'
+    | '/student-os/opportunities'
     | '/student-os/resources'
+    | '/super/staff'
+    | '/super/view-as'
     | '/buyer/'
+    | '/seller/'
     | '/student-os/'
+    | '/super/'
     | '/buyer/orders/$orderId'
     | '/buyer/product/$id'
   fileRoutesById: FileRoutesById
@@ -380,9 +520,10 @@ export interface RootRouteChildren {
   DisputeRoute: typeof DisputeRoute
   FinanceRoute: typeof FinanceRoute
   LoginRoute: typeof LoginRoute
-  SellerRoute: typeof SellerRoute
+  SellerRoute: typeof SellerRouteWithChildren
+  StaffInviteRoute: typeof StaffInviteRoute
   StudentOsRoute: typeof StudentOsRouteWithChildren
-  SuperRoute: typeof SuperRoute
+  SuperRoute: typeof SuperRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -450,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff-invite': {
+      id: '/staff-invite'
+      path: '/staff-invite'
+      fullPath: '/staff-invite'
+      preLoaderRoute: typeof StaffInviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/student-os': {
       id: '/student-os'
       path: '/student-os'
@@ -478,11 +626,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BuyerCartRouteImport
       parentRoute: typeof BuyerRoute
     }
+    '/buyer/categories': {
+      id: '/buyer/categories'
+      path: '/categories'
+      fullPath: '/buyer/categories'
+      preLoaderRoute: typeof BuyerCategoriesRouteImport
+      parentRoute: typeof BuyerRoute
+    }
     '/buyer/checkout': {
       id: '/buyer/checkout'
       path: '/checkout'
       fullPath: '/buyer/checkout'
       preLoaderRoute: typeof BuyerCheckoutRouteImport
+      parentRoute: typeof BuyerRoute
+    }
+    '/buyer/deals': {
+      id: '/buyer/deals'
+      path: '/deals'
+      fullPath: '/buyer/deals'
+      preLoaderRoute: typeof BuyerDealsRouteImport
       parentRoute: typeof BuyerRoute
     }
     '/buyer/installments': {
@@ -548,11 +710,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampusAdminDashboardRouteImport
       parentRoute: typeof CampusAdminRoute
     }
+    '/seller/': {
+      id: '/seller/'
+      path: '/'
+      fullPath: '/seller/'
+      preLoaderRoute: typeof SellerIndexRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/intelligence': {
+      id: '/seller/intelligence'
+      path: '/intelligence'
+      fullPath: '/seller/intelligence'
+      preLoaderRoute: typeof SellerIntelligenceRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/student-os/': {
       id: '/student-os/'
       path: '/'
       fullPath: '/student-os/'
       preLoaderRoute: typeof StudentOsIndexRouteImport
+      parentRoute: typeof StudentOsRoute
+    }
+    '/student-os/calendar': {
+      id: '/student-os/calendar'
+      path: '/calendar'
+      fullPath: '/student-os/calendar'
+      preLoaderRoute: typeof StudentOsCalendarRouteImport
       parentRoute: typeof StudentOsRoute
     }
     '/student-os/deals': {
@@ -562,11 +745,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentOsDealsRouteImport
       parentRoute: typeof StudentOsRoute
     }
+    '/student-os/events': {
+      id: '/student-os/events'
+      path: '/events'
+      fullPath: '/student-os/events'
+      preLoaderRoute: typeof StudentOsEventsRouteImport
+      parentRoute: typeof StudentOsRoute
+    }
+    '/student-os/lost-found': {
+      id: '/student-os/lost-found'
+      path: '/lost-found'
+      fullPath: '/student-os/lost-found'
+      preLoaderRoute: typeof StudentOsLostFoundRouteImport
+      parentRoute: typeof StudentOsRoute
+    }
     '/student-os/marketplace': {
       id: '/student-os/marketplace'
       path: '/marketplace'
       fullPath: '/student-os/marketplace'
       preLoaderRoute: typeof StudentOsMarketplaceRouteImport
+      parentRoute: typeof StudentOsRoute
+    }
+    '/student-os/opportunities': {
+      id: '/student-os/opportunities'
+      path: '/opportunities'
+      fullPath: '/student-os/opportunities'
+      preLoaderRoute: typeof StudentOsOpportunitiesRouteImport
       parentRoute: typeof StudentOsRoute
     }
     '/student-os/resources': {
@@ -575,6 +779,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/student-os/resources'
       preLoaderRoute: typeof StudentOsResourcesRouteImport
       parentRoute: typeof StudentOsRoute
+    }
+    '/super/': {
+      id: '/super/'
+      path: '/'
+      fullPath: '/super/'
+      preLoaderRoute: typeof SuperIndexRouteImport
+      parentRoute: typeof SuperRoute
+    }
+    '/super/staff': {
+      id: '/super/staff'
+      path: '/staff'
+      fullPath: '/super/staff'
+      preLoaderRoute: typeof SuperStaffRouteImport
+      parentRoute: typeof SuperRoute
+    }
+    '/super/view-as': {
+      id: '/super/view-as'
+      path: '/view-as'
+      fullPath: '/super/view-as'
+      preLoaderRoute: typeof SuperViewAsRouteImport
+      parentRoute: typeof SuperRoute
     }
     '/buyer/orders/$orderId': {
       id: '/buyer/orders/$orderId'
@@ -607,7 +832,9 @@ const BuyerOrdersRouteWithChildren = BuyerOrdersRoute._addFileChildren(
 
 interface BuyerRouteChildren {
   BuyerCartRoute: typeof BuyerCartRoute
+  BuyerCategoriesRoute: typeof BuyerCategoriesRoute
   BuyerCheckoutRoute: typeof BuyerCheckoutRoute
+  BuyerDealsRoute: typeof BuyerDealsRoute
   BuyerInstallmentsRoute: typeof BuyerInstallmentsRoute
   BuyerMessagesRoute: typeof BuyerMessagesRoute
   BuyerNotificationsRoute: typeof BuyerNotificationsRoute
@@ -622,7 +849,9 @@ interface BuyerRouteChildren {
 
 const BuyerRouteChildren: BuyerRouteChildren = {
   BuyerCartRoute: BuyerCartRoute,
+  BuyerCategoriesRoute: BuyerCategoriesRoute,
   BuyerCheckoutRoute: BuyerCheckoutRoute,
+  BuyerDealsRoute: BuyerDealsRoute,
   BuyerInstallmentsRoute: BuyerInstallmentsRoute,
   BuyerMessagesRoute: BuyerMessagesRoute,
   BuyerNotificationsRoute: BuyerNotificationsRoute,
@@ -649,16 +878,37 @@ const CampusAdminRouteWithChildren = CampusAdminRoute._addFileChildren(
   CampusAdminRouteChildren,
 )
 
+interface SellerRouteChildren {
+  SellerIntelligenceRoute: typeof SellerIntelligenceRoute
+  SellerIndexRoute: typeof SellerIndexRoute
+}
+
+const SellerRouteChildren: SellerRouteChildren = {
+  SellerIntelligenceRoute: SellerIntelligenceRoute,
+  SellerIndexRoute: SellerIndexRoute,
+}
+
+const SellerRouteWithChildren =
+  SellerRoute._addFileChildren(SellerRouteChildren)
+
 interface StudentOsRouteChildren {
+  StudentOsCalendarRoute: typeof StudentOsCalendarRoute
   StudentOsDealsRoute: typeof StudentOsDealsRoute
+  StudentOsEventsRoute: typeof StudentOsEventsRoute
+  StudentOsLostFoundRoute: typeof StudentOsLostFoundRoute
   StudentOsMarketplaceRoute: typeof StudentOsMarketplaceRoute
+  StudentOsOpportunitiesRoute: typeof StudentOsOpportunitiesRoute
   StudentOsResourcesRoute: typeof StudentOsResourcesRoute
   StudentOsIndexRoute: typeof StudentOsIndexRoute
 }
 
 const StudentOsRouteChildren: StudentOsRouteChildren = {
+  StudentOsCalendarRoute: StudentOsCalendarRoute,
   StudentOsDealsRoute: StudentOsDealsRoute,
+  StudentOsEventsRoute: StudentOsEventsRoute,
+  StudentOsLostFoundRoute: StudentOsLostFoundRoute,
   StudentOsMarketplaceRoute: StudentOsMarketplaceRoute,
+  StudentOsOpportunitiesRoute: StudentOsOpportunitiesRoute,
   StudentOsResourcesRoute: StudentOsResourcesRoute,
   StudentOsIndexRoute: StudentOsIndexRoute,
 }
@@ -666,6 +916,20 @@ const StudentOsRouteChildren: StudentOsRouteChildren = {
 const StudentOsRouteWithChildren = StudentOsRoute._addFileChildren(
   StudentOsRouteChildren,
 )
+
+interface SuperRouteChildren {
+  SuperStaffRoute: typeof SuperStaffRoute
+  SuperViewAsRoute: typeof SuperViewAsRoute
+  SuperIndexRoute: typeof SuperIndexRoute
+}
+
+const SuperRouteChildren: SuperRouteChildren = {
+  SuperStaffRoute: SuperStaffRoute,
+  SuperViewAsRoute: SuperViewAsRoute,
+  SuperIndexRoute: SuperIndexRoute,
+}
+
+const SuperRouteWithChildren = SuperRoute._addFileChildren(SuperRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -676,9 +940,10 @@ const rootRouteChildren: RootRouteChildren = {
   DisputeRoute: DisputeRoute,
   FinanceRoute: FinanceRoute,
   LoginRoute: LoginRoute,
-  SellerRoute: SellerRoute,
+  SellerRoute: SellerRouteWithChildren,
+  StaffInviteRoute: StaffInviteRoute,
   StudentOsRoute: StudentOsRouteWithChildren,
-  SuperRoute: SuperRoute,
+  SuperRoute: SuperRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

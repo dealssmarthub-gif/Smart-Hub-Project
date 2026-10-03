@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNaflis } from "@/lib/naflis/store";
+import { ESCROW_HELD_STATES, orderStateLabel } from "@/lib/naflis/orderMachine";
 import { GHS, fmtDate } from "@/lib/naflis/format";
 
 export const Route = createFileRoute("/finance")({
   beforeLoad: () => {
-    const { role } = useNaflis.getState();
-    if (role !== "finance") {
+    if (!useNaflis.getState().enterContext(["finance"])) {
       throw redirect({
         to: "/login",
         search: {
@@ -43,7 +43,7 @@ function FinanceDashboard() {
     [users],
   );
 
-  const refundQueue = orders.filter((o) => o.status === "refund-approved").slice(0, 5);
+  const refundQueue = orders.filter((o) => o.status === "refunded").slice(0, 5);
 
   return (
     <RoleShell
@@ -99,16 +99,16 @@ function FinanceDashboard() {
         </TabsContent>
 
         <TabsContent value="escrow" className="mt-4 space-y-2">
-          {orders.filter((o) => ["escrow-secured", "seller-accepted", "preparing", "out-for-delivery"].includes(o.status)).map((o) => (
+          {orders.filter((o) => ESCROW_HELD_STATES.includes(o.status)).map((o) => (
             <div key={o.id} className="flex items-center justify-between rounded-xl border bg-card p-4">
               <div>
                 <p className="text-xs text-muted-foreground">Order #{o.id.slice(2, 10)} · {fmtDate(o.createdAt)}</p>
-                <p className="font-semibold">{GHS(o.total)} held</p>
+                <p className="font-semibold">{GHS(o.escrowHeld ?? o.total)} held</p>
               </div>
-              <Badge variant="secondary" className="capitalize">{o.status.replaceAll("-", " ")}</Badge>
+              <Badge variant="secondary">{orderStateLabel(o.status)}</Badge>
             </div>
           ))}
-          {orders.filter((o) => ["escrow-secured", "seller-accepted", "preparing", "out-for-delivery"].includes(o.status)).length === 0 && (
+          {orders.filter((o) => ESCROW_HELD_STATES.includes(o.status)).length === 0 && (
             <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">No escrow currently held.</p>
           )}
         </TabsContent>

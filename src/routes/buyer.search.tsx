@@ -10,7 +10,8 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CATEGORIES, useNaflis } from "@/lib/naflis/store";
+import { useNaflis } from "@/lib/naflis/store";
+import { categoryFamily, useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
 import {
@@ -19,7 +20,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/buyer/search")({
-  validateSearch: z.object({ q: z.string().optional() }).parse,
+  validateSearch: z.object({ q: z.string().optional(), cat: z.string().optional() }).parse,
   component: SearchPage,
 });
 
@@ -34,7 +35,8 @@ function SearchPage() {
   const pushNotif = useNaflis((s) => s.pushNotif);
 
   const [q, setQ] = useState(search.q ?? "");
-  const [cat, setCat] = useState<string>("all");
+  const { tree: categoryTree, flat: categoryOptions } = useCategories("mall");
+  const [cat, setCat] = useState<string>(search.cat ?? "all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 25000]);
   const [minDiscount, setMinDiscount] = useState(0);
   const [freeDelivery, setFreeDelivery] = useState(false);
@@ -45,12 +47,14 @@ function SearchPage() {
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
+    // Picking a parent category also matches everything filed under its children.
+    const family = cat === "all" ? null : categoryFamily(categoryTree, cat);
     let r = products.filter((p) => {
       if (query) {
         const hay = `${p.name} ${p.brand} ${p.category} ${p.description}`.toLowerCase();
         if (!hay.includes(query)) return false;
       }
-      if (cat !== "all" && p.category !== cat) return false;
+      if (family && !family.includes(p.category)) return false;
       if (p.price < priceRange[0] || p.price > priceRange[1]) return false;
       const disc = ((p.originalPrice - p.price) / p.originalPrice) * 100;
       if (disc < minDiscount) return false;
@@ -69,7 +73,7 @@ function SearchPage() {
           (a.originalPrice - a.price) / a.originalPrice,
       );
     return r;
-  }, [products, q, cat, priceRange, minDiscount, freeDelivery, verifiedOnly, reserveOnly, installmentOnly, sort]);
+  }, [products, q, cat, categoryTree, priceRange, minDiscount, freeDelivery, verifiedOnly, reserveOnly, installmentOnly, sort]);
 
   useEffect(() => {
     if (q.trim().length > 2) {
@@ -113,7 +117,11 @@ function SearchPage() {
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All categories</SelectItem>
-                {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {categoryOptions.map(({ node, depth }) => (
+                  <SelectItem key={node.id} value={node.name} className={depth > 0 ? "pl-10" : "font-semibold"}>
+                    {node.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -248,7 +256,9 @@ function RequestProduct({ defaultName, onSubmit }: {
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(defaultName ?? "");
-  const [category, setCategory] = useState("Phones");
+  const { names: categoryNames } = useCategories("mall");
+  const [pickedCategory, setCategory] = useState("");
+  const category = pickedCategory || categoryNames[0] || "";
   const [brand, setBrand] = useState("");
   const [specs, setSpecs] = useState("");
   const [priceMin, setPriceMin] = useState(500);
@@ -277,7 +287,7 @@ function RequestProduct({ defaultName, onSubmit }: {
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {categoryNames.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

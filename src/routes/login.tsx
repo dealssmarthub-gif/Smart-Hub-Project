@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { supabase } from "@/lib/supabase";
+import { useNaflis } from "@/lib/naflis/store";
+import { normalizeRole, roleHome } from "@/lib/naflis/roles";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -38,18 +40,17 @@ function LoginPage() {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
           useNaflis.getState().syncUser(session.user);
-          const userRole = session.user.user_metadata?.role || "buyer";
-          const dest = search.redirect || `/${userRole}`;
+          const dest = search.redirect || roleHome(normalizeRole(session.user.user_metadata?.role));
           navigate({ to: dest });
         }
       });
     }
   }, [navigate, search.redirect]);
 
-  const handleDemoLogin = (role: "buyer" | "seller" | "admin") => {
-    useNaflis.getState().switchRole(role);
+  const handleDemoLogin = (role: "buyer" | "seller" | "admin" | "src_head" | "super_admin") => {
+    useNaflis.getState().setRole(role);
     toast.success(`Logged in as demo ${role}!`);
-    const dest = search.redirect || (role === "admin" ? "/admin" : `/${role}`);
+    const dest = search.redirect || roleHome(role);
     navigate({ to: dest });
   };
 
@@ -86,8 +87,7 @@ function LoginPage() {
         } else if (data.user) {
           toast.success("Successfully logged in!");
           useNaflis.getState().syncUser(data.user);
-          const userRole = data.user?.user_metadata?.role || "buyer";
-          const dest = search.redirect || `/${userRole}`;
+          const dest = search.redirect || roleHome(normalizeRole(data.user?.user_metadata?.role));
           navigate({ to: dest });
         }
       } else {
@@ -357,6 +357,12 @@ function LoginPage() {
                 onClick={() => handleDemoLogin("admin")}
               >
                 Demo Admin
+              </Button>
+              <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => handleDemoLogin("src_head")}>
+                Demo SRC (UG)
+              </Button>
+              <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => handleDemoLogin("super_admin")}>
+                Demo Super Admin
               </Button>
             </div>
           </div>

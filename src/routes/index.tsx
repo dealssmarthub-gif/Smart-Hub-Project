@@ -36,9 +36,11 @@ import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { ProductCard } from "@/components/naflis/ProductCard";
+import { roleHome } from "@/lib/naflis/roles";
+import { mapDbProduct } from "@/lib/naflis/mapProduct";
+import { ESCROW_HELD_STATES } from "@/lib/naflis/orderMachine";
 import {
   useNaflis,
-  CATEGORIES,
   CAMPUSES,
   type CampusEvent,
   type Product,
@@ -122,22 +124,14 @@ function Landing() {
           .eq("vendors.status", "approved");
 
         if (data && data.length > 0) {
-          const mapped = data.map((p) => ({
-            id: p.id,
-            storeId: p.vendor_id,
-            name: p.title,
-            image: p.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
-            gallery: p.images || [],
-            description: p.description || "",
-            price: p.price,
-            originalPrice: p.price * 1.25,
-            stock: p.stock,
-            demand: 85,
-            category: p.category,
-            flashSale: true,
-            verifiedDiscount: true,
-            location: "Greater Accra",
-          }));
+          const mapped = data.map((p) =>
+            mapDbProduct(p, {
+              originalPrice: Math.round(Number(p.price) * 1.25),
+              demand: 85,
+              flashSale: { endsAt: Date.now() + 8 * 3_600_000 },
+              location: "Greater Accra",
+            }),
+          );
           setProducts(mapped);
           useNaflis.setState({ products: mapped });
         }
@@ -240,8 +234,8 @@ function Landing() {
   const productsRequestedCount = requests.reduce((a, r) => a + r.interestedBuyers, 0);
   const inEscrowAmount = orders.reduce(
     (acc, o) =>
-      ["escrow-secured", "seller-accepted", "preparing", "out-for-delivery"].includes(o.status)
-        ? acc + o.total
+      ESCROW_HELD_STATES.includes(o.status)
+        ? acc + (o.escrowHeld ?? o.total)
         : acc,
     0
   );
@@ -365,7 +359,7 @@ function Landing() {
                   </span>
                 )}
                 <Button asChild size="sm" variant="outline">
-                  <Link to={role === "admin" || role === "super" ? "/admin" : `/${role}`}>
+                  <Link to={roleHome(role)}>
                     Dashboard
                   </Link>
                 </Button>

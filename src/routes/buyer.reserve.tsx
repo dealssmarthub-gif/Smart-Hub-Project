@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNaflis } from "@/lib/naflis/store";
 import { GHS } from "@/lib/naflis/format";
+import { fromMinor, getPurchaseConfig, quoteReservation, toMinor } from "@/lib/naflis/purchase";
+import { MyReservations } from "@/components/naflis/PaymentPlans";
 
 export const Route = createFileRoute("/buyer/reserve")({
   component: ReservePage,
@@ -11,7 +13,8 @@ export const Route = createFileRoute("/buyer/reserve")({
 
 function ReservePage() {
   const products = useNaflis((s) => s.products);
-  const sample = products.slice(0, 3);
+  const reservable = products.filter((p) => getPurchaseConfig(p).reservation.enabled && p.stock > 0);
+  const sample = (reservable.length ? reservable : products).slice(0, 3);
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border bg-card p-6">
@@ -19,18 +22,18 @@ function ReservePage() {
           <Clock className="h-5 w-5" />
           <span className="text-xs font-semibold uppercase tracking-widest">Reserve & Pay</span>
         </div>
-        <h1 className="mt-2 text-2xl font-bold">Lock in the discount today, pay gradually</h1>
+        <h1 className="mt-2 text-2xl font-bold">Lock in the item and the price today</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          Choose weekly, biweekly, or monthly installments. Your product is reserved from stock and delivered
-          once you complete the plan. No credit check — no risk.
+          Pay a small reservation fee and the seller holds the stock for you until the timer runs out. Complete the
+          purchase before then, or split it into installments on products that offer them. No credit check.
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         {[
-          { title: "1. Pick a product & plan", body: "Choose 4, 8, or 12 installments. Reserve fee is 10% of the total." },
-          { title: "2. Auto-deduct or top up", body: "Wallet, mobile money, or bank account — set it and forget it." },
-          { title: "3. Receive on completion", body: "Once the final installment clears, delivery is scheduled." },
+          { title: "1. Reserve", body: "Pay the seller's reservation fee from your wallet, card or MoMo. Stock is set aside instantly." },
+          { title: "2. Beat the timer", body: "Each product shows how long it's held. The fee usually counts towards the price." },
+          { title: "3. Complete & receive", body: "Pay the balance and the order goes to the seller for dispatch. Lapsed holds release the stock." },
         ].map((s) => (
           <div key={s.title} className="rounded-xl border bg-card p-5">
             <p className="font-semibold">{s.title}</p>
@@ -39,17 +42,7 @@ function ReservePage() {
         ))}
       </div>
 
-      <div className="rounded-2xl border bg-accent p-5">
-        <div className="flex items-center gap-2">
-          <Badge className="bg-success text-success-foreground gap-1">
-            <CheckCircle2 className="h-3 w-3" /> Full workflow ships in Phase 2
-          </Badge>
-        </div>
-        <p className="mt-2 text-sm">
-          The next build phase adds the full Reserve & Pay dashboard: schedule view, early payment, cancellation & refund
-          terms, and automatic wallet deductions.
-        </p>
-      </div>
+      <MyReservations />
 
       <div>
         <h2 className="mb-3 text-lg font-bold">Popular products for Reserve & Pay</h2>
@@ -60,7 +53,12 @@ function ReservePage() {
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-sm font-medium">{p.name}</p>
                 <p className="mt-1 text-sm font-bold">{GHS(p.price)}</p>
-                <p className="text-xs text-muted-foreground">or {GHS(Math.round(p.price / 8))} × 8 weeks</p>
+                {getPurchaseConfig(p).reservation.enabled && (
+                  <p className="text-xs text-muted-foreground">
+                    Reserve for {GHS(fromMinor(quoteReservation(toMinor(p.price), getPurchaseConfig(p).reservation, 0).feeMinor))} ·
+                    held {getPurchaseConfig(p).reservation.durationHours}h
+                  </p>
+                )}
                 <Button asChild size="sm" className="mt-2">
                   <Link to="/buyer/product/$id" params={{ id: p.id }}>Reserve</Link>
                 </Button>

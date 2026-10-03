@@ -3,6 +3,7 @@ import { Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNaflis } from "@/lib/naflis/store";
+import { orderStateLabel } from "@/lib/naflis/orderMachine";
 import { GHS, fmtDate } from "@/lib/naflis/format";
 
 export const Route = createFileRoute("/buyer/orders")({
@@ -40,7 +41,7 @@ function OrdersPage() {
               <p className="mt-1 font-semibold">{o.items.length} item(s) · {GHS(o.total)}</p>
             </div>
             <Badge variant="secondary" className="capitalize">
-              {o.status.replaceAll("-", " ")}
+              {orderStateLabel(o.status)}
             </Badge>
           </div>
           <div className="mt-3 flex gap-2">

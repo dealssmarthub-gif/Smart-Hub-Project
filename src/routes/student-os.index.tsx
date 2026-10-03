@@ -21,7 +21,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useNaflis, CAMPUSES, STUDENT_CATEGORIES, type StudentListing } from "@/lib/naflis/store";
+import { useNaflis, CAMPUSES, type StudentListing } from "@/lib/naflis/store";
+import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
 
@@ -41,6 +42,7 @@ function StudentOSDashboard() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const { names: studentCategories } = useCategories("student");
 
   // Filter listings based on campus, search query, and category
   const filteredListings = useMemo(() => {
@@ -320,7 +322,7 @@ function StudentOSDashboard() {
 
         {/* Category Pills */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {STUDENT_CATEGORIES.map((cat) => (
+          {["All", ...studentCategories].map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}

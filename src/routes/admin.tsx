@@ -6,12 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { useNaflis } from "@/lib/naflis/store";
+import { ORDER_STATES, orderStateLabel } from "@/lib/naflis/orderMachine";
 import { GHS, compact, fmtDate, fmtTime } from "@/lib/naflis/format";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: () => {
-    const { role } = useNaflis.getState();
-    if (role !== "admin" && role !== "super") {
+    if (!useNaflis.getState().enterContext(["admin", "super_admin"])) {
       throw redirect({
         to: "/login",
         search: {
@@ -95,19 +95,11 @@ function AdminDashboard() {
               <p className="font-semibold">Order pipeline</p>
             </div>
             <ul className="mt-3 space-y-2 text-sm">
-              {[
-                "escrow-secured",
-                "seller-accepted",
-                "preparing",
-                "out-for-delivery",
-                "delivered",
-                "funds-released",
-                "refund-approved",
-              ].map((status) => {
+              {ORDER_STATES.map((status) => {
                 const n = orders.filter((o) => o.status === status).length;
                 return (
                   <li key={status} className="flex items-center justify-between">
-                    <span className="capitalize">{status.replaceAll("-", " ")}</span>
+                    <span>{orderStateLabel(status)}</span>
                     <Badge variant="secondary">{n}</Badge>
                   </li>
                 );

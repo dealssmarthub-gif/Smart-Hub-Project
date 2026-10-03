@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
 import {
   GraduationCap,
@@ -27,6 +27,12 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
+import { ContextSwitcher } from "@/components/naflis/ContextSwitcher";
+import { SrcEventsTickets, TicketCheckIn } from "@/components/naflis/SrcConsole";
+import { publishCampusEvent, publishCampusResource, removeCampusEvent, removeCampusResource, togglePinCampusEvent } from "@/services/campusContent";
+import { scopedCampuses } from "@/lib/naflis/permissions";
+import { resolveRoles } from "@/lib/naflis/roles";
+import { useShallow } from "zustand/react/shallow";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -43,12 +49,32 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/campus-admin")({
+  // Staff only: SRC executives, deans / institutional staff, and super admins.
+  beforeLoad: () => {
+    if (!useNaflis.getState().enterContext(["src_head", "dean", "super_admin"])) {
+      throw redirect({ to: "/login", search: { redirect: "/campus-admin" } });
+    }
+  },
   component: CampusAdminPortal,
 });
 
 export function CampusAdminPortal() {
-  const selectedCampus = useNaflis((s) => s.selectedCampus);
+  const activeCampus = useNaflis((s) => s.selectedCampus);
   const setSelectedCampus = useNaflis((s) => s.setSelectedCampus);
+  const hasPermission = useNaflis((s) => s.hasPermission);
+  // Campuses this user may manage. Content from any other institution is never shown here.
+  const scope = useNaflis(
+    useShallow((s) => {
+      const isSuper = !s.impersonation && resolveRoles(s.users.find((u) => u.id === s.currentUserId), s.stores).includes("super_admin");
+      return scopedCampuses({ userId: s.currentUserId, isSuperAdmin: isSuper }, s.staffGrants);
+    }),
+  );
+  const selectedCampus = scope.includes(activeCampus) ? activeCampus : scope[0] ?? "";
+  const inScope = (campus: string) => scope.includes(campus);
+  const canAnnounce = hasPermission("student.announcements.create", selectedCampus);
+  const canUpload = hasPermission("student.resources.manage", selectedCampus);
+  const publishCampuses = scope.filter((c) => hasPermission("student.announcements.create", c));
+  const uploadCampuses = scope.filter((c) => hasPermission("student.resources.manage", c));
   const localEvents = useNaflis((s) => s.campusEvents);
   const addCampusEvent = useNaflis((s) => s.addCampusEvent);
   const togglePinEvent = useNaflis((s) => s.togglePinEvent);
@@ -71,9 +97,7 @@ export function CampusAdminPortal() {
   const [eventTitle, setEventTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventVenue, setEventVenue] = useState("");
-  const [eventCampus, setEventCampus] = useState(
-    selectedCampus !== "All Campuses" ? selectedCampus : "UG - Legon"
-  );
+  const [eventCampus, setEventCampus] = useState(selectedCampus);
   const [eventOrganizer, setEventOrganizer] = useState("Official SRC");
   const [eventDescription, setEventDescription] = useState("");
   const [eventPinned, setEventPinned] = useState(true);
@@ -87,9 +111,7 @@ export function CampusAdminPortal() {
   const [resType, setResType] = useState<string>("Lecture Slides");
   const [resCourse, setResCourse] = useState("");
   const [resDept, setResDept] = useState("");
-  const [resCampus, setResCampus] = useState(
-    selectedCampus !== "All Campuses" ? selectedCampus : "UG - Legon"
-  );
+  const [resCampus, setResCampus] = useState(selectedCampus);
   const [resDescription, setResDescription] = useState("");
   const [resFile, setResFile] = useState<File | null>(null);
   const [isSubmittingRes, setIsSubmittingRes] = useState(false);
@@ -167,10 +189,7 @@ export function CampusAdminPortal() {
   // Filtered Events
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
-      const matchCampus =
-        selectedCampus === "All Campuses" ||
-        e.campus === "All Campuses" ||
-        e.campus === selectedCampus;
+      const matchCampus = inScope(e.campus) && e.campus === selectedCampus;
 
       const matchSearch =
         !eventSearch.trim() ||
@@ -180,15 +199,12 @@ export function CampusAdminPortal() {
 
       return matchCampus && matchSearch;
     });
-  }, [events, selectedCampus, eventSearch]);
+  }, [events, selectedCampus, eventSearch, scope]);
 
   // Filtered Resources
   const filteredResources = useMemo(() => {
     return resources.filter((r) => {
-      const matchCampus =
-        selectedCampus === "All Campuses" ||
-        r.campus === "All Campuses" ||
-        r.campus === selectedCampus;
+      const matchCampus = inScope(r.campus) && r.campus === selectedCampus;
 
       const matchSearch =
         !resSearch.trim() ||
@@ -198,16 +214,11 @@ export function CampusAdminPortal() {
 
       return matchCampus && matchSearch;
     });
-  }, [resources, selectedCampus, resSearch]);
+  }, [resources, selectedCampus, resSearch, scope]);
 
   // Demand aggregation for campus
   const campusDemandList = useMemo(() => {
-    const list = demandLogs.filter(
-      (d) =>
-        selectedCampus === "All Campuses" ||
-        d.campus === selectedCampus ||
-        d.campus === "General"
-    );
+    const list = demandLogs.filter((d) => d.campus === selectedCampus);
     const countMap: Record<string, number> = {};
     for (const item of list) {
       const q = item.searchQuery.toLowerCase().trim();
@@ -265,6 +276,10 @@ export function CampusAdminPortal() {
       toast.error("Please provide an announcement title.");
       return;
     }
+    if (!hasPermission("student.announcements.create", eventCampus)) {
+      toast.error(`You can't publish announcements for ${eventCampus}.`);
+      return;
+    }
 
     setIsSubmittingEvent(true);
     try {
@@ -276,36 +291,18 @@ export function CampusAdminPortal() {
         bannerUrl = await uploadToCampusDocs(eventBannerFile);
       }
 
-      // Write to Supabase campus_events
-      if (supabase) {
-        const { error } = await supabase.from("campus_events").insert({
-          title: eventTitle.trim(),
-          description: eventDescription.trim(),
-          event_date: eventDate ? new Date(eventDate).toISOString() : new Date().toISOString(),
-          venue: eventVenue.trim() || "Main Campus Auditorium",
-          banner_url: bannerUrl,
-          campus: eventCampus,
-          pinned: eventPinned,
-          organizer: eventOrganizer.trim() || "Official SRC",
-        });
-
-        if (error) {
-          console.warn("Supabase event insert note:", error.message);
-        }
-      }
-
-      // Add to store
-      const newEvent = addCampusEvent({
+      // Server (scoped RLS) first when signed in, then the local store; both refuse with 403.
+      const newEvent = await publishCampusEvent({
+        kind: "announcement",
         title: eventTitle.trim(),
         description: eventDescription.trim() || "Official notice published for campus students.",
-        eventDate: eventDate || new Date().toISOString(),
+        eventDate: eventDate ? new Date(eventDate).toISOString() : new Date().toISOString(),
         venue: eventVenue.trim() || "Main Campus Auditorium",
         bannerUrl,
         campus: eventCampus,
         pinned: eventPinned,
         organizer: eventOrganizer.trim() || "Official SRC",
       });
-
       setEvents((prev) => [newEvent, ...prev]);
 
       toast.success(
@@ -336,6 +333,10 @@ export function CampusAdminPortal() {
       toast.error("Please fill in the title and course code.");
       return;
     }
+    if (!hasPermission("student.resources.manage", resCampus)) {
+      toast.error(`You can't upload resources for ${resCampus}.`);
+      return;
+    }
 
     setIsSubmittingRes(true);
     try {
@@ -349,28 +350,7 @@ export function CampusAdminPortal() {
         fileUrl = await uploadToCampusDocs(resFile);
       }
 
-      // Write to Supabase campus_resources
-      if (supabase) {
-        const { error } = await supabase.from("campus_resources").insert({
-          title: resTitle.trim(),
-          description: resDescription.trim(),
-          resource_type: resType,
-          course_code: resCourse.trim().toUpperCase(),
-          department: resDept.trim() || "General Academics",
-          campus: resCampus,
-          file_url: fileUrl,
-          file_name: fileName,
-          file_size: fileSize,
-          downloads: 0,
-        });
-
-        if (error) {
-          console.warn("Supabase resource insert note:", error.message);
-        }
-      }
-
-      // Add to store
-      const newRes = addCampusResource({
+      const newRes = await publishCampusResource({
         title: resTitle.trim(),
         description:
           resDescription.trim() ||
@@ -405,15 +385,16 @@ export function CampusAdminPortal() {
   };
 
   const handleTogglePin = async (e: CampusEvent) => {
-    togglePinEvent(e.id);
+    try {
+      await togglePinCampusEvent(e.id);
+    } catch (err: any) {
+      toast.error(err?.message ?? "Couldn't update this notice.");
+      return;
+    }
     const newStatus = !e.pinned;
     setEvents((prev) =>
       prev.map((item) => (item.id === e.id ? { ...item, pinned: newStatus } : item))
     );
-
-    if (supabase) {
-      await supabase.from("campus_events").update({ pinned: newStatus }).eq("id", e.id);
-    }
 
     toast.success(
       newStatus
@@ -423,20 +404,24 @@ export function CampusAdminPortal() {
   };
 
   const handleDeleteEvent = async (id: string) => {
-    deleteCampusEvent(id);
-    setEvents((prev) => prev.filter((item) => item.id !== id));
-    if (supabase) {
-      await supabase.from("campus_events").delete().eq("id", id);
+    try {
+      await removeCampusEvent(id);
+    } catch (err: any) {
+      toast.error(err?.message ?? "Couldn't remove this notice.");
+      return;
     }
+    setEvents((prev) => prev.filter((item) => item.id !== id));
     toast.success("Event notice removed.");
   };
 
   const handleDeleteResource = async (id: string) => {
-    deleteCampusResource(id);
-    setResources((prev) => prev.filter((item) => item.id !== id));
-    if (supabase) {
-      await supabase.from("campus_resources").delete().eq("id", id);
+    try {
+      await removeCampusResource(id);
+    } catch (err: any) {
+      toast.error(err?.message ?? "Couldn't remove this resource.");
+      return;
     }
+    setResources((prev) => prev.filter((item) => item.id !== id));
     toast.success("Academic resource removed.");
   };
 
@@ -463,7 +448,7 @@ export function CampusAdminPortal() {
                 onChange={(e) => setSelectedCampus(e.target.value)}
                 className="h-9 rounded-lg border border-border bg-card pl-8 pr-7 text-xs font-semibold text-foreground focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-sm transition"
               >
-                {CAMPUSES.map((c) => (
+                {scope.map((c) => (
                   <option key={c} value={c}>
                     {c}
                   </option>
@@ -472,6 +457,7 @@ export function CampusAdminPortal() {
             </div>
 
             <ThemeToggle />
+            <ContextSwitcher />
 
             <Button asChild variant="ghost" size="sm" className="text-xs">
               <Link to="/">
@@ -493,7 +479,7 @@ export function CampusAdminPortal() {
                   {selectedCampus}
                 </Badge>
                 <Badge className="bg-white/20 text-white border-white/20 text-xs gap-1">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-300" /> Verified Executive
+                  <CheckCircle2 className="h-3 w-3 text-emerald-300" /> Scoped to {scope.length === 1 ? scope[0] : `${scope.length} campuses`}
                 </Badge>
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight">
@@ -507,13 +493,15 @@ export function CampusAdminPortal() {
 
             <div className="flex flex-wrap items-center gap-3 shrink-0">
               <Button
-                onClick={() => setShowEventModal(true)}
+                onClick={() => { setEventCampus(selectedCampus); setShowEventModal(true); }}
+                disabled={!canAnnounce}
                 className="bg-white text-navy hover:bg-white/90 font-bold text-xs sm:text-sm shadow-md gap-1.5"
               >
                 <Plus className="h-4 w-4 text-sky-600" /> Publish Announcement
               </Button>
               <Button
-                onClick={() => setShowResourceModal(true)}
+                onClick={() => { setResCampus(selectedCampus); setShowResourceModal(true); }}
+                disabled={!canUpload}
                 className="bg-sky-500 hover:bg-sky-400 text-white font-bold text-xs sm:text-sm shadow-md gap-1.5"
               >
                 <UploadCloud className="h-4 w-4" /> Upload Lecture Slides
@@ -585,6 +573,14 @@ export function CampusAdminPortal() {
             <TabsTrigger value="resources" className="text-xs font-semibold gap-1.5">
               <FileText className="h-3.5 w-3.5 text-sky-500" />
               <span>Academic Slides & Past Questions</span>
+            </TabsTrigger>
+            <TabsTrigger value="tickets" className="text-xs font-semibold gap-1.5">
+              <Tag className="h-3.5 w-3.5 text-sky-500" />
+              <span>Events & Tickets</span>
+            </TabsTrigger>
+            <TabsTrigger value="checkin" className="text-xs font-semibold gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-sky-500" />
+              <span>Ticket Check-in</span>
             </TabsTrigger>
             <TabsTrigger value="intelligence" className="text-xs font-semibold gap-1.5">
               <BarChart3 className="h-3.5 w-3.5 text-sky-500" />
@@ -838,6 +834,13 @@ export function CampusAdminPortal() {
             )}
           </TabsContent>
 
+          <TabsContent value="tickets" className="space-y-4">
+            <SrcEventsTickets campus={selectedCampus} />
+          </TabsContent>
+          <TabsContent value="checkin" className="space-y-4">
+            <TicketCheckIn campus={selectedCampus} />
+          </TabsContent>
+
           {/* TAB 3: Demand Intelligence Logs */}
           <TabsContent value="intelligence" className="space-y-4">
             <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-4">
@@ -925,7 +928,7 @@ export function CampusAdminPortal() {
                     onChange={(e) => setEventCampus(e.target.value)}
                     className="w-full h-9 rounded-lg border bg-background px-2.5 text-xs font-semibold focus:border-sky-500 focus:outline-none"
                   >
-                    {CAMPUSES.filter((c) => c !== "All Campuses").map((c) => (
+                    {publishCampuses.map((c) => (
                       <option key={c} value={c}>
                         {c}
                       </option>
@@ -1144,7 +1147,7 @@ export function CampusAdminPortal() {
                     onChange={(e) => setResCampus(e.target.value)}
                     className="w-full h-9 rounded-lg border bg-background px-2.5 text-xs font-semibold focus:border-sky-500 focus:outline-none"
                   >
-                    {CAMPUSES.filter((c) => c !== "All Campuses").map((c) => (
+                    {uploadCampuses.map((c) => (
                       <option key={c} value={c}>
                         {c}
                       </option>

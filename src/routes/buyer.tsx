@@ -4,8 +4,7 @@ import { useNaflis } from "@/lib/naflis/store";
 
 export const Route = createFileRoute("/buyer")({
   beforeLoad: () => {
-    const { role } = useNaflis.getState();
-    if (role !== "buyer") {
+    if (!useNaflis.getState().enterContext(["buyer"])) {
       throw redirect({
         to: "/login",
         search: {

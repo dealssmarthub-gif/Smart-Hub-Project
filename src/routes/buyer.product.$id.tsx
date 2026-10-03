@@ -19,6 +19,9 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
+import { mapDbProduct } from "@/lib/naflis/mapProduct";
+import { PurchaseOptions } from "@/components/naflis/PurchaseOptions";
+import type { Product, Store } from "@/lib/naflis/store";
 
 export const Route = createFileRoute("/buyer/product/$id")({
   component: ProductDetail,
@@ -34,41 +37,34 @@ function ProductDetail() {
   const setPriceAlert = useNaflis((s) => s.setPriceAlert);
   const products = useNaflis((s) => s.products);
 
-  const [dbProduct, setDbProduct] = useState<any>(null);
-  const [dbStore, setDbStore] = useState<any>(null);
+  const [dbProduct, setDbProduct] = useState<Product | null>(null);
+  const [dbStore, setDbStore] = useState<Store | null>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
+    // Demo / seeded products live only in the local store.
+    const loadLocal = () => {
+      const s = useNaflis.getState();
+      const local = s.products.find((p) => p.id === id) ?? null;
+      setDbProduct(local);
+      setDbStore(local ? s.stores.find((st) => st.id === local.storeId) ?? null : null);
+    };
+
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        if (!supabase) return loadLocal();
+        const { data } = await supabase
           .from("products")
           .select("*, vendors(*)")
           .eq("id", id)
-          .single();
+          .maybeSingle();
 
-        if (data) {
-          const mapped = {
-            id: data.id,
-            storeId: data.vendor_id,
-            name: data.title,
-            image: data.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
-            gallery: data.images || [],
-            description: data.description || "",
-            price: data.price,
-            originalPrice: data.price * 1.2,
-            stock: data.stock,
-            demand: 75,
-            category: data.category,
-            priceHistory: [
-              { date: "2026-07-01", price: Math.round(data.price * 1.15) },
-              { date: "2026-07-05", price: Math.round(data.price * 1.10) },
-              { date: "2026-07-10", price: Math.round(data.price * 1.05) },
-              { date: "2026-07-15", price: data.price },
-            ]
-          };
+        if (!data) return loadLocal();
+        {
+          const existing = useNaflis.getState().products.find((p) => p.id === data.id);
+          const mapped = mapDbProduct(data, existing ? { rating: existing.rating, reviews: existing.reviews } : {});
           setDbProduct(mapped);
 
           // Sync product to Zustand store if not already present
@@ -92,12 +88,13 @@ function ProductDetail() {
               followers: 0,
               location: "Accra",
               categories: [data.category],
-              subscription: "starter"
+              subscription: "starter",
             });
           }
         }
       } catch (err) {
         console.error("Error loading product details:", err);
+        loadLocal();
       } finally {
         setLoading(false);
       }
@@ -196,6 +193,14 @@ function ProductDetail() {
             </div>
           )}
 
+          <PurchaseOptions
+            product={product}
+            onChoose={(method) => {
+              addToCart(product.id, 1, undefined, method);
+              navigate({ to: "/buyer/checkout" });
+            }}
+          />
+
           {/* Actions */}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Button
@@ -218,16 +223,6 @@ function ProductDetail() {
               }}
             >
               Add to cart
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/buyer/reserve">
-                <Clock className="mr-1 h-4 w-4" /> Reserve & Pay
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/buyer/installments">
-                <TrendingUp className="mr-1 h-4 w-4" /> Pay Later
-              </Link>
             </Button>
             <Button variant="ghost" onClick={() => { toggleWishlist(product.id); toast.success(inWishlist ? "Removed" : "Wishlisted"); }}>
               <Heart className={`mr-1 h-4 w-4 ${inWishlist ? "fill-error text-error" : ""}`} /> Wishlist
@@ -277,7 +272,7 @@ function ProductDetail() {
             {Object.entries(product.specs).map(([k, v]) => (
               <div key={k} className="flex justify-between border-b py-1">
                 <span className="text-muted-foreground">{k}</span>
-                <span className="font-medium">{v}</span>
+                <span className="font-medium">{String(v)}</span>
               </div>
             ))}
           </div>

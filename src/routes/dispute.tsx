@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useNaflis } from "@/lib/naflis/store";
+import { DISPUTABLE_STATES } from "@/lib/naflis/orderMachine";
+import { runOrderTransition } from "@/services/orderService";
 import { GHS, fmtDate, uid } from "@/lib/naflis/format";
 
 export const Route = createFileRoute("/dispute")({
   beforeLoad: () => {
-    const { role } = useNaflis.getState();
-    if (role !== "dispute") {
+    if (!useNaflis.getState().enterContext(["dispute"])) {
       throw redirect({
         to: "/login",
         search: {
@@ -30,7 +31,7 @@ function DisputeDashboard() {
   const users = useNaflis((s) => s.users);
 
   const eligible = useMemo(
-    () => orders.filter((o) => ["delivered", "funds-released", "out-for-delivery"].includes(o.status) && !disputes.some((d) => d.orderId === o.id)),
+    () => orders.filter((o) => DISPUTABLE_STATES.includes(o.status) && !disputes.some((d) => d.orderId === o.id)),
     [orders, disputes],
   );
 
@@ -38,15 +39,17 @@ function DisputeDashboard() {
   const resolved = disputes.filter((d) => d.status === "resolved");
 
   const openDisputeAction = useNaflis((s) => s.openDispute);
-  function seedDispute(orderId: string) {
-    const d = openDisputeAction({
-      orderId,
-      reason: "Item not as described",
-      description: "Buyer reports the item differs from listing photos. Requesting review.",
-      evidence: ["photo-1.jpg", "photo-2.jpg", "delivery-proof.pdf"],
-    });
-    if (d) toast.success("Dispute filed — escrow frozen, all parties notified");
-    else toast.error("Order already has an open dispute");
+  async function seedDispute(orderId: string) {
+    const res = await runOrderTransition(orderId, "disputed", () =>
+      openDisputeAction({
+        orderId,
+        reason: "Item not as described",
+        description: "Buyer reports the item differs from listing photos. Requesting review.",
+        evidence: ["photo-1.jpg", "photo-2.jpg", "delivery-proof.pdf"],
+      }),
+    );
+    if (res.ok) toast.success("Dispute filed — escrow frozen, all parties notified");
+    else toast.error(res.message);
   }
 
   return (
@@ -100,9 +103,17 @@ function DisputeCard({ dispute, order, buyerName }: { dispute: ReturnType<typeof
   const resolveDispute = useNaflis((s) => s.resolveDispute);
   const resolved = dispute.status === "resolved";
 
-  function resolve(kind: "full-refund" | "release" | "split" | "escalate") {
-    resolveDispute(dispute.id, kind, { splitPct, note: note || undefined });
-    toast.success(kind === "escalate" ? "Escalated to administrator" : `Dispute resolved · ${kind.replace("-", " ")}`);
+  async function resolve(kind: "full-refund" | "release" | "split" | "escalate") {
+    const apply = () => resolveDispute(dispute.id, kind, { splitPct, note: note || undefined });
+    if (kind === "escalate") {
+      apply();
+      toast.success("Escalated to administrator");
+      return;
+    }
+    // Split settlements are applied locally; the server records the order as completed.
+    const res = await runOrderTransition(dispute.orderId, kind === "full-refund" ? "refunded" : "completed", apply, note || undefined);
+    if (res.ok) toast.success(`Dispute resolved · ${kind.replace("-", " ")}`);
+    else toast.error(res.message);
   }
 
 

@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
+import { ContextSwitcher } from "@/components/naflis/ContextSwitcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNaflis } from "@/lib/naflis/store";
@@ -35,6 +36,7 @@ export function RoleShell({
               <Link to="/"><ArrowLeft className="mr-1 h-4 w-4" /> Landing</Link>
             </Button>
             <ThemeToggle />
+            <ContextSwitcher />
             <Button
               variant="outline"
               size="sm"

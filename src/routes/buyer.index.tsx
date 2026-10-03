@@ -4,9 +4,11 @@ import { Flame, Zap, Package, BadgePercent, Bell, Clock, TrendingUp } from "luci
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/naflis/ProductCard";
-import { CATEGORIES, useNaflis } from "@/lib/naflis/store";
+import { useNaflis } from "@/lib/naflis/store";
+import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { supabase } from "@/lib/supabase";
+import { mapDbProduct } from "@/lib/naflis/mapProduct";
 
 export const Route = createFileRoute("/buyer/")({
   component: BuyerHome,
@@ -18,33 +20,15 @@ function BuyerHome() {
 
   useEffect(() => {
     const fetchApprovedProducts = async () => {
+      if (!supabase) return;
       try {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("products")
           .select("*, vendors!inner(status, store_name, logo_url, description)")
           .eq("vendors.status", "approved");
 
         if (data && data.length > 0) {
-          const mapped = data.map((p) => ({
-            id: p.id,
-            storeId: p.vendor_id,
-            name: p.title,
-            image: p.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
-            gallery: p.images || [],
-            description: p.description || "",
-            price: p.price,
-            originalPrice: p.price * 1.2,
-            stock: p.stock,
-            demand: 75,
-            category: p.category,
-            flashSale: true,
-            priceHistory: [
-              { date: "2026-07-01", price: Math.round(p.price * 1.15) },
-              { date: "2026-07-05", price: Math.round(p.price * 1.10) },
-              { date: "2026-07-10", price: Math.round(p.price * 1.05) },
-              { date: "2026-07-15", price: p.price },
-            ]
-          }));
+          const mapped = data.map((p) => mapDbProduct(p, { flashSale: { endsAt: Date.now() + 8 * 3_600_000 } }));
           setProducts(mapped);
           useNaflis.setState({ products: mapped });
         }
@@ -55,6 +39,7 @@ function BuyerHome() {
     fetchApprovedProducts();
   }, []);
   const promos = useNaflis((s) => s.promos);
+  const { tree: categories } = useCategories("mall");
   const user = useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
 
   const flash = useMemo(() => products.filter((p) => p.flashSale).slice(0, 4), [products]);
@@ -99,17 +84,20 @@ function BuyerHome() {
 
       {/* Category shortcuts */}
       <section>
-        <h2 className="mb-3 text-lg font-bold">Categories</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-bold">Categories</h2>
+          <Link to="/buyer/categories" className="text-sm text-sky-500 hover:underline">All categories →</Link>
+        </div>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-6">
-          {CATEGORIES.slice(0, 12).map((c) => (
+          {categories.slice(0, 12).map((c) => (
             <Link
-              key={c}
+              key={c.id}
               to="/buyer/search"
-              search={{ q: c }}
+              search={{ cat: c.name }}
               className="rounded-lg border bg-card px-3 py-2 text-center text-xs font-medium transition hover:border-sky-500"
             >
               <Package className="mx-auto mb-1 h-4 w-4 text-sky-500" />
-              {c}
+              {c.name}
             </Link>
           ))}
         </div>

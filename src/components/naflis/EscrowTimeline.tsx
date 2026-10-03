@@ -1,4 +1,5 @@
 import type { OrderEvent } from "@/lib/naflis/store";
+import { orderStateLabel } from "@/lib/naflis/orderMachine";
 import { Check, Circle } from "lucide-react";
 
 export function EscrowTimeline({ events }: { events: OrderEvent[] }) {
@@ -19,7 +20,7 @@ export function EscrowTimeline({ events }: { events: OrderEvent[] }) {
               {i < events.length - 1 && <span className="mt-1 h-6 w-px bg-border" />}
             </div>
             <div className="flex-1 pb-2">
-              <p className="text-sm font-medium capitalize">{String(e.status).replaceAll("-", " ")}</p>
+              <p className="text-sm font-medium">{orderStateLabel(String(e.status))}</p>
               <p className="text-xs text-muted-foreground">{e.note}</p>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
                 {new Date(e.at).toLocaleString("en-GH")}

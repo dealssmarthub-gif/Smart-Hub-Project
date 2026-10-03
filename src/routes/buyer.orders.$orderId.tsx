@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EscrowTimeline } from "@/components/naflis/EscrowTimeline";
 import { useNaflis } from "@/lib/naflis/store";
+import { nextHappyState, orderStateLabel } from "@/lib/naflis/orderMachine";
+import { PURCHASE_METHOD_LABEL } from "@/lib/naflis/purchase";
+import { runOrderTransition } from "@/services/orderService";
 import { GHS, fmtDate } from "@/lib/naflis/format";
 import { toast } from "sonner";
 
@@ -27,6 +30,7 @@ function OrderDetail() {
     );
   }
 
+  const simulatedNext = order.status === "awaiting_payment" ? null : nextHappyState(order.status);
   const items = order.items.map((i) => ({ ...i, product: products.find((p) => p.id === i.productId)! }));
 
   return (
@@ -38,7 +42,7 @@ function OrderDetail() {
               <p className="text-xs text-muted-foreground">Order #{order.id.slice(2, 10)}</p>
               <p className="text-lg font-bold">Placed {fmtDate(order.createdAt)}</p>
             </div>
-            <Badge className="capitalize" variant="secondary">{order.status.replaceAll("-", " ")}</Badge>
+            <Badge variant="secondary">{orderStateLabel(order.status)}</Badge>
           </div>
         </div>
 
@@ -50,7 +54,10 @@ function OrderDetail() {
                 <img src={i.product?.image} alt="" className="h-14 w-14 rounded object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{i.product?.name}</p>
-                  <p className="text-xs text-muted-foreground">Qty {i.qty} · {GHS(i.price)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Qty {i.qty} · {GHS(i.price)}
+                    {i.method && i.method !== "full" ? ` · ${PURCHASE_METHOD_LABEL[i.method]}` : ""}
+                  </p>
                 </div>
                 <span className="text-sm font-semibold">{GHS(i.price * i.qty)}</span>
               </div>
@@ -63,13 +70,16 @@ function OrderDetail() {
           <EscrowTimeline events={order.timeline} />
 
           <div className="mt-5 flex flex-wrap gap-2">
-            {order.status !== "funds-released" && order.status !== "delivered" && (
+            {/* Demo-only shortcut through the fulfilment path; server-backed orders move via their real actors. */}
+            {!order.serverBacked && simulatedNext && simulatedNext !== "completed" && (
               <Button
                 variant="outline" size="sm"
                 onClick={() => {
-                  const next = order.status === "escrow-secured" ? "seller-accepted" : order.status === "seller-accepted" ? "preparing" : order.status === "preparing" ? "out-for-delivery" : "delivered";
-                  advance(order.id, next as any, `Simulated: order moved to ${next}`);
-                  toast.success(`Order advanced to ${next.replaceAll("-", " ")}`);
+                  if (advance(order.id, simulatedNext, `Simulated: order moved to ${orderStateLabel(simulatedNext)}`, "admin")) {
+                    toast.success(`Order advanced to ${orderStateLabel(simulatedNext).toLowerCase()}`);
+                  } else {
+                    toast.error("That step is blocked (for example, dispatch waits on the payment plan).");
+                  }
                 }}
               >
                 <RefreshCw className="mr-1 h-4 w-4" /> Simulate next status
@@ -77,9 +87,12 @@ function OrderDetail() {
             )}
             {order.status === "delivered" && (
               <Button
-                onClick={() => {
-                  advance(order.id, "funds-released", "Buyer confirmed delivery — escrow released to seller");
-                  pushNotif({ userId: "u_buyer1", type: "escrow", title: "Escrow released", body: "Funds released to seller — thanks for confirming." });
+                onClick={async () => {
+                  const res = await runOrderTransition(order.id, "completed", () =>
+                    advance(order.id, "completed", "Buyer confirmed delivery — escrow released to seller", "buyer"),
+                  );
+                  if (!res.ok) return toast.error(res.message);
+                  pushNotif({ userId: order.buyerId, type: "escrow", title: "Escrow released", body: "Funds released to seller — thanks for confirming." });
                   toast.success("Delivery confirmed. Funds released to seller.");
                 }}
               >
@@ -105,9 +118,18 @@ function OrderDetail() {
           <Row label="Escrow fee" value={GHS(order.escrowFee)} />
         </div>
         <div className="flex items-center justify-between border-t pt-3 font-bold">
-          <span>Total paid</span>
+          <span>Order total</span>
           <span>{GHS(order.total)}</span>
         </div>
+        {order.amountPaid !== undefined && (
+          <div className="space-y-1 text-sm">
+            <Row label="Paid so far" value={GHS(order.amountPaid)} />
+            {(order.amountOutstanding ?? 0) > 0 && <Row label="Still owed" value={GHS(order.amountOutstanding!)} />}
+            {order.deliveryUnlocked === false && (
+              <p className="rounded-lg bg-warning/10 p-2 text-xs text-warning">Delivery unlocks once your payment plan terms are met.</p>
+            )}
+          </div>
+        )}
         <div className="rounded-lg bg-accent/50 p-3 text-xs text-muted-foreground">
           Payment method: <b className="text-foreground capitalize">{order.paymentOption}</b>
         </div>

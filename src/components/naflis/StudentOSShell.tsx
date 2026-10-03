@@ -4,6 +4,10 @@ import {
   Store,
   BadgePercent,
   BookOpen,
+  CalendarDays,
+  Briefcase,
+  SearchCheck,
+  Ticket,
   PlusCircle,
   Building2,
   ShieldCheck,
@@ -13,17 +17,24 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
+import { ContextSwitcher } from "@/components/naflis/ContextSwitcher";
+import { MobileBottomNav } from "@/components/naflis/MobileBottomNav";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNaflis, CAMPUSES } from "@/lib/naflis/store";
 import { ListStudentItemModal } from "@/components/naflis/ListStudentItemModal";
 import { StudentVerificationModal } from "@/components/naflis/StudentVerificationModal";
+import { CampusContextBar, CampusSwitchPrompt } from "@/components/naflis/CampusContext";
 
 const TABS = [
   { to: "/student-os", label: "Hub Overview", icon: GraduationCap, exact: true },
   { to: "/student-os/marketplace", label: "Campus Marketplace", icon: Store },
   { to: "/student-os/deals", label: "Student Deals", icon: BadgePercent },
   { to: "/student-os/resources", label: "Resource Hub & Notes", icon: BookOpen },
+  { to: "/student-os/calendar", label: "Academic Calendar", icon: CalendarDays },
+  { to: "/student-os/events", label: "Events & Tickets", icon: Ticket },
+  { to: "/student-os/opportunities", label: "Opportunities", icon: Briefcase },
+  { to: "/student-os/lost-found", label: "Lost & Found", icon: SearchCheck },
   { to: "/campus-admin", label: "Institutional / SRC Access", icon: Building2 },
 ];
 
@@ -37,7 +48,7 @@ export function StudentOSShell() {
   const role = useNaflis((s) => s.role);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background pb-20 text-foreground md:pb-0">
       {/* Top Header */}
       <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
@@ -50,21 +61,7 @@ export function StudentOSShell() {
 
           {/* Campus Selector Dropdown */}
           <div className="flex items-center gap-2">
-            <div className="relative flex items-center">
-              <Building2 className="pointer-events-none absolute left-2.5 h-4 w-4 text-sky-500" />
-              <select
-                aria-label="Campus Selector"
-                value={selectedCampus}
-                onChange={(e) => setSelectedCampus(e.target.value)}
-                className="h-9 rounded-lg border border-border bg-card pl-8 pr-7 text-xs font-semibold text-foreground focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-sm transition"
-              >
-                {CAMPUSES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <CampusContextBar />
 
             {/* Student Verification Badge / Trigger */}
             <button
@@ -98,9 +95,10 @@ export function StudentOSShell() {
             </Button>
 
             <ThemeToggle />
+            <ContextSwitcher />
 
-            <Button asChild variant="ghost" size="sm" className="text-xs">
-              <Link to={role === "buyer" ? "/buyer" : "/"}>
+            <Button asChild variant="ghost" size="sm" className="hidden text-xs md:inline-flex">
+              <Link to={role === "guest" ? "/" : "/buyer"}>
                 <ArrowLeft className="mr-1 h-3.5 w-3.5" />
                 <span className="hidden md:inline">Main Mall</span>
               </Link>
@@ -137,6 +135,9 @@ export function StudentOSShell() {
       <main className="mx-auto max-w-7xl px-4 py-6">
         <Outlet />
       </main>
+
+      <MobileBottomNav context="student" />
+      <CampusSwitchPrompt />
 
       {/* Modals */}
       <ListStudentItemModal />

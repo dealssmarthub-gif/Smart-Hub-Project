@@ -8,12 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNaflis } from "@/lib/naflis/store";
+import { orderStateLabel } from "@/lib/naflis/orderMachine";
+import { runOrderTransition } from "@/services/orderService";
 import { GHS, fmtDate } from "@/lib/naflis/format";
 
 export const Route = createFileRoute("/delivery")({
   beforeLoad: () => {
-    const { role } = useNaflis.getState();
-    if (role !== "delivery") {
+    if (!useNaflis.getState().enterContext(["delivery"])) {
       throw redirect({
         to: "/login",
         search: {
@@ -43,15 +44,15 @@ function DeliveryDashboard() {
   const completeDelivery = useNaflis((s) => s.deliveryComplete);
 
   const available = useMemo(
-    () => orders.filter((o) => o.status === "delivery-assigned" && !o.deliveryPartnerId),
+    () => orders.filter((o) => o.status === "ready" && !o.deliveryPartnerId),
     [orders],
   );
   const active = useMemo(
-    () => orders.filter((o) => o.deliveryPartnerId === PARTNER_ID && !["funds-released", "delivered"].includes(o.status)),
+    () => orders.filter((o) => o.deliveryPartnerId === PARTNER_ID && !["completed", "delivered", "cancelled", "refunded"].includes(o.status)),
     [orders],
   );
   const completed = useMemo(
-    () => orders.filter((o) => o.deliveryPartnerId === PARTNER_ID && ["delivered", "funds-released"].includes(o.status)),
+    () => orders.filter((o) => o.deliveryPartnerId === PARTNER_ID && ["delivered", "completed"].includes(o.status)),
     [orders],
   );
 
@@ -111,9 +112,18 @@ function DeliveryDashboard() {
               <ActiveJob
                 key={o.id}
                 order={o}
-                onPickup={() => { confirmPickup(o.id, PARTNER_ID); toast.success("Pickup confirmed"); }}
-                onComplete={(code) => {
-                  const res = completeDelivery(o.id, PARTNER_ID, code);
+                onPickup={async () => {
+                  const res = await runOrderTransition(o.id, "dispatched", () => confirmPickup(o.id, PARTNER_ID));
+                  if (res.ok) toast.success("Pickup confirmed");
+                  else toast.error(res.message);
+                }}
+                onComplete={async (code) => {
+                  // Server-backed orders: the courier marks delivery; the buyer's confirmation completes it.
+                  const res = o.serverBacked
+                    ? await runOrderTransition(o.id, "delivered", () =>
+                        useNaflis.getState().advanceOrder(o.id, "delivered", "Package delivered", "delivery"),
+                      )
+                    : completeDelivery(o.id, PARTNER_ID, code);
                   if (res.ok) toast.success(res.message);
                   else toast.error(res.message);
                   return res.ok;
@@ -150,7 +160,7 @@ function ActiveJob({
 }: {
   order: ReturnType<typeof useNaflis.getState>["orders"][number];
   onPickup: () => void;
-  onComplete: (code: string) => boolean;
+  onComplete: (code: string) => Promise<boolean>;
 }) {
   const [entered, setEntered] = useState("");
   const expected = order.deliveryCode ?? codeFor(order.id);
@@ -162,23 +172,26 @@ function ActiveJob({
           <p className="text-xs text-muted-foreground">Job #{order.id.slice(2, 10)}</p>
           <p className="mt-1 font-semibold">Total {GHS(order.total)} · fee {GHS(order.delivery || 30)}</p>
         </div>
-        <Badge variant="secondary" className="capitalize">{order.status.replaceAll("-", " ")}</Badge>
+        <Badge variant="secondary">{orderStateLabel(order.status)}</Badge>
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {order.status === "delivery-assigned" && (
+        {order.status === "ready" && order.deliveryUnlocked === false && (
+          <p className="text-xs text-warning">Waiting on the buyer's payment plan before pickup.</p>
+        )}
+        {order.status === "ready" && order.deliveryUnlocked !== false && (
           <Button size="sm" onClick={onPickup}>
             <Package className="mr-1 h-4 w-4" /> Confirm pickup
           </Button>
         )}
-        {order.status === "out-for-delivery" && (
+        {order.status === "dispatched" && (
           <div className="w-full space-y-2">
             <p className="text-xs text-muted-foreground">
               Ask buyer for their delivery code (demo code: <span className="font-mono font-bold text-foreground">{expected}</span>)
             </p>
             <div className="flex gap-2">
               <Input placeholder="Enter buyer's 6-digit code" value={entered} onChange={(e) => setEntered(e.target.value)} className="max-w-[220px]" />
-              <Button size="sm" onClick={() => { if (onComplete(entered)) setEntered(""); }}>
+              <Button size="sm" onClick={async () => { if (await onComplete(entered)) setEntered(""); }}>
                 Confirm delivery
               </Button>
             </div>

@@ -18,10 +18,10 @@ import { Input } from "@/components/ui/input";
 import {
   useNaflis,
   CAMPUSES,
-  STUDENT_CATEGORIES,
   type StudentItemCondition,
   type StudentListing,
 } from "@/lib/naflis/store";
+import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
 
@@ -31,12 +31,13 @@ export const Route = createFileRoute("/student-os/marketplace")({
 
 function StudentMarketplace() {
   const selectedCampus = useNaflis((s) => s.selectedCampus);
-  const setSelectedCampus = useNaflis((s) => s.setSelectedCampus);
+  const requestCampusSwitch = useNaflis((s) => s.requestCampusSwitch);
   const studentListings = useNaflis((s) => s.studentListings);
   const setStudentModalOpen = useNaflis((s) => s.setStudentModalOpen);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const { names: studentCategories } = useCategories("student");
   const [selectedCondition, setSelectedCondition] = useState<string>("All");
   const [sortBy, setSortBy] = useState<"newest" | "price-asc" | "price-desc">("newest");
   const [contactModalItem, setContactModalItem] = useState<StudentListing | null>(null);
@@ -113,7 +114,7 @@ function StudentMarketplace() {
           {/* Campus Selector */}
           <select
             value={selectedCampus}
-            onChange={(e) => setSelectedCampus(e.target.value)}
+            onChange={(e) => requestCampusSwitch(e.target.value, "manual")}
             className="h-9 rounded-lg border bg-card px-2.5 text-xs font-semibold text-foreground focus:border-sky-500 focus:outline-none"
           >
             {CAMPUSES.map((c) => (
@@ -151,7 +152,7 @@ function StudentMarketplace() {
 
       {/* Category Pills */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-        {STUDENT_CATEGORIES.map((cat) => (
+        {["All", ...studentCategories].map((cat) => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}

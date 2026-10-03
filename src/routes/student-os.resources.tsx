@@ -29,7 +29,7 @@ export const Route = createFileRoute("/student-os/resources")({
 
 function StudentResources() {
   const selectedCampus = useNaflis((s) => s.selectedCampus);
-  const setSelectedCampus = useNaflis((s) => s.setSelectedCampus);
+  const requestCampusSwitch = useNaflis((s) => s.requestCampusSwitch);
   const studentListings = useNaflis((s) => s.studentListings);
   const incrementResourceDownload = useNaflis((s) => s.incrementResourceDownload);
 
@@ -148,7 +148,7 @@ function StudentResources() {
         <div className="flex items-center gap-2">
           <select
             value={selectedCampus}
-            onChange={(e) => setSelectedCampus(e.target.value)}
+            onChange={(e) => requestCampusSwitch(e.target.value, "manual")}
             className="h-9 rounded-lg border bg-card px-2.5 text-xs font-semibold text-foreground focus:border-sky-500 focus:outline-none"
           >
             {CAMPUSES.map((c) => (

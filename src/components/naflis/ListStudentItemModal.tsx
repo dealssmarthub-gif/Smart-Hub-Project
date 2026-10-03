@@ -7,9 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   useNaflis,
   CAMPUSES,
-  STUDENT_CATEGORIES,
   type StudentItemCondition,
 } from "@/lib/naflis/store";
+import { useCategories } from "@/services/categories";
 import { supabase } from "@/lib/supabase";
 import { Upload, X, Camera, Plus, Sparkles, MapPin, Tag } from "lucide-react";
 import { toast } from "sonner";
@@ -22,7 +22,9 @@ export function ListStudentItemModal() {
   const user = useCurrentUserSafe();
 
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<string>(STUDENT_CATEGORIES[1]);
+  const { names: availableCategories } = useCategories("student");
+  const [pickedCategory, setCategory] = useState<string>("");
+  const category = pickedCategory || availableCategories[0] || "";
   const [price, setPrice] = useState("");
   const [originalPrice, setOriginalPrice] = useState("");
   const [campus, setCampus] = useState(
@@ -37,7 +39,6 @@ export function ListStudentItemModal() {
   const [submitting, setSubmitting] = useState(false);
 
   const availableCampuses = CAMPUSES.filter((c) => c !== "All Campuses");
-  const availableCategories = STUDENT_CATEGORIES.filter((c) => c !== "All");
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
