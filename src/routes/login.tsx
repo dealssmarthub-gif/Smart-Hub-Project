@@ -10,7 +10,7 @@ import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { supabase } from "@/lib/supabase";
 import { useNaflis } from "@/lib/naflis/store";
-import { postSignInPath } from "@/lib/naflis/roles";
+import { ROLE_META, postSignInPath, type Role } from "@/lib/naflis/roles";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -34,21 +34,31 @@ function LoginPage() {
   const [selectedRole, setSelectedRole] = useState<"buyer" | "seller">("buyer");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Auto-redirect if user is already logged in
+  // Opening /login never signs anyone in or navigates away. If a session already
+  // exists we just say so and let the user continue or sign out.
+  const signedInUser = useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
+  const activeRole = useNaflis((s) => s.role);
+  const [hasServerSession, setHasServerSession] = useState(false);
   useEffect(() => {
-    if (supabase) {
-      supabase.auth.getSession().catch(() => ({ data: { session: null } })).then(async ({ data: { session } }) => {
-        if (session?.user) {
-          const role = await useNaflis.getState().completeSignIn(session.user);
-          navigate({ to: postSignInPath(role, search.redirect) });
-        }
-      });
-    }
-  }, [navigate, search.redirect]);
+    if (!supabase) return;
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => setHasServerSession(Boolean(session)))
+      .catch(() => setHasServerSession(false));
+  }, []);
 
-  const handleDemoLogin = (role: "buyer" | "seller" | "admin" | "src_head" | "super_admin") => {
+  const signOutEverywhere = async () => {
+    if (supabase) await supabase.auth.signOut().catch(() => undefined);
+    useNaflis.getState().signOut();
+    setHasServerSession(false);
+    toast.success("Signed out");
+  };
+
+  const handleDemoLogin = async (role: Extract<Role, "buyer" | "student" | "seller" | "admin" | "src_head" | "super_admin">) => {
+    // A real Supabase session would re-sync on its next token refresh and replace the demo account.
+    if (supabase) await supabase.auth.signOut().catch(() => undefined);
     useNaflis.getState().setRole(role);
-    toast.success(`Logged in as demo ${role}!`);
+    toast.success(`Signed in as demo ${ROLE_META[role].label}`);
     // Demo buttons are explicit persona choices ("Demo Seller" means the seller workspace).
     const dest = postSignInPath(role, search.redirect);
     navigate({ to: dest });
@@ -57,8 +67,8 @@ function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) {
-      // Fallback demo signin if Supabase is not configured
-      handleDemoLogin(selectedRole);
+      // No backend: don't pretend to check credentials — point to the explicit demo accounts.
+      toast.info("Email sign-in isn't available in demo mode. Use one of the demo accounts below.");
       return;
     }
 
@@ -165,6 +175,20 @@ function LoginPage() {
                 : "Join NAFLIS Mall to buy smarter or build your vendor store."}
             </p>
           </div>
+
+          {signedInUser && (
+            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-sky-500/40 bg-sky-500/5 p-4 text-sm">
+              <img src={signedInUser.avatar} alt="" className="h-9 w-9 rounded-full" />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">Signed in as {signedInUser.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {ROLE_META[activeRole].label} workspace{hasServerSession ? "" : " · demo account"}
+                </p>
+              </div>
+              <Button size="sm" onClick={() => navigate({ to: postSignInPath(activeRole, search.redirect) })}>Continue</Button>
+              <Button size="sm" variant="ghost" onClick={signOutEverywhere}>Sign out</Button>
+            </div>
+          )}
 
           {/* Form */}
           <form
@@ -331,7 +355,7 @@ function LoginPage() {
 
           {/* Quick Demo Role Navigation */}
           <div className="rounded-xl border bg-card/60 p-4 text-center backdrop-blur shadow-sm space-y-2">
-            <p className="text-xs font-semibold text-muted-foreground">Demo / Instant Role Access</p>
+            <p className="text-xs font-semibold text-muted-foreground">Demo accounts — click to sign in</p>
             <div className="flex flex-wrap justify-center gap-2">
               <Button
                 variant="outline"
@@ -340,6 +364,9 @@ function LoginPage() {
                 onClick={() => handleDemoLogin("buyer")}
               >
                 Demo Buyer
+              </Button>
+              <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => handleDemoLogin("student")}>
+                Demo Student
               </Button>
               <Button
                 variant="outline"

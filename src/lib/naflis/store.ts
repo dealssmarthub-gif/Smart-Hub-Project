@@ -2955,10 +2955,8 @@ export const useNaflis = create<State>()(
 );
 
 // Selectors / helpers
-export const useCurrentUser = () => {
-  const { currentUserId, users } = useNaflis();
-  return users.find((u) => u.id === currentUserId) ?? users[0];
-};
+/** The signed-in user, or undefined for guests (never a stand-in demo user). */
+export const useCurrentUser = (): User | undefined => useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
 
 /** Roles held by the signed-in user, in switcher order. */
 export const useUserRoles = (): Role[] => {
