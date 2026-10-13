@@ -1,4 +1,4 @@
-// Sign-in lands in Buyer (or Student), never Seller by default; ?redirect is honoured only for same-site paths.
+// Sign-in lands in Buyer (or Student); there is no seller workspace. ?redirect is honoured only for same-site paths.
 import { beforeEach, describe, expect, it } from "vitest";
 import { useNaflis } from "@/lib/naflis/store";
 import { defaultContext, postSignInPath, resolveRoles } from "@/lib/naflis/roles";
@@ -16,9 +16,9 @@ describe("sign-in destination", () => {
     const role = await st().completeSignIn(session("11111111-1111-1111-1111-111111111111", "new.seller@test.gh", "seller"));
     expect(role).toBe("buyer");
     expect(postSignInPath(role)).toBe("/buyer");
-    // Seller is still available — one switch away, not forced.
-    expect(resolveRoles(st().users.find((u) => u.id === st().currentUserId), st().stores)).toContain("seller");
-    expect(st().switchRole("seller")).toBe(true);
+    // Sellers live on the external platform: the legacy role isn't held or switchable.
+    expect(resolveRoles(st().users.find((u) => u.id === st().currentUserId))).toEqual(["buyer"]);
+    expect(st().switchRole("seller" as any)).toBe(false);
   });
 
   it("an account with the student role starts in Student OS", async () => {
@@ -28,18 +28,19 @@ describe("sign-in destination", () => {
     expect(postSignInPath(role)).toBe("/student-os");
   });
 
-  it("existing seller accounts also start in Buyer, and the switcher shows Buyer as active", async () => {
+  it("shop-owning accounts also start in Buyer and hold no seller role", async () => {
     const role = await st().completeSignIn(session("u_seller1", "seller@trendtech.gh", "seller"));
     expect(role).toBe("buyer");
     expect(st().role).toBe("buyer");
+    expect(resolveRoles(st().users.find((u) => u.id === "u_seller1"))).toEqual(["buyer"]);
   });
 
   it("re-syncing the same session (token refresh) keeps the workspace the user chose", async () => {
-    await st().completeSignIn(session("u_seller1", "seller@trendtech.gh", "seller"));
-    st().switchRole("seller");
-    st().syncUser(session("u_seller1", "seller@trendtech.gh", "seller"));
-    await st().completeSignIn(session("u_seller1", "seller@trendtech.gh", "seller"));
-    expect(st().role).toBe("seller");
+    await st().completeSignIn(session("u_buyer1", "ama@demo.gh", "buyer"));
+    st().switchRole("buyer");
+    st().syncUser(session("u_buyer1", "ama@demo.gh", "buyer"));
+    await st().completeSignIn(session("u_buyer1", "ama@demo.gh", "buyer"));
+    expect(st().role).toBe("buyer");
   });
 
   it("honours same-site redirects and rejects open redirects", () => {
@@ -50,9 +51,9 @@ describe("sign-in destination", () => {
     expect(postSignInPath("student", undefined)).toBe("/student-os");
   });
 
-  it("defaultContext never picks seller or staff roles", () => {
-    expect(defaultContext(["buyer", "seller"])).toBe("buyer");
-    expect(defaultContext(["buyer", "student", "seller", "src_head"])).toBe("student");
+  it("defaultContext never picks staff roles", () => {
+    expect(defaultContext(["buyer"])).toBe("buyer");
+    expect(defaultContext(["buyer", "student", "src_head"])).toBe("student");
     expect(defaultContext(["buyer", "super_admin"])).toBe("buyer");
   });
 });

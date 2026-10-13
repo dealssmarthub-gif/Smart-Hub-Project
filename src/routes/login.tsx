@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ArrowLeft, Mail, Lock, User, Store, Phone, Sparkles, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Mail, Lock, User, Phone, Sparkles, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +31,6 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"buyer" | "seller">("buyer");
   const [isLoading, setIsLoading] = useState(false);
 
   // Opening /login never signs anyone in or navigates away. If a session already
@@ -54,12 +53,12 @@ function LoginPage() {
     toast.success("Signed out");
   };
 
-  const handleDemoLogin = async (role: Extract<Role, "buyer" | "student" | "seller" | "admin" | "src_head" | "super_admin">) => {
+  const handleDemoLogin = async (role: Extract<Role, "buyer" | "student" | "admin" | "src_head" | "super_admin">) => {
     // A real Supabase session would re-sync on its next token refresh and replace the demo account.
     if (supabase) await supabase.auth.signOut().catch(() => undefined);
     useNaflis.getState().setRole(role);
     toast.success(`Signed in as demo ${ROLE_META[role].label}`);
-    // Demo buttons are explicit persona choices ("Demo Seller" means the seller workspace).
+    // Demo buttons are explicit persona choices ("Demo Admin" means the admin workspace).
     const dest = postSignInPath(role, search.redirect);
     navigate({ to: dest });
   };
@@ -111,7 +110,7 @@ function LoginPage() {
           password,
           options: {
             data: {
-              role: selectedRole,
+              role: "buyer",
               full_name: fullName,
               phone: phone,
               phone_number: phone,
@@ -129,7 +128,7 @@ function LoginPage() {
         } else {
           if (data.session && data.user) {
             toast.success("Account created and signed in!");
-            // Sellers start in Buyer like everyone else; the switcher (or "Open a shop") takes them to Seller.
+            // New accounts start in Buyer; Student OS is one switch away once verified.
             const role = await useNaflis.getState().completeSignIn(data.user);
             navigate({ to: postSignInPath(role, search.redirect) });
           } else {
@@ -171,8 +170,8 @@ function LoginPage() {
             </h1>
             <p className="text-sm text-muted-foreground">
               {mode === "signin"
-                ? "Access your dashboard to buy, sell or manage escrowed deals."
-                : "Join NAFLIS Mall to buy smarter or build your vendor store."}
+                ? "Access your dashboard to shop, track escrowed orders and use Student OS."
+                : "Join NAFLIS Mall to buy smarter and unlock Student OS."}
             </p>
           </div>
 
@@ -256,40 +255,6 @@ function LoginPage() {
                     />
                   </div>
                 </div>
-
-                {/* Role Selection */}
-                <div className="space-y-2">
-                  <Label>I want to join as a:</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedRole("buyer")}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition hover:-translate-y-0.5 ${
-                        selectedRole === "buyer"
-                          ? "border-sky-500 bg-sky-500/5 text-sky-500 shadow-sm"
-                          : "border-border bg-background hover:bg-muted"
-                      }`}
-                    >
-                      <User className="h-6 w-6 mb-1" />
-                      <span className="font-bold text-xs">Buyer</span>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">Shop & save with escrow</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedRole("seller")}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition hover:-translate-y-0.5 ${
-                        selectedRole === "seller"
-                          ? "border-gold bg-gold/5 text-gold shadow-sm"
-                          : "border-border bg-background hover:bg-muted"
-                      }`}
-                    >
-                      <Store className="h-6 w-6 mb-1" />
-                      <span className="font-bold text-xs">Seller</span>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">Publish products & campaigns</span>
-                    </button>
-                  </div>
-                </div>
               </>
             )}
 
@@ -367,14 +332,6 @@ function LoginPage() {
               </Button>
               <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => handleDemoLogin("student")}>
                 Demo Student
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs h-8"
-                onClick={() => handleDemoLogin("seller")}
-              >
-                Demo Seller
               </Button>
               <Button
                 variant="outline"

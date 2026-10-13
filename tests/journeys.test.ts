@@ -47,16 +47,15 @@ describe("Journey A — guest browses the mall by dynamic category", () => {
 });
 
 describe("Journey B — one account, many roles, no re-authentication", () => {
-  it("a buyer who is a student switches context; opening a shop unlocks seller", () => {
+  it("a buyer who is a student switches context; there is no seller workspace", () => {
     st().setRole("buyer"); // Ama
     const me = () => st().users.find((u) => u.id === st().currentUserId);
-    expect(resolveRoles(me(), st().stores)).toEqual(["buyer", "student"]);
+    expect(resolveRoles(me())).toEqual(["buyer", "student"]);
     expect(st().switchRole("student")).toBe(true);
     expect(st().role).toBe("student");
-    expect(st().switchRole("seller")).toBe(false);
-    st().openShop();
-    expect(resolveRoles(me(), st().stores)).toContain("seller");
-    expect(st().role).toBe("seller");
+    expect(st().switchRole("seller" as any)).toBe(false);
+    expect(st().enterContext(["seller" as any])).toBe(false);
+    expect(st().switchRole("buyer")).toBe(true);
     expect(st().currentUserId).toBe("u_buyer1"); // same account throughout
   });
 });

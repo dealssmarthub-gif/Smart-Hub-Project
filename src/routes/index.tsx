@@ -37,7 +37,7 @@ import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { ProductCard } from "@/components/naflis/ProductCard";
 import { roleHome } from "@/lib/naflis/roles";
-import { mapDbProduct } from "@/lib/naflis/mapProduct";
+import { fetchSellerProducts } from "@/services/sellerApi";
 import { ESCROW_HELD_STATES } from "@/lib/naflis/orderMachine";
 import {
   useNaflis,
@@ -116,22 +116,17 @@ function Landing() {
   // Fetch approved products and pinned events from Supabase
   useEffect(() => {
     const fetchApprovedProducts = async () => {
-      if (!supabase) return;
       try {
-        const { data } = await supabase
-          .from("products")
-          .select("*, vendors!inner(status, store_name, logo_url, description)")
-          .eq("vendors.status", "approved");
+        const data = await fetchSellerProducts();
 
         if (data && data.length > 0) {
-          const mapped = data.map((p) =>
-            mapDbProduct(p, {
-              originalPrice: Math.round(Number(p.price) * 1.25),
-              demand: 85,
-              flashSale: { endsAt: Date.now() + 8 * 3_600_000 },
-              location: "Greater Accra",
-            }),
-          );
+          const mapped = data.map((p) => ({
+            ...p,
+            originalPrice: Math.round(p.price * 1.25),
+            demand: 85,
+            flashSale: { endsAt: Date.now() + 8 * 3_600_000 },
+            location: "Greater Accra",
+          }));
           setProducts(mapped);
           useNaflis.setState({ products: mapped });
         }
@@ -938,14 +933,13 @@ function Landing() {
             </div>
 
             <div className="space-y-2">
-              <h5 className="text-xs font-bold uppercase tracking-wider text-foreground">Leadership & Stores</h5>
+              <h5 className="text-xs font-bold uppercase tracking-wider text-foreground">Leadership</h5>
               <ul className="space-y-1.5 text-xs text-muted-foreground">
                 <li>
                   <Link to="/campus-admin" className="font-bold text-sky-500 hover:underline">
                     Institutional / SRC Access
                   </Link>
                 </li>
-                <li><Link to="/seller" className="hover:text-foreground">Vendor Command Center</Link></li>
                 <li><Link to="/login" className="hover:text-foreground">Executive Sign In</Link></li>
               </ul>
             </div>

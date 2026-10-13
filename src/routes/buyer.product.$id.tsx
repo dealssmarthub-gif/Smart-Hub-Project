@@ -18,8 +18,7 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/lib/supabase";
-import { mapDbProduct } from "@/lib/naflis/mapProduct";
+import { fetchSellerProduct } from "@/services/sellerApi";
 import { PurchaseOptions } from "@/components/naflis/PurchaseOptions";
 import type { Product, Store } from "@/lib/naflis/store";
 
@@ -54,17 +53,12 @@ function ProductDetail() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        if (!supabase) return loadLocal();
-        const { data } = await supabase
-          .from("products")
-          .select("*, vendors(*)")
-          .eq("id", id)
-          .maybeSingle();
+        const data = await fetchSellerProduct(id);
 
         if (!data) return loadLocal();
         {
-          const existing = useNaflis.getState().products.find((p) => p.id === data.id);
-          const mapped = mapDbProduct(data, existing ? { rating: existing.rating, reviews: existing.reviews } : {});
+          const existing = useNaflis.getState().products.find((p) => p.id === data.product.id);
+          const mapped = existing ? { ...data.product, rating: existing.rating, reviews: existing.reviews } : data.product;
           setDbProduct(mapped);
 
           // Sync product to Zustand store if not already present
@@ -75,22 +69,7 @@ function ProductDetail() {
             };
           });
 
-          if (data.vendors) {
-            setDbStore({
-              id: data.vendors.id,
-              name: data.vendors.store_name,
-              ownerId: data.vendors.user_id,
-              logo: data.vendors.logo_url || `https://api.dicebear.com/9.x/notionists/svg?seed=${data.vendors.store_name}`,
-              tagline: data.vendors.description || "Verified Seller",
-              rating: 5.0,
-              reviews: 0,
-              verified: data.vendors.status === "approved",
-              followers: 0,
-              location: "Accra",
-              categories: [data.category],
-              subscription: "starter",
-            });
-          }
+          if (data.vendor) setDbStore(data.vendor);
         }
       } catch (err) {
         console.error("Error loading product details:", err);

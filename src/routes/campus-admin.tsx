@@ -65,7 +65,7 @@ export function CampusAdminPortal() {
   // Campuses this user may manage. Content from any other institution is never shown here.
   const scope = useNaflis(
     useShallow((s) => {
-      const isSuper = !s.impersonation && resolveRoles(s.users.find((u) => u.id === s.currentUserId), s.stores).includes("super_admin");
+      const isSuper = !s.impersonation && resolveRoles(s.users.find((u) => u.id === s.currentUserId)).includes("super_admin");
       return scopedCampuses({ userId: s.currentUserId, isSuperAdmin: isSuper }, s.staffGrants);
     }),
   );
@@ -1230,10 +1230,6 @@ export function CampusAdminPortal() {
             <span>•</span>
             <Link to="/student-os" className="hover:text-foreground">
               Student OS
-            </Link>
-            <span>•</span>
-            <Link to="/seller" className="hover:text-foreground">
-              Seller Hub
             </Link>
           </div>
           <p>© {new Date().getFullYear()} NAFLIS Campus Infrastructure.</p>

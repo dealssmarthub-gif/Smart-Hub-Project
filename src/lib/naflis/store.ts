@@ -751,9 +751,9 @@ const seedUsers: User[] = [
   { id: "u_buyer2", name: "Kwame Mensah", email: "kwame@demo.gh", phone: "+233 24 000 0002", region: "Ashanti", role: "buyer", avatar: AVATARS[1], verified: false, creditScore: 520, creditLimit: 0, tags: ["new"] },
   { id: "u_buyer3", name: "Efua Boateng", email: "efua@demo.gh", phone: "+233 24 000 0003", region: "Western", role: "buyer", avatar: AVATARS[2], verified: true, creditScore: 890, creditLimit: 20000, tags: ["high-credit"] },
   { id: "u_buyer4", name: "Yaw Antwi", email: "yaw@demo.gh", phone: "+233 24 000 0004", region: "Northern", role: "buyer", avatar: AVATARS[3], verified: false, creditScore: 310, creditLimit: 0, tags: ["declined-credit"] },
-  { id: "u_seller1", name: "TrendTech Ghana", email: "seller@trendtech.gh", phone: "+233 30 200 0001", region: "Greater Accra", role: "seller", avatar: AVATARS[4], verified: true, tags: ["electronics"] },
-  { id: "u_seller2", name: "Kente & Co", email: "seller@kente.gh", phone: "+233 30 200 0002", region: "Ashanti", role: "seller", avatar: AVATARS[5], verified: true, tags: ["fashion"] },
-  { id: "u_seller3", name: "New Seller Corp", email: "seller@new.gh", phone: "+233 30 200 0003", region: "Western", role: "seller", avatar: AVATARS[6], verified: false, tags: ["new"] },
+  { id: "u_seller1", name: "TrendTech Ghana", email: "seller@trendtech.gh", phone: "+233 30 200 0001", region: "Greater Accra", role: "buyer", avatar: AVATARS[4], verified: true, tags: ["electronics"] },
+  { id: "u_seller2", name: "Kente & Co", email: "seller@kente.gh", phone: "+233 30 200 0002", region: "Ashanti", role: "buyer", avatar: AVATARS[5], verified: true, tags: ["fashion"] },
+  { id: "u_seller3", name: "New Seller Corp", email: "seller@new.gh", phone: "+233 30 200 0003", region: "Western", role: "buyer", avatar: AVATARS[6], verified: false, tags: ["new"] },
   { id: "u_delivery1", name: "Kojo Delivery", email: "kojo@ride.gh", phone: "+233 24 000 0011", region: "Greater Accra", role: "delivery", avatar: AVATARS[7], verified: true },
   { id: "u_finance1", name: "Nana Finance", email: "nana@naflis.gh", phone: "+233 30 200 0011", region: "Greater Accra", role: "finance", avatar: AVATARS[8], verified: true },
   { id: "u_dispute1", name: "Abena Resolutions", email: "abena@naflis.gh", phone: "+233 30 200 0012", region: "Greater Accra", role: "dispute", avatar: AVATARS[9], verified: true },
@@ -1226,8 +1226,6 @@ interface State {
   enterContext: (allowed: Role[]) => boolean;
   grantRole: (r: Role, userId?: string) => void;
   revokeRole: (r: Role, userId?: string) => void;
-  /** Unlocks the seller role; in demo mode also creates the shop. */
-  openShop: () => void;
   /** Pull the account's roles from Supabase `profiles` (no-op offline). */
   refreshRoles: () => Promise<void>;
   setUser: (id: string | null) => void;
@@ -1528,7 +1526,7 @@ export const useNaflis = create<State>()(
       const isRealSuperAdmin = () => {
         const s = get();
         if (s.impersonation) return false;
-        return resolveRoles(s.users.find((u) => u.id === s.currentUserId), s.stores).includes("super_admin");
+        return resolveRoles(s.users.find((u) => u.id === s.currentUserId)).includes("super_admin");
       };
       const canEditEvent = (e: CampusEvent) =>
         get().hasPermission(e.kind === "announcement" ? "student.announcements.create" : "student.events.create", e.campus);
@@ -1574,7 +1572,7 @@ export const useNaflis = create<State>()(
 
       setRole: (r) => {
         const map: Record<Role, string | null> = {
-          guest: null, buyer: "u_buyer1", seller: "u_seller1", student: "u_buyer1", src_head: "u_src1", dean: "u_dean1",
+          guest: null, buyer: "u_buyer1", student: "u_buyer1", src_head: "u_src1", dean: "u_dean1",
           delivery: "u_delivery1", finance: "u_finance1", dispute: "u_dispute1",
           admin: "u_admin1", super_admin: "u_super1",
         };
@@ -1583,7 +1581,7 @@ export const useNaflis = create<State>()(
       switchRole: (r) => {
         const s = get();
         const user = s.users.find((u) => u.id === s.currentUserId);
-        if (!resolveRoles(user, s.stores).includes(r)) return false;
+        if (!resolveRoles(user).includes(r)) return false;
         if (s.role !== r) set({ role: r });
         return true;
       },
@@ -1591,7 +1589,7 @@ export const useNaflis = create<State>()(
         const s = get();
         if (allowed.includes(s.role)) return true;
         const user = s.users.find((u) => u.id === s.currentUserId);
-        const match = resolveRoles(user, s.stores).find((r) => allowed.includes(r));
+        const match = resolveRoles(user).find((r) => allowed.includes(r));
         if (!match) return false;
         set({ role: match });
         return true;
@@ -1612,7 +1610,7 @@ export const useNaflis = create<State>()(
           const id = userId ?? s.currentUserId;
           if (!id || r === "buyer") return {};
           const users = s.users.map((u) => (u.id === id ? { ...u, roles: (u.roles ?? []).filter((x) => x !== r) } : u));
-          const stillHeld = resolveRoles(users.find((u) => u.id === id), s.stores).includes(r);
+          const stillHeld = resolveRoles(users.find((u) => u.id === id)).includes(r);
           return {
             users,
             // Never leave the user in a context they no longer hold.
@@ -1620,26 +1618,6 @@ export const useNaflis = create<State>()(
             auditLog: [{ id: uid(), at: Date.now(), actor: s.currentUserId ?? "system", action: "role.revoke", target: `${id}:${r}` }, ...s.auditLog],
           };
         }),
-      openShop: () => {
-        const s = get();
-        const user = s.users.find((u) => u.id === s.currentUserId);
-        if (!user) return;
-        // With Supabase the shop itself is created by the vendor onboarding form in /seller.
-        if (!supabase && !s.stores.some((st) => st.ownerId === user.id)) {
-          set({
-            stores: [
-              ...s.stores,
-              {
-                id: "s_" + uid(), name: `${user.name.split(" ")[0]}'s Shop`, ownerId: user.id, logo: user.avatar,
-                tagline: "Just getting started.", rating: 0, reviews: 0, verified: false, followers: 0,
-                location: user.region, categories: [], subscription: "starter",
-              },
-            ],
-          });
-        }
-        get().grantRole("seller");
-        set({ role: "seller" });
-      },
       refreshRoles: async () => {
         const id = get().currentUserId;
         if (!supabase || !id) return;
@@ -1721,7 +1699,7 @@ export const useNaflis = create<State>()(
 
           // Auth events (token refresh, tab focus) re-run this for the same user:
           // keep whichever context they switched to as long as they still hold it.
-          const held = resolveRoles(updatedUsers.find((u) => u.id === id), state.stores);
+          const held = resolveRoles(updatedUsers.find((u) => u.id === id));
           const keepContext = state.currentUserId === id && held.includes(state.role);
 
           return {
@@ -1740,7 +1718,7 @@ export const useNaflis = create<State>()(
         await get().refreshRoles();
         const s = get();
         if (s.currentUserId && before !== s.currentUserId) {
-          set({ role: defaultContext(resolveRoles(s.users.find((u) => u.id === s.currentUserId), s.stores)) });
+          set({ role: defaultContext(resolveRoles(s.users.find((u) => u.id === s.currentUserId))) });
         }
         return get().role;
       },
@@ -2832,12 +2810,11 @@ export const useNaflis = create<State>()(
         const admin = s.users.find((u) => u.id === s.currentUserId)!;
         const target = s.users.find((u) => u.id === targetUserId);
         if (!target) return { ok: false, message: "User not found." };
-        const targetRoles = resolveRoles(target, s.stores);
+        const targetRoles = resolveRoles(target);
         if (targetRoles.includes("super_admin")) return { ok: false, message: "You can't view as another Super Admin." };
         if (!targetRoles.includes(role)) return { ok: false, message: `${target.name} doesn't hold the ${ROLE_META[role].label} role.` };
         if (reason.trim().length < 5) return { ok: false, message: "Give a reason (it's recorded in the audit log)." };
         const now = Date.now();
-        const store = s.stores.find((st) => st.ownerId === target.id);
         const session: ImpersonationSession = {
           id: sessionId ?? "imp_" + uid() + uid(),
           adminUserId: admin.id,
@@ -2845,7 +2822,7 @@ export const useNaflis = create<State>()(
           targetUserId: target.id,
           targetName: target.name,
           role,
-          context: role === "seller" && store ? store.name : target.institutionId ?? target.region,
+          context: target.institutionId ?? target.region,
           reason: reason.trim(),
           startedAt: now,
           expiresAt: now + minutes * 60_000,
@@ -2916,9 +2893,10 @@ export const useNaflis = create<State>()(
     },
     {
       name: "naflis-store-v2",
-      version: 3,
+      version: 4,
       // v0 -> v1: single `role` per user becomes a role set; "super" is renamed "super_admin".
       // v1 -> v2: order statuses move to the P1 state machine; ledgers get their new shapes.
+      // v3 -> v4: the seller workspace moved to the external seller platform; seller accounts are buyers.
       migrate: (persisted: any, version: number) => {
         if (!persisted || typeof persisted !== "object") return persisted;
         if (version < 2) {
@@ -2934,6 +2912,16 @@ export const useNaflis = create<State>()(
           for (const seed of seedUsers) if (!persisted.users.some((u: any) => u.id === seed.id)) persisted.users.push(seed);
           if (Array.isArray(persisted.campusEvents) && !persisted.campusEvents.some((e: any) => e.id === "ce_srcweek")) {
             persisted.campusEvents = [SEED_CAMPUS_EVENTS[0], ...persisted.campusEvents];
+          }
+        }
+        if (version < 4) {
+          if (persisted.role === "seller") persisted.role = "buyer";
+          if (Array.isArray(persisted.users)) {
+            persisted.users = persisted.users.map((u: any) => ({
+              ...u,
+              role: u.role === "seller" ? "buyer" : u.role,
+              roles: Array.isArray(u.roles) ? u.roles.filter((r: any) => r !== "seller") : u.roles,
+            }));
           }
         }
         if (version >= 1) return persisted;
@@ -2961,8 +2949,7 @@ export const useCurrentUser = (): User | undefined => useNaflis((s) => s.users.f
 /** Roles held by the signed-in user, in switcher order. */
 export const useUserRoles = (): Role[] => {
   const user = useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
-  const stores = useNaflis((s) => s.stores);
-  return resolveRoles(user, stores);
+  return resolveRoles(user);
 };
 
 export const useWallet = (): Wallet | undefined =>

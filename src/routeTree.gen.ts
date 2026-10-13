@@ -35,8 +35,7 @@ import { Route as BuyerSearchRouteImport } from './routes/buyer.search'
 import { Route as BuyerWalletRouteImport } from './routes/buyer.wallet'
 import { Route as BuyerWishlistRouteImport } from './routes/buyer.wishlist'
 import { Route as CampusAdminDashboardRouteImport } from './routes/campus-admin.dashboard'
-import { Route as SellerIndexRouteImport } from './routes/seller.index'
-import { Route as SellerIntelligenceRouteImport } from './routes/seller.intelligence'
+import { Route as SellerSplatRouteImport } from './routes/seller.$'
 import { Route as StudentOsIndexRouteImport } from './routes/student-os.index'
 import { Route as StudentOsCalendarRouteImport } from './routes/student-os.calendar'
 import { Route as StudentOsDealsRouteImport } from './routes/student-os.deals'
@@ -181,14 +180,9 @@ const CampusAdminDashboardRoute = CampusAdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => CampusAdminRoute,
 } as any)
-const SellerIndexRoute = SellerIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => SellerRoute,
-} as any)
-const SellerIntelligenceRoute = SellerIntelligenceRouteImport.update({
-  id: '/intelligence',
-  path: '/intelligence',
+const SellerSplatRoute = SellerSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => SellerRoute,
 } as any)
 const StudentOsIndexRoute = StudentOsIndexRouteImport.update({
@@ -283,7 +277,7 @@ export interface FileRoutesByFullPath {
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
   '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
-  '/seller/intelligence': typeof SellerIntelligenceRoute
+  '/seller/$': typeof SellerSplatRoute
   '/student-os/calendar': typeof StudentOsCalendarRoute
   '/student-os/deals': typeof StudentOsDealsRoute
   '/student-os/events': typeof StudentOsEventsRoute
@@ -294,7 +288,6 @@ export interface FileRoutesByFullPath {
   '/super/staff': typeof SuperStaffRoute
   '/super/view-as': typeof SuperViewAsRoute
   '/buyer/': typeof BuyerIndexRoute
-  '/seller/': typeof SellerIndexRoute
   '/student-os/': typeof StudentOsIndexRoute
   '/super/': typeof SuperIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
@@ -308,6 +301,7 @@ export interface FileRoutesByTo {
   '/dispute': typeof DisputeRoute
   '/finance': typeof FinanceRoute
   '/login': typeof LoginRoute
+  '/seller': typeof SellerRouteWithChildren
   '/staff-invite': typeof StaffInviteRoute
   '/buyer/cart': typeof BuyerCartRoute
   '/buyer/categories': typeof BuyerCategoriesRoute
@@ -322,7 +316,7 @@ export interface FileRoutesByTo {
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
   '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
-  '/seller/intelligence': typeof SellerIntelligenceRoute
+  '/seller/$': typeof SellerSplatRoute
   '/student-os/calendar': typeof StudentOsCalendarRoute
   '/student-os/deals': typeof StudentOsDealsRoute
   '/student-os/events': typeof StudentOsEventsRoute
@@ -333,7 +327,6 @@ export interface FileRoutesByTo {
   '/super/staff': typeof SuperStaffRoute
   '/super/view-as': typeof SuperViewAsRoute
   '/buyer': typeof BuyerIndexRoute
-  '/seller': typeof SellerIndexRoute
   '/student-os': typeof StudentOsIndexRoute
   '/super': typeof SuperIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
@@ -366,7 +359,7 @@ export interface FileRoutesById {
   '/buyer/wallet': typeof BuyerWalletRoute
   '/buyer/wishlist': typeof BuyerWishlistRoute
   '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
-  '/seller/intelligence': typeof SellerIntelligenceRoute
+  '/seller/$': typeof SellerSplatRoute
   '/student-os/calendar': typeof StudentOsCalendarRoute
   '/student-os/deals': typeof StudentOsDealsRoute
   '/student-os/events': typeof StudentOsEventsRoute
@@ -377,7 +370,6 @@ export interface FileRoutesById {
   '/super/staff': typeof SuperStaffRoute
   '/super/view-as': typeof SuperViewAsRoute
   '/buyer/': typeof BuyerIndexRoute
-  '/seller/': typeof SellerIndexRoute
   '/student-os/': typeof StudentOsIndexRoute
   '/super/': typeof SuperIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
@@ -411,7 +403,7 @@ export interface FileRouteTypes {
     | '/buyer/wallet'
     | '/buyer/wishlist'
     | '/campus-admin/dashboard'
-    | '/seller/intelligence'
+    | '/seller/$'
     | '/student-os/calendar'
     | '/student-os/deals'
     | '/student-os/events'
@@ -422,7 +414,6 @@ export interface FileRouteTypes {
     | '/super/staff'
     | '/super/view-as'
     | '/buyer/'
-    | '/seller/'
     | '/student-os/'
     | '/super/'
     | '/buyer/orders/$orderId'
@@ -436,6 +427,7 @@ export interface FileRouteTypes {
     | '/dispute'
     | '/finance'
     | '/login'
+    | '/seller'
     | '/staff-invite'
     | '/buyer/cart'
     | '/buyer/categories'
@@ -450,7 +442,7 @@ export interface FileRouteTypes {
     | '/buyer/wallet'
     | '/buyer/wishlist'
     | '/campus-admin/dashboard'
-    | '/seller/intelligence'
+    | '/seller/$'
     | '/student-os/calendar'
     | '/student-os/deals'
     | '/student-os/events'
@@ -461,7 +453,6 @@ export interface FileRouteTypes {
     | '/super/staff'
     | '/super/view-as'
     | '/buyer'
-    | '/seller'
     | '/student-os'
     | '/super'
     | '/buyer/orders/$orderId'
@@ -493,7 +484,7 @@ export interface FileRouteTypes {
     | '/buyer/wallet'
     | '/buyer/wishlist'
     | '/campus-admin/dashboard'
-    | '/seller/intelligence'
+    | '/seller/$'
     | '/student-os/calendar'
     | '/student-os/deals'
     | '/student-os/events'
@@ -504,7 +495,6 @@ export interface FileRouteTypes {
     | '/super/staff'
     | '/super/view-as'
     | '/buyer/'
-    | '/seller/'
     | '/student-os/'
     | '/super/'
     | '/buyer/orders/$orderId'
@@ -710,18 +700,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampusAdminDashboardRouteImport
       parentRoute: typeof CampusAdminRoute
     }
-    '/seller/': {
-      id: '/seller/'
-      path: '/'
-      fullPath: '/seller/'
-      preLoaderRoute: typeof SellerIndexRouteImport
-      parentRoute: typeof SellerRoute
-    }
-    '/seller/intelligence': {
-      id: '/seller/intelligence'
-      path: '/intelligence'
-      fullPath: '/seller/intelligence'
-      preLoaderRoute: typeof SellerIntelligenceRouteImport
+    '/seller/$': {
+      id: '/seller/$'
+      path: '/$'
+      fullPath: '/seller/$'
+      preLoaderRoute: typeof SellerSplatRouteImport
       parentRoute: typeof SellerRoute
     }
     '/student-os/': {
@@ -879,13 +862,11 @@ const CampusAdminRouteWithChildren = CampusAdminRoute._addFileChildren(
 )
 
 interface SellerRouteChildren {
-  SellerIntelligenceRoute: typeof SellerIntelligenceRoute
-  SellerIndexRoute: typeof SellerIndexRoute
+  SellerSplatRoute: typeof SellerSplatRoute
 }
 
 const SellerRouteChildren: SellerRouteChildren = {
-  SellerIntelligenceRoute: SellerIntelligenceRoute,
-  SellerIndexRoute: SellerIndexRoute,
+  SellerSplatRoute: SellerSplatRoute,
 }
 
 const SellerRouteWithChildren =

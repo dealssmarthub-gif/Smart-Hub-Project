@@ -13,7 +13,7 @@ export function Logo({ className = "" }: { className?: string }) {
           <span className="text-gradient-sea">Mall</span>
         </span>
         <span className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-          Buy Smarter · Sell Smarter
+          Buy Smarter · Study Smarter
         </span>
       </span>
     </Link>

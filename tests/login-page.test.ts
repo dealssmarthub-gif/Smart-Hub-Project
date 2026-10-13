@@ -42,9 +42,10 @@ describe("/login", () => {
     expect(st().role).toBe("guest");
   });
 
-  it("offers explicit Demo Buyer / Student / Seller buttons", async () => {
+  it("offers explicit Demo Buyer / Student buttons and no seller sign-in", async () => {
     const { html } = await renderAt("/login");
-    for (const label of ["Demo Buyer", "Demo Student", "Demo Seller"]) expect(html).toContain(label);
+    for (const label of ["Demo Buyer", "Demo Student"]) expect(html).toContain(label);
+    expect(html).not.toContain("Seller");
   });
 
   it("stays on /login when already signed in, showing who and a Continue option", async () => {
@@ -61,8 +62,21 @@ describe("/login", () => {
     expect(postSignInPath(st().role)).toBe("/student-os");
     st().setRole("buyer");
     expect(postSignInPath(st().role)).toBe("/buyer");
-    st().setRole("seller");
-    expect(postSignInPath(st().role)).toBe("/seller");
+  });
+
+  it("old /seller links redirect to the Buyer marketplace", async () => {
+    st().setRole("buyer");
+    // Client-side router: the server-mode one above doesn't follow redirects.
+    for (const path of ["/seller", "/seller/intelligence"]) {
+      const router = createRouter({
+        routeTree,
+        history: createMemoryHistory({ initialEntries: [path] }),
+        context: { queryClient: new QueryClient() },
+        isServer: false,
+      });
+      await router.load();
+      expect(router.state.location.pathname).toBe("/buyer");
+    }
   });
 
   it("guests have no stand-in user", () => {

@@ -7,8 +7,7 @@ import { ProductCard } from "@/components/naflis/ProductCard";
 import { useNaflis } from "@/lib/naflis/store";
 import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
-import { supabase } from "@/lib/supabase";
-import { mapDbProduct } from "@/lib/naflis/mapProduct";
+import { fetchSellerProducts } from "@/services/sellerApi";
 
 export const Route = createFileRoute("/buyer/")({
   component: BuyerHome,
@@ -20,15 +19,11 @@ function BuyerHome() {
 
   useEffect(() => {
     const fetchApprovedProducts = async () => {
-      if (!supabase) return;
       try {
-        const { data } = await supabase
-          .from("products")
-          .select("*, vendors!inner(status, store_name, logo_url, description)")
-          .eq("vendors.status", "approved");
+        const data = await fetchSellerProducts();
 
         if (data && data.length > 0) {
-          const mapped = data.map((p) => mapDbProduct(p, { flashSale: { endsAt: Date.now() + 8 * 3_600_000 } }));
+          const mapped = data.map((p) => ({ ...p, flashSale: { endsAt: Date.now() + 8 * 3_600_000 } }));
           setProducts(mapped);
           useNaflis.setState({ products: mapped });
         }

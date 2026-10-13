@@ -164,9 +164,6 @@ export function MobileBottomNav({
                   />
                 );
               })}
-              {ws.canOpenShop && (
-                <SheetRow icon={PlusCircle} label="Open a shop" onClick={() => { setOpen(false); ws.openShop(); }} />
-              )}
               {ws.canJoinStudentOs && (
                 <SheetRow icon={PlusCircle} label="Join Student OS" onClick={() => { setOpen(false); ws.joinStudentOs(); }} />
               )}

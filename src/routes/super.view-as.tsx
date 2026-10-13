@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Eye, GraduationCap, Loader2, ShieldAlert, ShoppingBag, Store, Building2 } from "lucide-react";
+import { ArrowLeft, Eye, GraduationCap, Loader2, ShieldAlert, ShoppingBag, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { RoleShell } from "@/components/naflis/RoleShell";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,6 @@ export const Route = createFileRoute("/super/view-as")({
 const ROLES: { role: Role; label: string; icon: typeof Eye }[] = [
   { role: "buyer", label: "Buyer", icon: ShoppingBag },
   { role: "student", label: "Student", icon: GraduationCap },
-  { role: "seller", label: "Seller", icon: Store },
   { role: "src_head", label: "SRC member", icon: Building2 },
   { role: "dean", label: "Dean / Staff", icon: Building2 },
 ];
@@ -27,7 +26,6 @@ const ROLES: { role: Role; label: string; icon: typeof Eye }[] = [
 function ViewAsConsole() {
   const navigate = useNavigate();
   const users = useNaflis((s) => s.users);
-  const stores = useNaflis((s) => s.stores);
   const grants = useNaflis((s) => s.staffGrants);
   const sessions = useNaflis((s) => s.impersonationSessions);
   const [role, setRole] = useState<Role>("buyer");
@@ -63,13 +61,12 @@ function ViewAsConsole() {
   const candidates = useMemo(
     () =>
       users
-        .map((u) => ({ user: u, roles: resolveRoles(u, stores) }))
+        .map((u) => ({ user: u, roles: resolveRoles(u) }))
         .filter(({ roles }) => roles.includes(role) && !roles.includes("super_admin"))
         .filter(({ user }) => !q.trim() || `${user.name} ${user.email}`.toLowerCase().includes(q.toLowerCase())),
-    [users, stores, role, q],
+    [users, role, q],
   );
   const contextFor = (u: User) => {
-    if (role === "seller") return stores.find((s) => s.ownerId === u.id)?.name ?? "No shop yet";
     const g = grants.find((x) => x.userId === u.id && x.status === "active");
     if ((role === "src_head" || role === "dean") && g) return `${g.title} · ${g.campusId === "*" ? g.institutionId.toUpperCase() : g.campusId}`;
     return u.institutionId ?? u.region;
@@ -86,7 +83,7 @@ function ViewAsConsole() {
   };
 
   return (
-    <RoleShell title="View As" subtitle="See the platform exactly as a buyer, student, seller or SRC member sees it. Every session is logged." icon={Eye} badge="Audited">
+    <RoleShell title="View As" subtitle="See the platform exactly as a buyer, student or SRC member sees it. Every session is logged." icon={Eye} badge="Audited">
       <Button asChild variant="ghost" size="sm" className="mb-4">
         <Link to="/super"><ArrowLeft className="mr-1 h-4 w-4" /> Engine room</Link>
       </Button>

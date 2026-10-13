@@ -1,12 +1,9 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { useNaflis } from "@/lib/naflis/store";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-// Seller area. The guard covers the dashboard and Seller Intelligence.
+// The seller workspace moved to the external seller platform (see services/sellerApi.ts).
+// Old /seller links — bookmarks, notifications — land in the Buyer marketplace.
 export const Route = createFileRoute("/seller")({
-  beforeLoad: ({ location }) => {
-    if (!useNaflis.getState().enterContext(["seller"])) {
-      throw redirect({ to: "/login", search: { redirect: location.pathname } });
-    }
+  beforeLoad: () => {
+    throw redirect({ to: "/buyer" });
   },
-  component: Outlet,
 });

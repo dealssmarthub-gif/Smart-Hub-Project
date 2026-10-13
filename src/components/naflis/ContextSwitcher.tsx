@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import {
   Building2, Check, ChevronsUpDown, Crown, GraduationCap, Landmark, PlusCircle, Scale, Shield,
-  ShoppingBag, Store, Truck, User,
+  ShoppingBag, Truck, User,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -17,7 +17,6 @@ import { useNaflis, useUserRoles } from "@/lib/naflis/store";
 export const ROLE_ICONS: Record<Role, LucideIcon> = {
   guest: User,
   buyer: ShoppingBag,
-  seller: Store,
   student: GraduationCap,
   src_head: Building2,
   dean: GraduationCap,
@@ -34,7 +33,6 @@ export function useWorkspaces() {
   const active = useNaflis((s) => s.role);
   const signedIn = useNaflis((s) => Boolean(s.currentUserId));
   const switchRole = useNaflis((s) => s.switchRole);
-  const openShop = useNaflis((s) => s.openShop);
   const setVerifyModalOpen = useNaflis((s) => s.setVerifyModalOpen);
   const held = useUserRoles();
   const studentOs = useFeatureFlag("student_os");
@@ -46,17 +44,11 @@ export function useWorkspaces() {
     active,
     signedIn,
     roles,
-    canOpenShop: signedIn && !held.includes("seller"),
     canJoinStudentOs: signedIn && studentOs && !held.includes("student"),
     switchTo: (r: Role) => {
       if (!switchRole(r)) return;
       if (r !== active) toast.success(`Switched to ${ROLE_META[r].label} workspace`);
       navigate({ to: roleHome(r) });
-    },
-    openShop: () => {
-      openShop();
-      toast.success("Seller workspace unlocked");
-      navigate({ to: "/seller" });
     },
     joinStudentOs: () => {
       setVerifyModalOpen(true);
@@ -97,13 +89,7 @@ export function ContextSwitcher() {
             </DropdownMenuItem>
           );
         })}
-        {(ws.canOpenShop || ws.canJoinStudentOs) && <DropdownMenuSeparator />}
-        {ws.canOpenShop && (
-          <DropdownMenuItem onSelect={ws.openShop} className="gap-3">
-            <PlusCircle className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">Open a shop</span>
-          </DropdownMenuItem>
-        )}
+        {ws.canJoinStudentOs && <DropdownMenuSeparator />}
         {ws.canJoinStudentOs && (
           <DropdownMenuItem onSelect={ws.joinStudentOs} className="gap-3">
             <PlusCircle className="h-4 w-4 text-muted-foreground" />

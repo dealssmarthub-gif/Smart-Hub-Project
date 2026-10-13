@@ -60,7 +60,7 @@ function AdminDashboard() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="GMV" value={GHS(gmv)} hint={`${orders.length} orders`} />
         <MetricCard label="Escrow balance" value={GHS(escrow)} hint="Currently held" />
-        <MetricCard label="Buyers" value={compact(buyers)} hint={`${users.filter((u) => u.role === "seller").length} sellers`} />
+        <MetricCard label="Buyers" value={compact(buyers)} hint={`${stores.length} sellers`} />
         <MetricCard label="Open disputes" value={String(openDisputes)} hint={`${fraudAlerts.length} fraud alerts`} />
       </div>
 

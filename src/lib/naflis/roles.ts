@@ -7,7 +7,6 @@
 export type Role =
   | "guest"
   | "buyer"
-  | "seller"
   | "student"
   | "src_head"
   | "dean"
@@ -22,14 +21,13 @@ export interface RoleMeta {
   description: string;
   /** Landing route for this workspace. */
   home:
-    | "/" | "/buyer" | "/seller" | "/student-os" | "/campus-admin"
+    | "/" | "/buyer" | "/student-os" | "/campus-admin"
     | "/delivery" | "/finance" | "/dispute" | "/admin" | "/super";
 }
 
 export const ROLE_META: Record<Role, RoleMeta> = {
   guest: { label: "Guest", description: "Browsing without an account", home: "/" },
   buyer: { label: "Buyer", description: "Shop the NAFLIS Mall", home: "/buyer" },
-  seller: { label: "Seller", description: "Manage your shop & orders", home: "/seller" },
   student: { label: "Student", description: "Student OS & campus life", home: "/student-os" },
   src_head: { label: "SRC Executive", description: "Campus notices, events & tickets", home: "/campus-admin" },
   dean: { label: "Dean / Staff", description: "Institutional publishing & timetables", home: "/campus-admin" },
@@ -42,10 +40,14 @@ export const ROLE_META: Record<Role, RoleMeta> = {
 
 /** Display order in the context switcher. */
 const ROLE_ORDER: Role[] = [
-  "buyer", "student", "seller", "src_head", "dean", "delivery", "finance", "dispute", "admin", "super_admin",
+  "buyer", "student", "src_head", "dean", "delivery", "finance", "dispute", "admin", "super_admin",
 ];
 
-/** Maps raw / legacy role strings (e.g. the old "super") onto a known Role. */
+/**
+ * Maps raw / legacy role strings (e.g. the old "super") onto a known Role.
+ * Accounts created as "seller" before sellers moved to the external platform
+ * (see services/sellerApi.ts) are plain buyers here.
+ */
 export function normalizeRole(raw: unknown): Role {
   if (raw === "super" || raw === "superadmin") return "super_admin";
   if (typeof raw === "string" && raw in ROLE_META) return raw as Role;
@@ -54,26 +56,23 @@ export function normalizeRole(raw: unknown): Role {
 
 /**
  * The full set of roles an account holds.
- * - every signed-in user is a buyer (students included)
- * - owning a shop unlocks seller
+ * Every signed-in user is a buyer (students included).
  */
 export function resolveRoles(
   user: { id: string; role?: unknown; roles?: unknown[] } | null | undefined,
-  stores: { ownerId: string }[] = [],
 ): Role[] {
   if (!user) return [];
   const held = new Set<Role>(["buyer"]);
   for (const r of user.roles ?? []) held.add(normalizeRole(r));
   if (user.role) held.add(normalizeRole(user.role));
-  if (stores.some((s) => s.ownerId === user.id)) held.add("seller");
   held.delete("guest");
   return ROLE_ORDER.filter((r) => held.has(r));
 }
 
 /**
  * Workspace a fresh sign-in starts in: Student when the account holds it,
- * otherwise Buyer (every account is a buyer). Seller and staff workspaces are
- * one switch away in the context switcher — never the default.
+ * otherwise Buyer (every account is a buyer). Staff workspaces are one switch
+ * away in the context switcher — never the default.
  */
 export function defaultContext(held: Role[]): Role {
   return held.includes("student") ? "student" : "buyer";
