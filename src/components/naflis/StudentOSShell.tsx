@@ -39,6 +39,8 @@ export function StudentOSShell() {
   const setVerifyModalOpen = useNaflis((s) => s.setVerifyModalOpen);
   const role = useNaflis((s) => s.role);
   useSuggestRegisteredCampus();
+  // The student Home draws its own phone header (greeting, campus pill, search).
+  const isHome = pathname === "/student-os" || pathname === "/student-os/";
 
   const pill = (active: boolean) =>
     `inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-4 text-xs font-bold transition ${
@@ -46,9 +48,9 @@ export function StudentOSShell() {
     }`;
 
   return (
-    <AppShell>
+    <AppShell mobileHeader={!isHome}>
       {/* Student OS section bar: every Student OS page, plus verification and selling. */}
-      <div className="border-b border-border-soft bg-background">
+      <div className={`border-b border-border-soft bg-background ${isHome ? "hidden md:block" : ""}`}>
         <div className={`${PAGE_WIDTH} flex flex-wrap items-center gap-2 pt-3`}>
           <span className="hidden items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-accent-foreground sm:inline-flex">
             <GraduationCap className="h-3.5 w-3.5" strokeWidth={1.8} /> Student OS
@@ -66,7 +68,7 @@ export function StudentOSShell() {
                 </>
               ) : (
                 <>
-                  <ShieldCheck className="h-4 w-4 text-primary" strokeWidth={1.8} />
+                  <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} />
                   <span>Verify<span className="hidden sm:inline"> Student ID</span></span>
                 </>
               )}
@@ -100,7 +102,7 @@ export function StudentOSShell() {
         </nav>
       </div>
 
-      <main className={`${PAGE_WIDTH} py-6`}>
+      <main className={`${PAGE_WIDTH} ${isHome ? "pb-6 md:py-6" : "py-6"}`}>
         <Outlet />
       </main>
 

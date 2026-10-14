@@ -35,14 +35,14 @@ function Row({ icon: Icon, label, hint, to, onClick, active }: {
 }) {
   const body = (
     <>
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary-soft text-link">
         <Icon className="h-5 w-5" strokeWidth={1.8} />
       </span>
       <span className="min-w-0 flex-1 text-left">
         <span className="block text-sm font-semibold">{label}</span>
         {hint && <span className="block truncate text-xs text-muted-foreground">{hint}</span>}
       </span>
-      {active ? <span className="text-xs font-bold text-primary">Current</span> : <ChevronRight className="h-4 w-4 text-muted-foreground" strokeWidth={1.8} />}
+      {active ? <span className="text-xs font-bold text-link">Current</span> : <ChevronRight className="h-4 w-4 text-muted-foreground" strokeWidth={1.8} />}
     </>
   );
   const cls = "flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 py-2 transition hover:bg-accent";

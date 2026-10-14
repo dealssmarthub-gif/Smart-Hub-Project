@@ -64,11 +64,11 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="min-h-11 gap-3 rounded-xl" onSelect={() => navigate({ to: "/me" })}>
-          <User className="h-4 w-4 text-primary" strokeWidth={1.8} /> Me — wallet, orders & more
+          <User className="h-4 w-4 text-link" strokeWidth={1.8} /> Me — wallet, orders & more
         </DropdownMenuItem>
         {staff.map((r) => (
           <DropdownMenuItem key={`dash-${r}`} className="min-h-11 gap-3 rounded-xl" onSelect={() => ws.switchTo(r)}>
-            <LayoutDashboard className="h-4 w-4 text-primary" strokeWidth={1.8} /> {ROLE_META[r].label} dashboard
+            <LayoutDashboard className="h-4 w-4 text-link" strokeWidth={1.8} /> {ROLE_META[r].label} dashboard
           </DropdownMenuItem>
         ))}
         {ws.roles.length > 1 && (
@@ -79,7 +79,7 @@ export function UserMenu() {
               const Icon = ROLE_ICONS[r];
               return (
                 <DropdownMenuItem key={r} className="min-h-11 gap-3 rounded-xl" onSelect={() => ws.switchTo(r)}>
-                  <Icon className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.8} />
+                  <Icon className="h-4 w-4 shrink-0 text-link" strokeWidth={1.8} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium">{ROLE_META[r].label}</span>
                     <span className="block truncate text-xs text-muted-foreground">{ROLE_META[r].description}</span>

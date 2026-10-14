@@ -1,10 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { useFeatureFlag } from "@/lib/featureFlags";
-import { useNaflis } from "@/lib/naflis/store";
+import { useNaflis, useUserRoles } from "@/lib/naflis/store";
+import { NotificationBell } from "@/components/naflis/home/HomeBlocks";
 import { CampusPicker } from "./CampusPicker";
 import { PLACES, placeFor, type PlaceId } from "./places";
 import { UserMenu } from "./UserMenu";
@@ -17,10 +18,19 @@ export const PAGE_WIDTH = "mx-auto w-full max-w-[1160px] px-4 sm:px-6";
  * `onEscrowClick` lets the landing page open its explainer in place; elsewhere
  * "How escrow works" links to that section of the landing page.
  */
-export function TopNav({ onEscrowClick, showCampus = true }: { onEscrowClick?: () => void; showCampus?: boolean }) {
-  const pathname = useRouterState({ select: (r) => r.location.pathname });
+/**
+ * Where "Home" goes: the signed-in student hub for accounts that hold the
+ * student role, the public landing page for everyone else.
+ */
+export function useHomePath(): "/" | "/student-os" {
   const signedIn = useNaflis((s) => Boolean(s.currentUserId));
-  const unread = useNaflis((s) => s.notifications.filter((n) => n.userId === s.currentUserId && !n.read).length);
+  const held = useUserRoles();
+  const studentOs = useFeatureFlag("student_os");
+  return signedIn && studentOs && held.includes("student") ? "/student-os" : "/";
+}
+
+export function TopNav({ onEscrowClick, showCampus = true, mobile = true }: { onEscrowClick?: () => void; showCampus?: boolean; mobile?: boolean }) {
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
   const studentOs = useFeatureFlag("student_os");
   const active = placeFor(pathname);
   const link = (id: PlaceId) =>
@@ -32,7 +42,7 @@ export function TopNav({ onEscrowClick, showCampus = true }: { onEscrowClick?: (
   const escrowClass = "inline-flex h-11 items-center whitespace-nowrap gap-1.5 rounded-full px-4 text-sm font-semibold text-subtle-foreground transition hover:bg-accent hover:text-accent-foreground";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border-soft bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+    <header className={`sticky top-0 z-40 border-b border-border-soft ${mobile ? "" : "hidden md:block"} bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75`}>
       <div className={`${PAGE_WIDTH} flex h-16 items-center gap-3 md:h-[72px]`}>
         <Logo className="shrink-0" compact />
         <nav aria-label="Main" className="ml-4 hidden items-center gap-1 md:flex">
@@ -40,28 +50,17 @@ export function TopNav({ onEscrowClick, showCampus = true }: { onEscrowClick?: (
           {studentOs && <Link to={campus.to} className={link("campus")}>Campus</Link>}
           {onEscrowClick ? (
             <button type="button" onClick={onEscrowClick} className={escrowClass}>
-              <ShieldCheck className="h-4 w-4 text-primary" strokeWidth={1.8} /> How escrow works
+              <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> How escrow works
             </button>
           ) : (
             <Link to="/" hash="escrow" className={escrowClass}>
-              <ShieldCheck className="h-4 w-4 text-primary" strokeWidth={1.8} /> How escrow works
+              <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> How escrow works
             </Link>
           )}
         </nav>
         <div className="ml-auto flex min-w-0 items-center gap-1 md:gap-2">
           {showCampus && <CampusPicker compact />}
-          {signedIn && (
-            <Link
-              to="/buyer/notifications"
-              aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
-              className="relative grid h-11 w-11 place-items-center rounded-full text-subtle-foreground transition hover:bg-accent hover:text-accent-foreground"
-            >
-              <Bell className="h-5 w-5" strokeWidth={1.8} />
-              {unread > 0 && (
-                <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[9px] font-bold text-error-foreground">{unread}</span>
-              )}
-            </Link>
-          )}
+          <NotificationBell />
           <ThemeToggle />
           <div className="hidden md:block"><UserMenu /></div>
         </div>
@@ -74,8 +73,9 @@ export function TopNav({ onEscrowClick, showCampus = true }: { onEscrowClick?: (
 export function MobileTabBar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const studentOs = useFeatureFlag("student_os");
+  const home = useHomePath();
   const active = placeFor(pathname);
-  const places = PLACES.filter((p) => studentOs || p.id !== "campus").map((p) =>
+  const places = PLACES.map((p) => (p.id === "home" ? { ...p, to: home } : p)).filter((p) => studentOs || p.id !== "campus").map((p) =>
     p.id === "shop" && !studentOs ? { ...p, to: "/buyer" } : p,
   );
 
@@ -132,15 +132,17 @@ export function SiteFooter() {
  * The consumer shell: top nav, page content, footer, and the mobile tab bar.
  * Content gets bottom padding on phones so nothing sits behind the tab bar.
  */
-export function AppShell({ children, onEscrowClick, showCampus, footer = true }: {
+export function AppShell({ children, onEscrowClick, showCampus, footer = true, mobileHeader = true }: {
   children: ReactNode;
   onEscrowClick?: () => void;
   showCampus?: boolean;
   footer?: boolean;
+  /** False when the page draws its own phone header (the student Home). */
+  mobileHeader?: boolean;
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <TopNav onEscrowClick={onEscrowClick} showCampus={showCampus} />
+      <TopNav onEscrowClick={onEscrowClick} showCampus={showCampus} mobile={mobileHeader} />
       <div className={`flex-1 ${footer ? "" : "pb-28 md:pb-0"}`}>{children}</div>
       {footer && <div className="pb-28 md:pb-0"><SiteFooter /></div>}
       <MobileTabBar />

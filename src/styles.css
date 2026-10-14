@@ -29,6 +29,8 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-deep: var(--primary-deep);
   --color-primary-soft: var(--primary-soft);
+  /* Accent for text, icons and links. Same violet as --primary in light mode; lighter on dark backgrounds. */
+  --color-link: var(--link);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -147,6 +149,7 @@
   --primary-foreground: #ffffff;
   --primary-deep: #4733c4;
   --primary-soft: #ece8ff;
+  --link: #5b45e0;
   --secondary: #ece8ff;
   --secondary-foreground: #4733c4;
   --muted: #eeebfb;
@@ -203,9 +206,9 @@
   --brand-100: #241e45;
   --brand-200: #3a3270;
   --brand-300: #5d50b8;
-  --brand-400: #9a8cff;
-  --brand-500: #7b6bff;
-  --brand-600: #6a58f5;
+  --brand-400: #8f7cf2;
+  --brand-500: #5b45e0;
+  --brand-600: #4733c4;
   --brand-700: #b9b0ff;
   --brand-800: #d4ceff;
   --brand-900: #e6e2ff;
@@ -230,10 +233,12 @@
   --card-foreground: #f2f0ff;
   --popover: #1a1633;
   --popover-foreground: #f2f0ff;
-  --primary: #a99cff;
-  --primary-foreground: #110e22;
-  --primary-deep: #8f7cf2;
+  /* Filled buttons keep the brand violet with white text (6.2:1) in both themes. */
+  --primary: #5b45e0;
+  --primary-foreground: #ffffff;
+  --primary-deep: #4733c4;
   --primary-soft: #262050;
+  --link: #a99cff;
   --secondary: #262050;
   --secondary-foreground: #d4ceff;
   --muted: #221d40;
@@ -252,7 +257,7 @@
   --escrow-foreground: #ffffff;
 
   --tile-lavender: #262050;
-  --tile-lavender-icon: #7b6bff;
+  --tile-lavender-icon: #5b45e0;
   --tile-peach: #3a2418;
   --tile-peach-icon: #e8590c;
   --tile-mint: #13342c;
@@ -274,8 +279,8 @@
 
   --sidebar: #110e22;
   --sidebar-foreground: #f2f0ff;
-  --sidebar-primary: #a99cff;
-  --sidebar-primary-foreground: #110e22;
+  --sidebar-primary: #5b45e0;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #262050;
   --sidebar-accent-foreground: #d4ceff;
   --sidebar-border: #322b5c;
@@ -291,7 +296,16 @@
 }
 
 @utility text-gradient-sea {
-  color: var(--primary);
+  color: var(--link);
+}
+
+/*
+ * Transitional (see the sky-* mapping above): on dark backgrounds, violet used
+ * as TEXT switches to the lighter --link shade, while violet used as a FILL
+ * stays #5B45E0 so white button labels keep their contrast.
+ */
+.dark :is(.text-sky-300, .text-sky-400, .text-sky-500, .text-sky-600, .text-sky-700, .text-primary) {
+  color: var(--link);
 }
 
 @utility glass {

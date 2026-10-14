@@ -22,7 +22,7 @@ export function CampusPicker({ tone = "light", compact = false }: { tone?: "ligh
           className="hidden items-center gap-1 whitespace-nowrap rounded-full border border-border-soft px-2.5 py-1 text-[11px] font-medium text-muted-foreground 2xl:flex"
           title="Registered institution (set by student verification)"
         >
-          <GraduationCap className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} /> {registered}
+          <GraduationCap className="h-3.5 w-3.5 text-link" strokeWidth={1.8} /> {registered}
         </span>
       )}
       <label
@@ -30,7 +30,7 @@ export function CampusPicker({ tone = "light", compact = false }: { tone?: "ligh
           onPrimary ? "bg-white/15 text-white hover:bg-white/20" : "border border-border bg-card text-foreground shadow-soft hover:border-primary/40"
         }`}
       >
-        <MapPin className={`mr-1.5 h-4 w-4 shrink-0 ${onPrimary ? "text-white" : "text-primary"}`} strokeWidth={1.8} aria-hidden />
+        <MapPin className={`mr-1.5 h-4 w-4 shrink-0 ${onPrimary ? "text-white" : "text-link"}`} strokeWidth={1.8} aria-hidden />
         <span className="sr-only">Active campus</span>
         <select
           value={activeCampus}
