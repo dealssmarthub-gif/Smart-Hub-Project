@@ -9,7 +9,7 @@ export function Logo({ className = "", compact = false }: { className?: string; 
         <Sparkles className="h-4 w-4 text-white" />
       </span>
       <span className={`flex-col leading-none ${compact ? "hidden sm:flex" : "flex"}`}>
-        <span className="text-sm font-black tracking-tight">
+        <span className="text-sm font-extrabold tracking-tight">
           <span className="text-foreground">NAFLIS</span>{" "}
           <span className="text-gradient-sea">Mall</span>
         </span>

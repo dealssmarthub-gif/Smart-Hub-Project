@@ -67,7 +67,7 @@ function DisputeDashboard() {
       </div>
 
       {eligible.length > 0 && (
-        <div className="mt-6 rounded-xl border bg-card p-4">
+        <div className="mt-6 rounded-2xl border border-border-soft bg-card p-4">
           <p className="text-sm font-semibold">Seed a demo dispute from a delivered order</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {eligible.slice(0, 3).map((o) => (
@@ -81,7 +81,7 @@ function DisputeDashboard() {
 
       <div className="mt-6 space-y-3">
         {disputes.length === 0 ? (
-          <div className="rounded-2xl border bg-card p-10 text-center">
+          <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-10 text-center">
             <Shield className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">No disputes yet. Deliver an order first, then open one above.</p>
           </div>
@@ -118,7 +118,7 @@ function DisputeCard({ dispute, order, buyerName }: { dispute: ReturnType<typeof
 
 
   return (
-    <div className="rounded-2xl border bg-card p-5">
+    <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ function DisputeCard({ dispute, order, buyerName }: { dispute: ReturnType<typeof
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Evidence</p>
           <ul className="mt-1 space-y-1 text-sm">
             {dispute.evidence.map((e) => (
-              <li key={e} className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-sky-500" />{e}</li>
+              <li key={e} className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />{e}</li>
             ))}
           </ul>
         </div>
@@ -160,7 +160,7 @@ function DisputeCard({ dispute, order, buyerName }: { dispute: ReturnType<typeof
             <Button size="sm" variant="outline" onClick={() => resolve("full-refund")}>Full refund to buyer</Button>
             <Button size="sm" variant="outline" onClick={() => resolve("release")}>Release to seller</Button>
             <div className="flex items-center gap-2 rounded-lg border px-3 py-1">
-              <Split className="h-4 w-4 text-sky-500" />
+              <Split className="h-4 w-4 text-link" />
               <input type="range" min={10} max={90} step={5} value={splitPct} onChange={(e) => setSplitPct(Number(e.target.value))} />
               <span className="w-16 text-xs font-semibold">Buyer {splitPct}%</span>
               <Button size="sm" onClick={() => resolve("split")}>Split escrow</Button>

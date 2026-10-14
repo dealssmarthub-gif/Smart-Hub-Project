@@ -74,9 +74,9 @@ function AdminDashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 grid gap-3 md:grid-cols-2">
-          <div className="rounded-xl border bg-card p-4">
+          <div className="rounded-2xl border border-border-soft bg-card p-4">
             <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-sky-500" />
+              <Package className="h-4 w-4 text-link" />
               <p className="font-semibold">Catalog distribution</p>
             </div>
             <ul className="mt-3 space-y-2">
@@ -89,9 +89,9 @@ function AdminDashboard() {
               ))}
             </ul>
           </div>
-          <div className="rounded-xl border bg-card p-4">
+          <div className="rounded-2xl border border-border-soft bg-card p-4">
             <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-sky-500" />
+              <Activity className="h-4 w-4 text-link" />
               <p className="font-semibold">Order pipeline</p>
             </div>
             <ul className="mt-3 space-y-2 text-sm">
@@ -110,7 +110,7 @@ function AdminDashboard() {
 
         <TabsContent value="users" className="mt-4 space-y-2">
           {users.map((u) => (
-            <div key={u.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-3">
+            <div key={u.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-soft bg-card p-3">
               <div className="flex items-center gap-3">
                 <img src={u.avatar} alt="" className="h-10 w-10 rounded-full border" />
                 <div>
@@ -128,7 +128,7 @@ function AdminDashboard() {
 
         <TabsContent value="stores" className="mt-4 space-y-2">
           {stores.map((s) => (
-            <div key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-3">
+            <div key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-soft bg-card p-3">
               <div className="flex items-center gap-3">
                 <img src={s.logo} alt="" className="h-10 w-10 rounded-full border" />
                 <div>
@@ -143,7 +143,7 @@ function AdminDashboard() {
 
         <TabsContent value="fraud" className="mt-4 space-y-2">
           {fraudAlerts.map((a) => (
-            <div key={a.id} className="flex items-center justify-between rounded-xl border bg-card p-4">
+            <div key={a.id} className="flex items-center justify-between rounded-2xl border border-border-soft bg-card p-4">
               <div className="flex items-center gap-3">
                 <ShieldAlert className={`h-5 w-5 ${a.severity === "high" ? "text-error" : a.severity === "medium" ? "text-warning" : "text-muted-foreground"}`} />
                 <div>
@@ -158,11 +158,11 @@ function AdminDashboard() {
 
         <TabsContent value="audit" className="mt-4">
           {audit.length === 0 ? (
-            <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">
+            <p className="rounded-2xl border border-border-soft bg-card p-6 text-center text-sm text-muted-foreground">
               Audit log is empty. Perform some actions across the platform to see them appear here in real time.
             </p>
           ) : (
-            <div className="rounded-xl border bg-card">
+            <div className="rounded-2xl border border-border-soft bg-card">
               <table className="w-full text-sm">
                 <thead className="border-b bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
                   <tr>

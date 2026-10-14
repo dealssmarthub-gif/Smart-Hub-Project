@@ -30,7 +30,7 @@ function InstallmentsPage() {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl gradient-hero p-6 text-white shadow-premium">
-        <div className="flex items-center gap-2 text-white/70">
+        <div className="flex items-center gap-2 text-white/90">
           <TrendingUp className="h-4 w-4" />
           <span className="text-xs font-semibold uppercase tracking-widest">Take Now, Pay Later</span>
         </div>
@@ -38,23 +38,23 @@ function InstallmentsPage() {
 
         <div className="mt-6 grid gap-4 md:grid-cols-[1fr_1fr] md:items-center">
           <div>
-            <p className="text-xs text-white/70">Credit score</p>
-            <p className="text-5xl font-black">{score}</p>
+            <p className="text-xs text-white/90">Credit score</p>
+            <p className="text-5xl font-extrabold">{score}</p>
             <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/10">
               <div className="h-full gradient-gold" style={{ width: `${scorePct}%` }} />
             </div>
-            <p className="mt-1 text-xs text-white/70">Out of 1000</p>
+            <p className="mt-1 text-xs text-white/90">Out of 1000</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-lg bg-white/10 p-3">
-              <p className="text-xs text-white/70">Available credit</p>
+              <p className="text-xs text-white/90">Available credit</p>
               <p className="text-xl font-bold">{GHS(fromMinor(decision.availableMinor))}</p>
-              <p className="text-[10px] text-white/60">of {GHS(fromMinor(decision.limitMinor))} limit</p>
+              <p className="text-[10px] text-white/90">of {GHS(fromMinor(decision.limitMinor))} limit</p>
             </div>
             <div className="rounded-lg bg-white/10 p-3">
-              <p className="text-xs text-white/70">Status</p>
+              <p className="text-xs text-white/90">Status</p>
               <p className="text-xl font-bold">{decision.eligible ? "Approved" : "Not eligible yet"}</p>
-              <p className="text-[10px] capitalize text-white/60">{decision.band} band</p>
+              <p className="text-[10px] capitalize text-white/90">{decision.band} band</p>
             </div>
           </div>
         </div>
@@ -62,7 +62,7 @@ function InstallmentsPage() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {decision.checks.filter((c) => c.code !== "limit").map((c) => (
-          <div key={c.code} className="rounded-xl border bg-card p-4">
+          <div key={c.code} className="rounded-2xl border border-border-soft bg-card p-4">
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
               {c.passed ? <CheckCircle2 className="h-3.5 w-3.5 text-success" /> : <XCircle className="h-3.5 w-3.5 text-error" />}
               {c.label}
@@ -78,7 +78,7 @@ function InstallmentsPage() {
         <h2 className="mb-3 text-lg font-bold">Try Pay Later on a product</h2>
         <div className="grid gap-3 md:grid-cols-3">
           {(financeable.length ? financeable : products).slice(0, 3).map((p) => (
-            <div key={p.id} className="flex gap-3 rounded-xl border bg-card p-3">
+            <div key={p.id} className="flex gap-3 rounded-2xl border border-border-soft bg-card p-3">
               <img src={p.image} className="h-20 w-20 rounded-lg object-cover" alt="" />
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-sm font-medium">{p.name}</p>

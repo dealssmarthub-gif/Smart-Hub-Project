@@ -37,7 +37,7 @@ const VIEWS: { id: View; label: string }[] = [
   { id: "list", label: "List" },
 ];
 const TYPE_META: Record<OccurrenceType, { label: string; icon: typeof BookOpen; tone: string }> = {
-  class: { label: "Classes", icon: BookOpen, tone: "border-l-sky-500" },
+  class: { label: "Classes", icon: BookOpen, tone: "border-l-primary" },
   exam: { label: "Exams", icon: GraduationCap, tone: "border-l-error" },
   event: { label: "Campus events", icon: Megaphone, tone: "border-l-gold" },
 };
@@ -174,7 +174,7 @@ function AcademicCalendar() {
           })}
           {myProgramme && (
             <label className="flex min-h-10 items-center gap-1.5 text-xs font-semibold">
-              <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} className="accent-sky-500" />
+              <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} className="accent-primary" />
               My programme only
             </label>
           )}
@@ -193,8 +193,8 @@ function AcademicCalendar() {
             const items = byDay.get(toIsoDate(day)) ?? [];
             const isToday = toIsoDate(day) === toIsoDate(now);
             return (
-              <div key={day} className={`min-w-0 rounded-2xl border bg-card p-2 shadow-soft ${isToday ? "border-primary" : "border-border-soft"}`}>
-                <p className={`mb-2 text-xs font-semibold ${isToday ? "text-sky-500" : "text-muted-foreground"}`}>
+              <div key={day} className={`min-w-0 rounded-3xl border border-border-soft bg-card shadow-soft p-2 shadow-soft ${isToday ? "border-primary" : "border-border-soft"}`}>
+                <p className={`mb-2 text-xs font-semibold ${isToday ? "text-link" : "text-muted-foreground"}`}>
                   {DOW[i]} {new Date(day).getDate()}
                 </p>
                 <div className="space-y-2">
@@ -286,12 +286,12 @@ function MonthGrid({ anchor, gridStart, byDay, now, onPick }: {
               onClick={() => onPick(day)}
               className={`min-h-20 border-b border-r p-1.5 text-left transition hover:bg-muted ${inMonth ? "" : "bg-muted/40 text-muted-foreground"}`}
             >
-              <span className={`text-xs font-semibold ${toIsoDate(day) === toIsoDate(now) ? "grid h-5 w-5 place-items-center rounded-full bg-sky-500 text-white" : ""}`}>
+              <span className={`text-xs font-semibold ${toIsoDate(day) === toIsoDate(now) ? "grid h-5 w-5 place-items-center rounded-full bg-primary text-white" : ""}`}>
                 {new Date(day).getDate()}
               </span>
               <div className="mt-1 space-y-0.5 text-[10px]">
                 {count("exam") > 0 && <p className="truncate rounded bg-error/15 px-1 font-semibold text-error">{items.filter((o) => o.type === "exam").map((o) => o.courseCode).join(", ")}</p>}
-                {count("class") > 0 && <p className="truncate rounded bg-sky-500/10 px-1 text-sky-600 dark:text-sky-400">{count("class")} class{count("class") > 1 ? "es" : ""}</p>}
+                {count("class") > 0 && <p className="truncate rounded bg-primary/10 px-1 text-link">{count("class")} class{count("class") > 1 ? "es" : ""}</p>}
                 {count("event") > 0 && <p className="truncate rounded bg-gold/15 px-1">{count("event")} event</p>}
               </div>
             </button>

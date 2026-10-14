@@ -111,6 +111,31 @@ The redesign changes presentation and navigation only. Behaviour and data issues
 ### 27. Lost & Found claim panel re-renders on any store change
 - **Where:** `ClaimPanel` in `student-os.lost-found.tsx` calls `useNaflis()` with no selector, so every card re-renders whenever anything in the app store changes. A performance note only; behaviour is correct.
 
+## Found in Phase 5 (Me, wallet/orders, staff and auth pages)
+
+### 28. Orders page and every order detail page crash ("This page didn't load")
+- **Where:** `/buyer/orders` and `/buyer/orders/<id>` (same on `main`).
+- **Reproduce:** sign in with **Demo Buyer** → open **Me → Orders & escrow** (or **Track order** on the Me active-order card).
+- **What happens:** the error screen appears; the console shows "The result of getSnapshot should be cached" then "Maximum update depth exceeded".
+- **Cause:** `buyer.orders.tsx` selects `s.orders.filter(...)` inside `useNaflis`, which returns a new array on every read (zustand 5 loops on this). `buyer.orders.tsx` is also the *parent* route of `buyer.orders.$orderId.tsx`, so the detail page crashes too, and it has no `<Outlet />`, so the detail page would not render even without the crash.
+- **Knock-on:** the order page's **Confirm delivery & release escrow** and the demo **Simulate next status** button can't be reached, so an order can't be moved to "Delivered" from the buyer UI.
+
+### 29. Alerts page uses the same crashing selector
+- **Where:** `/buyer/notifications` selects `s.notifications.filter(...)` in `useNaflis` (same pattern as #28). Reproduce: Demo Buyer → **Me → Alerts**.
+
+### 30. No buyer-side "Open a dispute" action
+- **Where:** buyer order pages. The order machine allows the buyer to move an order to `disputed`, and the store has `openDispute`, but the only button that calls it is the staff "Seed a demo dispute" panel on `/dispute`. The Me active-order card therefore shows no dispute option (none was invented).
+
+### 31. Wallet buttons that do nothing
+- **Where:** `/buyer/wallet` → **Withdraw**, **Send**, **Freeze wallet** and **Link another method**.
+- **What happens:** nothing (no handler). Kept as they were; the Me wallet card shows **Top up** only.
+
+### 32. Order numbers can be very short
+- **Where:** Me active-order card, order list. `Order #{id.slice(2, 10)}` shows e.g. "#id1n" for locally created orders, whose ids are short.
+
+### 33. Expensive first cart item blocks wallet checkout
+- **Where:** `/buyer` → first **Add to cart** is the iPhone 16 Pro Max (GH₵18,500) while the demo wallet holds GH₵4,200, so **Pay** with the wallet is disabled ("Short by … top up first"). Not a bug as such, but the demo flow needs Mobile Money/Card (simulated in demo mode) to place an order.
+
 ## Code health (pre-existing)
 
 ### 14. Lint baseline

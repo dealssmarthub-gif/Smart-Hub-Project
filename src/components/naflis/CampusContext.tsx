@@ -88,17 +88,17 @@ export function CampusContextBar() {
           className="hidden items-center gap-1 rounded-md border px-2 py-1 text-[11px] text-muted-foreground lg:flex"
           title="Registered institution (set by student verification)"
         >
-          <GraduationCap className="h-3.5 w-3.5 text-sky-500" /> {registered}
+          <GraduationCap className="h-3.5 w-3.5 text-link" /> {registered}
         </span>
       )}
       <div className="relative flex items-center">
-        <Building2 className="pointer-events-none absolute left-2.5 h-4 w-4 text-sky-500" />
+        <Building2 className="pointer-events-none absolute left-2.5 h-4 w-4 text-link" />
         <select
           aria-label="Active campus"
           title="Active campus"
           value={activeCampus}
           onChange={(e) => requestCampusSwitch(e.target.value, "manual")}
-          className="h-9 rounded-lg border border-border bg-card pl-8 pr-7 text-xs font-semibold text-foreground shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          className="h-9 rounded-lg border border-border bg-card pl-8 pr-7 text-xs font-semibold text-foreground shadow-sm transition focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
         >
           {CAMPUSES.map((c) => (
             <option key={c} value={c}>{c}</option>
@@ -140,7 +140,7 @@ export function CampusSwitchPrompt() {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-sky-500" /> {title}
+            <MapPin className="h-5 w-5 text-link" /> {title}
           </AlertDialogTitle>
           <AlertDialogDescription>{body}</AlertDialogDescription>
         </AlertDialogHeader>

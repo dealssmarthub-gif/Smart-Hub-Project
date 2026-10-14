@@ -89,8 +89,8 @@ export function SrcEventsTickets({ campus }: { campus: string }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
-      <section className="h-fit space-y-3 rounded-2xl border bg-card p-5">
-        <h3 className="flex items-center gap-2 font-bold"><CalendarPlus className="h-4 w-4 text-sky-500" /> New event · {campus}</h3>
+      <section className="h-fit space-y-3 rounded-3xl border border-border-soft bg-card shadow-soft p-5">
+        <h3 className="flex items-center gap-2 font-bold"><CalendarPlus className="h-4 w-4 text-link" /> New event · {campus}</h3>
         {!canCreate ? (
           <p className="text-sm text-muted-foreground">Your role doesn't include creating events for {campus}.</p>
         ) : (
@@ -103,7 +103,7 @@ export function SrcEventsTickets({ campus }: { campus: string }) {
             <Input value={organizer} onChange={(e) => setOrganizer(e.target.value)} placeholder="Organiser" />
             <Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What's happening" />
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" className="accent-sky-500" checked={ticketed} disabled={!canSell} onChange={(e) => setTicketed(e.target.checked)} />
+              <input type="checkbox" className="accent-primary" checked={ticketed} disabled={!canSell} onChange={(e) => setTicketed(e.target.checked)} />
               Sell tickets {!canSell && <span className="text-xs text-muted-foreground">(not in your permissions)</span>}
             </label>
             {ticketed && canSell && (
@@ -127,12 +127,12 @@ export function SrcEventsTickets({ campus }: { campus: string }) {
 
       <section className="space-y-3">
         <h3 className="font-bold">Events at {campus}</h3>
-        {mine.length === 0 && <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">No events yet.</p>}
+        {mine.length === 0 && <p className="rounded-2xl border border-border-soft bg-card p-6 text-center text-sm text-muted-foreground">No events yet.</p>}
         {mine.map((e) => {
           const evTickets = tickets.filter((t) => t.eventId === e.id);
           const checkedIn = evTickets.filter((t) => t.status === "checked_in").length;
           return (
-            <div key={e.id} className="rounded-xl border bg-card p-4">
+            <div key={e.id} className="rounded-2xl border border-border-soft bg-card p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <p className="font-semibold">{e.title}</p>
@@ -145,7 +145,7 @@ export function SrcEventsTickets({ campus }: { campus: string }) {
                   {e.ticketing.tiers.map((t) => (
                     <div key={t.id}>
                       <div className="flex justify-between"><span>{t.name} · {GHS(t.price)}</span><span>{t.sold} / {t.capacity} sold · {GHS(t.sold * t.price)}</span></div>
-                      <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full bg-sky-500" style={{ width: `${Math.min(100, (t.sold / t.capacity) * 100)}%` }} /></div>
+                      <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full bg-primary" style={{ width: `${Math.min(100, (t.sold / t.capacity) * 100)}%` }} /></div>
                     </div>
                   ))}
                   <p className="text-muted-foreground">{evTickets.length} issued in this app · {checkedIn} checked in</p>
@@ -178,11 +178,11 @@ export function TicketCheckIn({ campus }: { campus: string }) {
     setCode("");
   }, []);
 
-  if (!allowed) return <p className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">Your role doesn't include validating tickets for {campus}.</p>;
+  if (!allowed) return <p className="rounded-2xl border border-border-soft bg-card p-6 text-sm text-muted-foreground">Your role doesn't include validating tickets for {campus}.</p>;
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="space-y-3 rounded-2xl border bg-card p-5">
+      <section className="space-y-3 rounded-3xl border border-border-soft bg-card shadow-soft p-5">
         <h3 className="font-bold">Scan tickets · {campus}</h3>
         <QrScanner onScan={check} />
         <div className="flex gap-2">
@@ -193,7 +193,7 @@ export function TicketCheckIn({ campus }: { campus: string }) {
           <div className={`flex items-center gap-3 rounded-xl p-4 ${result.ok ? "bg-success/15 text-success" : "bg-error/15 text-error"}`}>
             {result.ok ? <CheckCircle2 className="h-8 w-8 shrink-0" /> : <XCircle className="h-8 w-8 shrink-0" />}
             <div>
-              <p className="text-lg font-black">{result.ok ? "ADMIT" : "DENY"}</p>
+              <p className="text-lg font-extrabold">{result.ok ? "ADMIT" : "DENY"}</p>
               <p className="text-sm">{result.message}</p>
             </div>
           </div>

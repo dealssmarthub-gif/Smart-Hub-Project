@@ -69,7 +69,7 @@ function FinanceDashboard() {
 
         <TabsContent value="credit" className="mt-4 space-y-2">
           {applications.map(({ user, approved }) => (
-            <div key={user.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
+            <div key={user.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-soft bg-card p-4">
               <div className="flex items-center gap-3">
                 <img src={user.avatar} alt="" className="h-10 w-10 rounded-full border" />
                 <div>
@@ -100,7 +100,7 @@ function FinanceDashboard() {
 
         <TabsContent value="escrow" className="mt-4 space-y-2">
           {orders.filter((o) => ESCROW_HELD_STATES.includes(o.status)).map((o) => (
-            <div key={o.id} className="flex items-center justify-between rounded-xl border bg-card p-4">
+            <div key={o.id} className="flex items-center justify-between rounded-2xl border border-border-soft bg-card p-4">
               <div>
                 <p className="text-xs text-muted-foreground">Order #{o.id.slice(2, 10)} · {fmtDate(o.createdAt)}</p>
                 <p className="font-semibold">{GHS(o.escrowHeld ?? o.total)} held</p>
@@ -109,15 +109,15 @@ function FinanceDashboard() {
             </div>
           ))}
           {orders.filter((o) => ESCROW_HELD_STATES.includes(o.status)).length === 0 && (
-            <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">No escrow currently held.</p>
+            <p className="rounded-2xl border border-border-soft bg-card p-6 text-center text-sm text-muted-foreground">No escrow currently held.</p>
           )}
         </TabsContent>
 
         <TabsContent value="refunds" className="mt-4 space-y-2">
           {refundQueue.length === 0 ? (
-            <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">No refunds queued.</p>
+            <p className="rounded-2xl border border-border-soft bg-card p-6 text-center text-sm text-muted-foreground">No refunds queued.</p>
           ) : refundQueue.map((o) => (
-            <div key={o.id} className="flex items-center justify-between rounded-xl border bg-card p-4">
+            <div key={o.id} className="flex items-center justify-between rounded-2xl border border-border-soft bg-card p-4">
               <div>
                 <p className="text-xs text-muted-foreground">Order #{o.id.slice(2, 10)}</p>
                 <p className="font-semibold">{GHS(o.total)}</p>
@@ -130,7 +130,7 @@ function FinanceDashboard() {
         </TabsContent>
 
         <TabsContent value="settlements" className="mt-4">
-          <div className="rounded-xl border bg-card p-4">
+          <div className="rounded-2xl border border-border-soft bg-card p-4">
             <p className="font-semibold">Seller settlements</p>
             <p className="mt-1 text-sm text-muted-foreground">
               Auto-settle every 24 hours after successful delivery. Manual approval required over GHS 10,000.
@@ -154,7 +154,7 @@ function FinanceDashboard() {
             </Button>
           </div>
           {activePlans.length > 0 && (
-            <div className="mt-3 rounded-xl border bg-card p-4">
+            <div className="mt-3 rounded-2xl border border-border-soft bg-card p-4">
               <div className="flex items-center gap-2">
                 <TrendingDown className="h-4 w-4 text-warning" />
                 <p className="font-semibold">Installment exposure</p>

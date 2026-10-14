@@ -100,7 +100,7 @@ function CheckoutPage() {
 
   if (lines.length === 0) {
     return (
-      <div className="rounded-xl border bg-card p-10 text-center">
+      <div className="rounded-2xl border border-border-soft bg-card p-10 text-center">
         <p>Your cart is empty.</p>
         <Button asChild className="mt-3"><Link to="/buyer">Continue shopping</Link></Button>
       </div>
@@ -201,7 +201,7 @@ function CheckoutPage() {
               value="wallet"
               title={`NAFLIS Wallet · ${GHS(wallet?.balance ?? 0)} available`}
               subtitle={walletShort > 0 ? `Short by ${GHS(walletShort)} — top up first` : "Instant, zero fees"}
-              icon={<Wallet className="h-5 w-5 text-sky-500" />}
+              icon={<Wallet className="h-5 w-5 text-link" />}
               active={payment === "wallet"}
             />
             <RadioTile value="card" title="NAFLIS Card / Bank card" subtitle="Visa / Mastercard via Paystack" icon={<CreditCard className="h-5 w-5" />} active={payment === "card"} />
@@ -220,7 +220,7 @@ function CheckoutPage() {
         </div>
       </div>
 
-      <aside className="sticky top-24 h-fit space-y-4 rounded-2xl border bg-card p-5">
+      <aside className="sticky top-24 h-fit space-y-4 rounded-3xl border border-border-soft bg-card shadow-soft p-5">
         <h3 className="font-bold">Review & pay</h3>
 
         <div className="space-y-1">
@@ -287,9 +287,9 @@ function CheckoutPage() {
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border bg-card p-5">
+    <section className="rounded-3xl border border-border-soft bg-card shadow-soft p-5">
       <div className="mb-3 flex items-center gap-2">
-        <span className="grid h-6 w-6 place-items-center rounded-full bg-sky-500 text-xs font-bold text-white">{n}</span>
+        <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-xs font-bold text-white">{n}</span>
         <h2 className="font-semibold">{title}</h2>
       </div>
       {children}
@@ -301,7 +301,7 @@ function RadioTile({ value, title, subtitle, icon, active }: {
   value: string; title: string; subtitle?: string; icon?: React.ReactNode; active: boolean;
 }) {
   return (
-    <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${active ? "border-sky-500 bg-accent" : "hover:bg-muted"}`}>
+    <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${active ? "border-primary bg-accent" : "hover:bg-muted"}`}>
       <RadioGroupItem value={value} />
       {icon}
       <div className="flex-1">

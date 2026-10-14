@@ -15,7 +15,7 @@ function WishlistPage() {
 
   if (list.length === 0) {
     return (
-      <div className="rounded-2xl border bg-card p-10 text-center">
+      <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-10 text-center">
         <Heart className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
         <h2 className="text-xl font-bold">Nothing wishlisted yet</h2>
         <p className="mt-1 text-sm text-muted-foreground">Tap the heart on any product to save it here.</p>

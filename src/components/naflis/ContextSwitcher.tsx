@@ -69,7 +69,7 @@ export function ContextSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5" aria-label="Switch workspace">
-          <ActiveIcon className="h-4 w-4 text-sky-500" />
+          <ActiveIcon className="h-4 w-4 text-link" />
           <span className="hidden text-xs font-semibold sm:inline">{ROLE_META[ws.active].label}</span>
           <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground" />
         </Button>
@@ -80,7 +80,7 @@ export function ContextSwitcher() {
           const Icon = ROLE_ICONS[r];
           return (
             <DropdownMenuItem key={r} onSelect={() => ws.switchTo(r)} className="gap-3">
-              <Icon className="h-4 w-4 shrink-0 text-sky-500" />
+              <Icon className="h-4 w-4 shrink-0 text-link" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{ROLE_META[r].label}</p>
                 <p className="truncate text-xs text-muted-foreground">{ROLE_META[r].description}</p>

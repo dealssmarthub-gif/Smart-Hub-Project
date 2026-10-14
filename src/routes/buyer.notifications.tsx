@@ -19,7 +19,7 @@ function NotifPage() {
         <Button size="sm" variant="outline" onClick={clearAll}><CheckCheck className="mr-1 h-4 w-4" /> Mark all read</Button>
       </div>
       {list.length === 0 ? (
-        <div className="rounded-2xl border bg-card p-10 text-center">
+        <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-10 text-center">
           <Bell className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">No notifications yet.</p>
         </div>
@@ -30,17 +30,17 @@ function NotifPage() {
               key={n.id}
               onClick={() => markRead(n.id)}
               className={`flex w-full items-start gap-3 rounded-xl border p-4 text-left transition ${
-                n.read ? "bg-card" : "border-sky-500/40 bg-accent"
+                n.read ? "bg-card" : "border-primary/40 bg-accent"
               }`}
             >
-              <div className={`grid h-9 w-9 place-items-center rounded-full ${n.read ? "bg-muted" : "bg-sky-500 text-white"}`}>
+              <div className={`grid h-9 w-9 place-items-center rounded-full ${n.read ? "bg-muted" : "bg-primary text-white"}`}>
                 <Bell className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold">{n.title}</p>
                 <p className="text-xs text-muted-foreground">{n.body}</p>
               </div>
-              {!n.read && <span className="h-2 w-2 shrink-0 rounded-full bg-sky-500" />}
+              {!n.read && <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />}
             </button>
           ))}
         </div>

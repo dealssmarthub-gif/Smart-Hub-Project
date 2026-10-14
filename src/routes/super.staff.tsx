@@ -55,15 +55,15 @@ function StaffManagement() {
             </select>
           </div>
           <p className="flex items-start gap-1.5 rounded-lg bg-muted p-2.5 text-xs text-muted-foreground">
-            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-500" />
+            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-link" />
             Staff can only see and change content for their own institution — and only the campus in their scope. An SRC executive at one school
             can't touch another school's notices, events, tickets or timetables.
           </p>
-          {visible.length === 0 && <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">No staff yet.</p>}
+          {visible.length === 0 && <p className="rounded-2xl border border-border-soft bg-card p-6 text-center text-sm text-muted-foreground">No staff yet.</p>}
           {visible.map((g) => <GrantRow key={g.id} grant={g} />)}
 
           {staffAudit.length > 0 && (
-            <div className="rounded-xl border bg-card p-4">
+            <div className="rounded-2xl border border-border-soft bg-card p-4">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent staff changes</p>
               <ul className="space-y-1 text-xs">
                 {staffAudit.map((a) => (
@@ -118,8 +118,8 @@ function InviteForm() {
   };
 
   return (
-    <section className="h-fit space-y-3 rounded-2xl border bg-card p-5">
-      <h2 className="flex items-center gap-2 font-bold"><UserPlus className="h-4 w-4 text-sky-500" /> Invite staff</h2>
+    <section className="h-fit space-y-3 rounded-3xl border border-border-soft bg-card shadow-soft p-5">
+      <h2 className="flex items-center gap-2 font-bold"><UserPlus className="h-4 w-4 text-link" /> Invite staff</h2>
       <div className="space-y-1">
         <Label className="text-xs">Role template</Label>
         <select className={select} value={templateId} onChange={(e) => pickTemplate(e.target.value)}>
@@ -167,7 +167,7 @@ function InviteForm() {
         <Label className="text-xs">Permissions</Label>
         {PERMISSIONS.map((p) => (
           <label key={p} className="flex cursor-pointer items-start gap-2 text-xs">
-            <input type="checkbox" className="mt-0.5 accent-sky-500" checked={permissions.includes(p)} onChange={() => toggle(p)} />
+            <input type="checkbox" className="mt-0.5 accent-primary" checked={permissions.includes(p)} onChange={() => toggle(p)} />
             <span>
               {PERMISSION_LABEL[p]} <span className="font-mono text-[10px] text-muted-foreground">{p}</span>
             </span>
@@ -185,7 +185,7 @@ function InviteForm() {
       </Button>
 
       {link && (
-        <div className="space-y-2 rounded-lg border border-sky-500/40 bg-sky-500/5 p-3 text-xs">
+        <div className="space-y-2 rounded-lg border border-primary/40 bg-primary/5 p-3 text-xs">
           <p className="flex items-center gap-1 font-semibold"><KeyRound className="h-3.5 w-3.5" /> One-time invite link</p>
           <p className="break-all font-mono text-[11px]">{link}</p>
           <p className="text-muted-foreground">Send it to the invitee securely. It's shown once — only a hash of the token is stored.</p>
@@ -214,7 +214,7 @@ function GrantRow({ grant }: { grant: StaffGrant }) {
   const statusVariant = useMemo(() => (status === "active" ? "default" : status === "revoked" || status === "expired" ? "destructive" : "secondary"), [status]);
 
   return (
-    <div className={`rounded-xl border bg-card p-4 ${grant.status === "revoked" ? "opacity-60" : ""}`}>
+    <div className={`rounded-2xl border border-border-soft bg-card p-4 ${grant.status === "revoked" ? "opacity-60" : ""}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="font-semibold">{grant.name} <span className="text-xs font-normal text-muted-foreground">· {grant.email}</span></p>
@@ -244,7 +244,7 @@ function GrantRow({ grant }: { grant: StaffGrant }) {
         <div className="mt-3 space-y-1.5">
           {PERMISSIONS.map((p) => (
             <label key={p} className="flex items-center gap-2 text-xs">
-              <input type="checkbox" className="accent-sky-500" checked={perms.includes(p)} onChange={() => setPerms((c) => (c.includes(p) ? c.filter((x) => x !== p) : [...c, p]))} />
+              <input type="checkbox" className="accent-primary" checked={perms.includes(p)} onChange={() => setPerms((c) => (c.includes(p) ? c.filter((x) => x !== p) : [...c, p]))} />
               {PERMISSION_LABEL[p]}
             </label>
           ))}

@@ -23,7 +23,7 @@ function OrderDetail() {
 
   if (!order) {
     return (
-      <div className="rounded-xl border bg-card p-10 text-center">
+      <div className="rounded-2xl border border-border-soft bg-card p-10 text-center">
         <p>Order not found.</p>
         <Button asChild className="mt-3"><Link to="/buyer/orders">Back to orders</Link></Button>
       </div>
@@ -36,7 +36,7 @@ function OrderDetail() {
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
       <div className="space-y-4">
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-xs text-muted-foreground">Order #{order.id.slice(2, 10)}</p>
@@ -46,7 +46,7 @@ function OrderDetail() {
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-5">
           <h3 className="mb-3 font-bold">Items</h3>
           <div className="divide-y">
             {items.map((i) => (
@@ -65,7 +65,7 @@ function OrderDetail() {
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-5">
           <h3 className="mb-3 flex items-center gap-2 font-bold"><ShieldCheck className="h-4 w-4 text-success" /> Escrow timeline</h3>
           <EscrowTimeline events={order.timeline} />
 
@@ -106,7 +106,7 @@ function OrderDetail() {
         </div>
       </div>
 
-      <aside className="sticky top-24 h-fit space-y-4 rounded-2xl border bg-card p-5">
+      <aside className="sticky top-24 h-fit space-y-4 rounded-3xl border border-border-soft bg-card shadow-soft p-5">
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Delivery address</p>
           <p className="mt-1 text-sm">{order.address}</p>

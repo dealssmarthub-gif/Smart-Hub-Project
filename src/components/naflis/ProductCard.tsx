@@ -15,7 +15,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
   const off = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-xl border bg-card transition hover:shadow-premium">
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-border-soft bg-card transition hover:shadow-soft">
       <Link to="/buyer/product/$id" params={{ id: product.id }} className="relative block aspect-square overflow-hidden bg-muted">
         <img
           src={product.image}
@@ -57,7 +57,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
           <Link
             to="/buyer/product/$id"
             params={{ id: product.id }}
-            className="line-clamp-2 text-sm font-semibold leading-snug hover:text-sky-500"
+            className="line-clamp-2 text-sm font-semibold leading-snug hover:text-link"
           >
             {product.name}
           </Link>

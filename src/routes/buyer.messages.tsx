@@ -41,7 +41,7 @@ function MessagesPage() {
   };
 
   return (
-    <div className="grid gap-4 rounded-2xl border bg-card md:grid-cols-[240px_1fr]" style={{ minHeight: "60vh" }}>
+    <div className="grid gap-4 rounded-3xl border border-border-soft bg-card shadow-soft md:grid-cols-[240px_1fr]" style={{ minHeight: "60vh" }}>
       <aside className="border-b p-3 md:border-b-0 md:border-r">
         <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <MessageSquare className="h-4 w-4" /> Threads
@@ -63,7 +63,7 @@ function MessagesPage() {
         <div className="flex-1 space-y-2 overflow-y-auto p-4">
           {(msgs[active] ?? []).map((m, i) => (
             <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${m.from === "me" ? "bg-sky-500 text-white" : "bg-muted"}`}>
+              <div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${m.from === "me" ? "bg-primary text-white" : "bg-muted"}`}>
                 {m.body}
                 <p className="mt-0.5 text-[10px] opacity-60">{fmtTime(m.at)}</p>
               </div>

@@ -33,7 +33,7 @@ function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border bg-card p-10 text-center">
+      <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-10 text-center">
         <ShoppingBag className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
         <h2 className="text-xl font-bold">Your cart is empty</h2>
         <p className="mt-1 text-sm text-muted-foreground">Discover deals across categories.</p>
@@ -48,7 +48,7 @@ function CartPage() {
         {Object.entries(grouped).map(([storeId, arr]) => {
           const store = stores.find((s) => s.id === storeId);
           return (
-            <div key={storeId} className="rounded-2xl border bg-card">
+            <div key={storeId} className="rounded-3xl border border-border-soft bg-card shadow-soft">
               <div className="border-b p-4">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">Sold by</p>
                 <p className="font-semibold">{store?.name}</p>
@@ -81,7 +81,7 @@ function CartPage() {
         <Button variant="outline" onClick={() => { clear(); toast.success("Cart cleared"); }}>Clear cart</Button>
       </div>
 
-      <aside className="sticky top-24 h-fit rounded-2xl border bg-card p-5">
+      <aside className="sticky top-24 h-fit rounded-3xl border border-border-soft bg-card shadow-soft p-5">
         <h3 className="font-bold">Order summary</h3>
         <dl className="mt-4 space-y-2 text-sm">
           <Row label="Subtotal" value={GHS(subtotal)} />

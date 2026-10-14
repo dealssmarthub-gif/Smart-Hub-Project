@@ -72,7 +72,7 @@ function PlanCard({ plan }: { plan: InstallmentPlan }) {
   };
 
   return (
-    <div className="rounded-2xl border bg-card p-4">
+    <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-3">
           {product && <img src={product.image} alt="" className="h-12 w-12 rounded object-cover" />}
@@ -80,7 +80,7 @@ function PlanCard({ plan }: { plan: InstallmentPlan }) {
             <p className="truncate text-sm font-semibold">{product?.name ?? "Item"}</p>
             <p className="text-xs text-muted-foreground">
               {plan.kind === "credit" ? "Credit sale" : "Installments"} · order{" "}
-              <Link to="/buyer/orders/$orderId" params={{ orderId: plan.orderId }} className="text-sky-500 hover:underline">
+              <Link to="/buyer/orders/$orderId" params={{ orderId: plan.orderId }} className="text-link hover:underline">
                 #{plan.orderId.slice(2, 10)}
               </Link>
             </p>
@@ -97,7 +97,7 @@ function PlanCard({ plan }: { plan: InstallmentPlan }) {
           <span>{progress}%</span>
         </div>
         <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
-          <div className="h-full bg-sky-500" style={{ width: `${progress}%` }} />
+          <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
@@ -137,7 +137,7 @@ function PlanCard({ plan }: { plan: InstallmentPlan }) {
 
       {plan.kind === "installment" && (
         <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Truck className="h-3.5 w-3.5 text-sky-500" />
+          <Truck className="h-3.5 w-3.5 text-link" />
           {DELIVERY_RULE_LABEL[plan.deliveryRule]} ·{" "}
           {order?.deliveryUnlocked === false ? "not yet unlocked" : "delivery unlocked"}
         </p>
@@ -201,7 +201,7 @@ function ReservationCard({ reservation: r }: { reservation: Reservation }) {
   };
 
   return (
-    <div className={`rounded-2xl border bg-card p-4 ${active ? "border-sky-500/40" : "opacity-75"}`}>
+    <div className={`rounded-3xl border border-border-soft bg-card shadow-soft p-4 ${active ? "border-primary/40" : "opacity-75"}`}>
       <div className="flex flex-wrap items-center gap-3">
         {product && <img src={product.image} alt="" className="h-12 w-12 rounded object-cover" />}
         <div className="min-w-0 flex-1">
@@ -213,7 +213,7 @@ function ReservationCard({ reservation: r }: { reservation: Reservation }) {
         {active ? (
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Hold ends in</p>
-            <p className={`flex items-center gap-1 font-mono text-lg font-black ${remaining < 3_600_000 ? "text-error" : "text-sky-500"}`}>
+            <p className={`flex items-center gap-1 font-mono text-lg font-extrabold ${remaining < 3_600_000 ? "text-error" : "text-link"}`}>
               <Timer className="h-4 w-4" /> {formatCountdown(remaining)}
             </p>
           </div>

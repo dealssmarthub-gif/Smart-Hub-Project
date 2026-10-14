@@ -118,10 +118,10 @@ function OpportunitiesBoard() {
           {DEADLINES.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
         </select>
         <label className="flex min-h-11 items-center gap-1.5 px-1 text-xs font-semibold">
-          <input type="checkbox" className="accent-sky-500" checked={savedOnly} onChange={(e) => setSavedOnly(e.target.checked)} /> Saved
+          <input type="checkbox" className="accent-primary" checked={savedOnly} onChange={(e) => setSavedOnly(e.target.checked)} /> Saved
         </label>
         <label className="flex min-h-11 items-center gap-1.5 px-1 text-xs font-semibold">
-          <input type="checkbox" className="accent-sky-500" checked={showClosed} onChange={(e) => setShowClosed(e.target.checked)} /> Show closed
+          <input type="checkbox" className="accent-primary" checked={showClosed} onChange={(e) => setShowClosed(e.target.checked)} /> Show closed
         </label>
       </div>
 
@@ -148,7 +148,7 @@ function OpportunitiesBoard() {
                     aria-label={isSaved ? "Unsave" : "Save"}
                     className="grid h-11 w-11 shrink-0 place-items-center rounded-full hover:bg-muted"
                   >
-                    {isSaved ? <BookmarkCheck className="h-4 w-4 text-sky-500" /> : <Bookmark className="h-4 w-4" />}
+                    {isSaved ? <BookmarkCheck className="h-4 w-4 text-link" /> : <Bookmark className="h-4 w-4" />}
                   </button>
                 </div>
                 <p className="mt-2 line-clamp-3 text-sm">{o.description}</p>

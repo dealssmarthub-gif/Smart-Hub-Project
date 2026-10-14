@@ -92,22 +92,6 @@
   --color-error: var(--error);
   --color-error-foreground: var(--error-foreground);
 
-  /*
-   * Transitional: pages still use Tailwind's `sky-*` classes as their accent.
-   * Pointing that scale at the brand violet makes every page use the one
-   * accent now; each page moves to the semantic tokens above as it is redesigned.
-   */
-  --color-sky-50: var(--brand-50);
-  --color-sky-100: var(--brand-100);
-  --color-sky-200: var(--brand-200);
-  --color-sky-300: var(--brand-300);
-  --color-sky-400: var(--brand-400);
-  --color-sky-500: var(--brand-500);
-  --color-sky-600: var(--brand-600);
-  --color-sky-700: var(--brand-700);
-  --color-sky-800: var(--brand-800);
-  --color-sky-900: var(--brand-900);
-  --color-sky-950: var(--brand-950);
 }
 
 :root {
@@ -288,7 +272,7 @@
 }
 
 @utility gradient-hero {
-  background-image: linear-gradient(135deg, var(--primary-deep) 0%, var(--brand-500) 60%, var(--brand-400) 100%);
+  background-image: linear-gradient(135deg, var(--primary-deep) 0%, var(--brand-500) 100%);
 }
 
 @utility gradient-gold {
@@ -299,15 +283,10 @@
   color: var(--link);
 }
 
-/*
- * Transitional (see the sky-* mapping above): on dark backgrounds, violet used
- * as TEXT switches to the lighter --link shade, while violet used as a FILL
- * stays #5B45E0 so white button labels keep their contrast.
- */
-.dark :is(.text-sky-300, .text-sky-400, .text-sky-500, .text-sky-600, .text-sky-700, .text-primary) {
+/* On dark backgrounds, violet used as text takes the lighter link shade; filled buttons keep #5B45E0. */
+.dark .text-primary {
   color: var(--link);
 }
-
 @utility glass {
   background-color: color-mix(in oklab, var(--card) 70%, transparent);
   backdrop-filter: blur(12px);

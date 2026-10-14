@@ -58,7 +58,7 @@ export function RolePreview({
               <div className="mb-3 grid h-12 w-12 place-items-center rounded-xl gradient-hero text-white">
                 <Icon className="h-6 w-6" />
               </div>
-              <h1 className="text-3xl font-black tracking-tight">{title}</h1>
+              <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
               <p className="mt-2 max-w-2xl text-muted-foreground">{subtitle}</p>
             </div>
             <Badge className="bg-gold text-gold-foreground">{phase}</Badge>
@@ -66,9 +66,9 @@ export function RolePreview({
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((m) => (
-              <div key={m.label} className="rounded-xl border bg-background p-4">
+              <div key={m.label} className="rounded-2xl border border-border-soft bg-background p-4">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">{m.label}</p>
-                <p className="mt-1 text-2xl font-black">{m.value}</p>
+                <p className="mt-1 text-2xl font-extrabold">{m.value}</p>
               </div>
             ))}
           </div>
@@ -78,7 +78,7 @@ export function RolePreview({
             <ul className="grid gap-2 sm:grid-cols-2">
               {features.map((f) => (
                 <li key={f} className="flex items-start gap-2 rounded-lg border bg-background p-3 text-sm">
-                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-sky-500" />
+                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
                   {f}
                 </li>
               ))}
