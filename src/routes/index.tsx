@@ -1,42 +1,35 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   ShieldCheck,
   Wallet,
   Zap,
-  Sparkles,
   TrendingUp,
-  Clock,
   Users,
-  Package,
   ArrowRight,
   Store,
-  Truck,
-  LineChart,
   BadgePercent,
+  ChevronDown,
   ChevronRight,
   ChevronLeft,
   GraduationCap,
   Search,
   Building2,
   Pin,
-  Calendar,
   MapPin,
   BookOpen,
-  FileText,
   Lock,
   CheckCircle2,
   Flame,
   X,
-  ExternalLink,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/naflis/Logo";
-import { ThemeToggle } from "@/components/naflis/ThemeToggle";
-import { ProductCard } from "@/components/naflis/ProductCard";
-import { roleHome } from "@/lib/naflis/roles";
+import { MobileTabBar, PAGE_WIDTH, TopNav } from "@/components/naflis/shell/AppShell";
+import {
+  GroupBuyCard, ListingImage, SectionHeader, SectionLink, Tile, almostFull, onDarkButton,
+} from "@/components/naflis/home/HomeBlocks";
+import { NoticeDialog } from "@/components/naflis/campus/CampusBlocks";
 import { fetchSellerProducts } from "@/services/sellerApi";
 import { ESCROW_HELD_STATES } from "@/lib/naflis/orderMachine";
 import {
@@ -47,12 +40,6 @@ import {
 } from "@/lib/naflis/store";
 import { GHS, compact } from "@/lib/naflis/format";
 import { toast } from "sonner";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   Dialog,
   DialogContent,
@@ -66,12 +53,17 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-function Metric({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+const primaryBtn =
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground shadow-soft transition hover:bg-primary-deep";
+const secondaryBtn =
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 text-sm font-bold text-foreground transition hover:border-primary/40 hover:bg-accent";
+
+function Metric({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="rounded-xl border bg-card/60 backdrop-blur p-4 text-left shadow-sm">
-      <Icon className="mb-2 h-5 w-5 text-sky-500" />
-      <p className="text-2xl font-black tracking-tight text-foreground">{value}</p>
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+    <div className="rounded-3xl border border-border-soft bg-card p-4 shadow-soft">
+      <Icon className="mb-2 h-5 w-5 text-link" strokeWidth={1.8} />
+      <p className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">{value}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
     </div>
   );
 }
@@ -99,6 +91,7 @@ function Landing() {
   const stores = useNaflis((s) => s.stores);
   const requests = useNaflis((s) => s.productRequests);
   const orders = useNaflis((s) => s.orders);
+  const studentListings = useNaflis((s) => s.studentListings);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -236,65 +229,55 @@ function Landing() {
   );
 
   const currentPinnedEvent = pinnedEvents[activeTickerIndex] || pinnedEvents[0];
+  const groupBuys = almostFull(studentListings).slice(0, 3);
+  const heroListing = flash[0] ?? trending[0];
+  const heroGroupBuy = groupBuys[0];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* 1. Pinned SRC Announcement Banner Ticker */}
       {currentPinnedEvent && (
-        <aside
-          aria-label="Pinned Official SRC Announcement"
-          className="bg-navy text-white border-b border-sky-500/30 px-3 py-2 text-xs transition-colors"
-        >
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <span className="flex items-center gap-1 shrink-0 rounded-full bg-sky-500 px-2 py-0.5 font-black text-[10px] uppercase tracking-wider text-white shadow-sm">
-                <Pin className="h-3 w-3 fill-current" />
+        <aside aria-label="Pinned Official SRC Announcement" className="bg-escrow text-escrow-foreground">
+          <div className={`${PAGE_WIDTH} flex min-h-11 items-center justify-between gap-3 py-1 text-xs`}>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider">
+                <Pin className="h-3 w-3" strokeWidth={1.8} />
                 SRC Notice
               </span>
-              <span className="shrink-0 font-bold text-sky-300 hidden sm:inline">
-                [{currentPinnedEvent.campus}]
-              </span>
-              <p className="truncate font-medium text-white/95">
-                {currentPinnedEvent.title}
-              </p>
+              <span className="hidden shrink-0 font-bold text-white/80 sm:inline">[{currentPinnedEvent.campus}]</span>
+              <p className="truncate font-semibold">{currentPinnedEvent.title}</p>
               {currentPinnedEvent.venue && (
-                <span className="hidden md:inline text-white/70 truncate text-[11px]">
-                  • 📍 {currentPinnedEvent.venue}
+                <span className="hidden items-center gap-1 truncate text-[11px] text-white/75 md:inline-flex">
+                  <MapPin className="h-3 w-3 shrink-0" strokeWidth={1.8} /> {currentPinnedEvent.venue}
                 </span>
               )}
             </div>
-
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex shrink-0 items-center gap-1">
               <button
+                type="button"
                 onClick={() => setSelectedEventModal(currentPinnedEvent)}
-                className="font-bold text-sky-400 hover:text-sky-300 underline text-xs"
+                className="inline-flex min-h-11 items-center px-2 text-xs font-bold text-white underline underline-offset-2"
               >
                 Read Notice →
               </button>
               {pinnedEvents.length > 1 && (
-                <div className="hidden sm:flex items-center gap-1 border-l border-white/20 pl-2">
+                <div className="hidden items-center gap-0.5 border-l border-white/20 pl-1 sm:flex">
                   <button
-                    onClick={() =>
-                      setActiveTickerIndex(
-                        (prev) => (prev - 1 + pinnedEvents.length) % pinnedEvents.length
-                      )
-                    }
-                    className="p-0.5 hover:bg-white/10 rounded"
+                    type="button"
+                    onClick={() => setActiveTickerIndex((prev) => (prev - 1 + pinnedEvents.length) % pinnedEvents.length)}
+                    className="grid h-11 w-9 place-items-center rounded hover:bg-white/10"
                     aria-label="Previous Notice"
                   >
-                    <ChevronLeft className="h-3.5 w-3.5" />
+                    <ChevronLeft className="h-4 w-4" strokeWidth={1.8} />
                   </button>
-                  <span className="text-[10px] text-white/70">
-                    {activeTickerIndex + 1}/{pinnedEvents.length}
-                  </span>
+                  <span className="text-[10px] text-white/75">{activeTickerIndex + 1}/{pinnedEvents.length}</span>
                   <button
-                    onClick={() =>
-                      setActiveTickerIndex((prev) => (prev + 1) % pinnedEvents.length)
-                    }
-                    className="p-0.5 hover:bg-white/10 rounded"
+                    type="button"
+                    onClick={() => setActiveTickerIndex((prev) => (prev + 1) % pinnedEvents.length)}
+                    className="grid h-11 w-9 place-items-center rounded hover:bg-white/10"
                     aria-label="Next Notice"
                   >
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    <ChevronRight className="h-4 w-4" strokeWidth={1.8} />
                   </button>
                 </div>
               )}
@@ -303,171 +286,87 @@ function Landing() {
         </aside>
       )}
 
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4">
-          <Logo />
+      <TopNav onEscrowClick={() => setEscrowModalOpen(true)} />
 
-          <nav className="hidden items-center gap-6 lg:flex">
-            <Link
-              to="/student-os"
-              className="flex items-center gap-1.5 text-sm font-bold text-sky-500 hover:text-sky-400 transition"
-            >
-              <GraduationCap className="h-4 w-4" />
-              <span>Student OS</span>
-            </Link>
-            <Link
-              to="/student-os/marketplace"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              Marketplace
-            </Link>
-            <Link
-              to="/student-os/deals"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              Student Deals
-            </Link>
-            <button
-              onClick={() => setEscrowModalOpen(true)}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1"
-            >
-              <ShieldCheck className="h-3.5 w-3.5 text-sky-500" />
-              <span>Safe Escrow</span>
-            </button>
-            <Link
-              to="/campus-admin"
-              className="text-sm font-semibold text-sky-500 hover:underline flex items-center gap-1"
-            >
-              <Building2 className="h-3.5 w-3.5" />
-              <span>Institutional / SRC Access</span>
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            {currentUserId ? (
-              <>
-                {loggedInUser && (
-                  <span className="hidden xl:inline text-xs font-semibold text-muted-foreground">
-                    {loggedInUser.name}
-                  </span>
-                )}
-                <Button asChild size="sm" variant="outline">
-                  <Link to={roleHome(role)}>
-                    Dashboard
-                  </Link>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    signOut();
-                    toast.success("Signed out successfully");
-                  }}
-                >
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <Button asChild size="sm" className="bg-sky-500 hover:bg-sky-600 text-white font-bold">
-                <Link to="/login">Sign In</Link>
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative overflow-hidden gradient-hero text-white">
-        <div
-          className="absolute inset-0 opacity-25 pointer-events-none"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 15% 20%, #0284c7 0%, transparent 45%), radial-gradient(circle at 85% 70%, #38bdf8 0%, transparent 40%)",
-          }}
-        />
-
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:py-24">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/40 bg-sky-500/20 px-3.5 py-1 text-xs font-semibold text-sky-200 backdrop-blur">
-              <GraduationCap className="h-4 w-4 text-sky-300" />
-              <span>The Verified Campus & Student Commerce Operating System</span>
-            </div>
-
-            <h1 className="text-4xl font-black leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl text-white">
-              Smart Campus Commerce & Student Hub
+      <main className="flex-1 pb-28 md:pb-0">
+        {/* Hero */}
+        <section className={`${PAGE_WIDTH} grid items-center gap-10 py-10 md:py-16 lg:grid-cols-[1.1fr_0.9fr]`}>
+          <div className="space-y-5">
+            <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3.5 py-1.5 text-xs font-bold text-accent-foreground">
+              <GraduationCap className="h-4 w-4" strokeWidth={1.8} />
+              Verified student commerce
+            </span>
+            <h1 className="text-[40px] font-extrabold leading-[1.05] tracking-tight text-foreground md:text-[56px]">
+              Buy smarter.
+              <br />
+              <span className="text-link">Study smarter.</span>
             </h1>
-
-            <p className="text-sm sm:text-base text-white/80 max-w-2xl mx-auto leading-relaxed">
-              Trade peer-to-peer thrift, join bulk student group buys, download verified lecture notes,
-              and lock in zero-risk escrow transactions across Ghanaian universities.
+            <p className="max-w-xl text-base leading-relaxed text-subtle-foreground">
+              <span className="font-bold text-foreground">Smart Campus Commerce &amp; Student Hub</span>, the verified campus &amp;
+              student commerce operating system. Trade peer-to-peer thrift, join bulk student group buys, download verified
+              lecture notes, and lock in zero-risk escrow transactions across Ghanaian universities.
             </p>
 
-            {/* Prominent Central Search Bar with Campus Dropdown */}
+            {/* Search: campus + query + button */}
             <form
               onSubmit={handleSearchSubmit}
-              className="mt-6 flex flex-col sm:flex-row items-center gap-2 bg-white/10 p-2 rounded-2xl border border-white/20 backdrop-blur shadow-2xl"
+              role="search"
+              className="flex flex-col gap-2 rounded-3xl border border-border-soft bg-card p-2 shadow-soft sm:flex-row sm:items-center"
             >
-              <div className="relative flex items-center w-full sm:w-auto shrink-0">
-                <Building2 className="pointer-events-none absolute left-3 h-4 w-4 text-sky-400 z-10" />
+              <label className="relative flex shrink-0 items-center">
+                <span className="sr-only">Campus</span>
+                <MapPin className="pointer-events-none absolute left-3.5 h-4 w-4 text-link" strokeWidth={1.8} />
                 <select
                   aria-label="Campus Selector"
                   value={selectedCampus}
                   onChange={(e) => setSelectedCampus(e.target.value)}
-                  className="h-11 w-full sm:w-44 rounded-xl border-0 bg-white/20 pl-9 pr-7 text-xs font-bold text-white focus:bg-white/30 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                  className="h-12 w-full appearance-none rounded-2xl bg-muted pl-10 pr-8 text-sm font-semibold text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-48"
                 >
                   {CAMPUSES.map((c) => (
-                    <option key={c} value={c} className="bg-navy text-white">
-                      {c}
-                    </option>
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-              </div>
-
-              <div className="relative flex-1 w-full">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
-                <Input
+                <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-muted-foreground" strokeWidth={1.8} />
+              </label>
+              <label className="relative flex-1">
+                <span className="sr-only">Search</span>
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" strokeWidth={1.8} />
+                <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search laptops, textbooks, past exams, dorm gear..."
-                  className="h-11 w-full bg-white/20 pl-10 pr-9 border-0 text-white placeholder:text-white/60 text-xs sm:text-sm rounded-xl focus-visible:ring-1 focus-visible:ring-sky-400"
+                  className="h-12 w-full rounded-2xl bg-transparent pl-11 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
                 {searchQuery && (
                   <button
                     type="button"
+                    aria-label="Clear search"
                     onClick={() => {
                       setSearchQuery("");
                       setActiveSearchTerm("");
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                    className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center text-muted-foreground hover:text-foreground"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-4 w-4" strokeWidth={1.8} />
                   </button>
                 )}
-              </div>
-
-              <Button
-                type="submit"
-                className="h-11 w-full sm:w-auto bg-sky-500 hover:bg-sky-400 text-white font-black text-xs sm:text-sm px-6 rounded-xl shadow-lg shrink-0 gap-1.5"
-              >
-                <Search className="h-4 w-4" />
-                <span>Search Deals</span>
-              </Button>
+              </label>
+              <button type="submit" className={`${primaryBtn} h-12 shrink-0 px-6`}>
+                <Search className="h-4 w-4" strokeWidth={1.8} /> Search Deals
+              </button>
             </form>
 
-            {/* Active Campus Chips */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-2">
-              <span className="text-xs text-white/60 font-semibold mr-1">Popular Campuses:</span>
+            {/* Popular campuses */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-xs font-semibold text-muted-foreground">Popular Campuses:</span>
               {CAMPUSES.slice(0, 7).map((campus) => (
                 <button
                   key={campus}
                   type="button"
                   onClick={() => handleCampusChipClick(campus)}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                    selectedCampus === campus
-                      ? "bg-sky-500 text-white shadow-md font-bold"
-                      : "bg-white/10 text-white/80 hover:bg-white/20"
+                  aria-pressed={selectedCampus === campus}
+                  className={`min-h-11 rounded-full px-4 text-xs font-bold transition ${
+                    selectedCampus === campus ? "bg-primary text-primary-foreground" : "bg-card text-subtle-foreground shadow-soft hover:bg-accent"
                   }`}
                 >
                   {campus.replace("University", "").trim()}
@@ -475,41 +374,62 @@ function Landing() {
               ))}
             </div>
 
-            {/* Prominent CTA Buttons */}
-            <div className="pt-4 flex flex-wrap justify-center gap-3">
-              <Button
-                asChild
-                size="lg"
-                className="bg-sky-500 hover:bg-sky-400 text-white font-bold text-xs sm:text-sm shadow-xl"
-              >
-                <Link to="/student-os/deals">
-                  <BadgePercent className="mr-2 h-4 w-4" /> Browse Student Deals
-                </Link>
-              </Button>
-
-              <Button
-                size="lg"
-                onClick={() => setEscrowModalOpen(true)}
-                className="bg-white text-navy hover:bg-white/90 font-bold text-xs sm:text-sm shadow-xl"
-              >
-                <ShieldCheck className="mr-2 h-4 w-4 text-sky-600" /> Safe Escrow
-              </Button>
-
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="border-white/40 bg-white/10 text-white hover:bg-white/20 backdrop-blur font-bold text-xs sm:text-sm"
-              >
-                <Link to="/student-os">
-                  <GraduationCap className="mr-2 h-4 w-4 text-sky-300" /> Student OS
-                </Link>
-              </Button>
+            {/* Calls to action */}
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Link to="/student-os/deals" className={primaryBtn}>
+                <BadgePercent className="h-4 w-4" strokeWidth={1.8} /> Browse Student Deals
+              </Link>
+              <button type="button" onClick={() => setEscrowModalOpen(true)} className={secondaryBtn}>
+                <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> Safe Escrow
+              </button>
+              <Link to="/student-os" className={secondaryBtn}>
+                <GraduationCap className="h-4 w-4 text-link" strokeWidth={1.8} /> Student OS
+              </Link>
             </div>
           </div>
 
-          {/* Quick Metrics */}
-          <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 max-w-5xl mx-auto">
+          {/* Illustration: real listings floating on a lavender circle */}
+          <div className="relative mx-auto hidden aspect-square w-full max-w-[460px] lg:block" aria-hidden>
+            <div className="absolute inset-6 rounded-full bg-tile-lavender" />
+            {heroListing && (
+              <div className="absolute left-0 top-10 w-56 overflow-hidden rounded-3xl border border-border-soft bg-card shadow-soft">
+                <div className="h-32"><ListingImage src={heroListing.image} alt="" /></div>
+                <div className="p-3">
+                  <p className="line-clamp-1 text-sm font-bold">{heroListing.name}</p>
+                  <p className="text-sm">
+                    <span className="font-extrabold">{GHS(heroListing.price)}</span>
+                    {heroListing.originalPrice > heroListing.price && (
+                      <span className="ml-1.5 text-xs text-muted-foreground line-through">{GHS(heroListing.originalPrice)}</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+            {heroGroupBuy && (
+              <div className="absolute bottom-16 right-0 w-60 rounded-3xl border border-border-soft bg-card p-4 shadow-soft">
+                <p className="text-xs font-bold text-muted-foreground">Group buy</p>
+                <p className="line-clamp-1 text-sm font-bold">{heroGroupBuy.title}</p>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${Math.min(100, Math.round(((heroGroupBuy.groupDealJoined || 0) / (heroGroupBuy.groupDealTarget || 10)) * 100))}%` }}
+                  />
+                </div>
+                <p className="mt-1.5 text-xs text-subtle-foreground">
+                  {heroGroupBuy.groupDealJoined || 0} of {heroGroupBuy.groupDealTarget || 10} students joined
+                </p>
+              </div>
+            )}
+            <div className="absolute bottom-2 left-10 flex items-center gap-3 rounded-2xl bg-escrow px-4 py-3 text-escrow-foreground shadow-soft">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15"><Lock className="h-4 w-4" strokeWidth={1.8} /></span>
+              <span className="text-sm font-bold">Funds held in escrow</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Quick metrics (values as computed before this redesign) */}
+        <section className={`${PAGE_WIDTH} pb-4`}>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <Metric icon={Users} label="Active shoppers" value={compact(activeShoppersCount)} />
             <Metric icon={ShieldCheck} label="Verified sellers" value={compact(verifiedSellersCount)} />
             <Metric icon={BadgePercent} label="Live discounts" value={compact(liveDiscountsCount)} />
@@ -517,530 +437,244 @@ function Landing() {
             <Metric icon={TrendingUp} label="Requested items" value={compact(productsRequestedCount)} />
             <Metric icon={Lock} label="Protected in escrow" value={GHS(inEscrowAmount)} />
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Active Search Results Indicator */}
-      {activeSearchTerm && (
-        <section className="border-b bg-sky-500/10 py-4">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4">
-            <p className="text-xs sm:text-sm font-semibold text-foreground">
-              Showing search results for{" "}
-              <span className="font-bold text-sky-500">"{activeSearchTerm}"</span> on{" "}
-              <span className="font-bold">{selectedCampus}</span> ({displayProducts.length} items found)
-            </p>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setActiveSearchTerm("");
-                setSearchQuery("");
-              }}
-              className="text-xs h-7"
-            >
-              Clear filter ✕
-            </Button>
+        {/* Active Search Results Indicator */}
+        {activeSearchTerm && (
+          <section className={`${PAGE_WIDTH} pt-4`}>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-primary-soft px-4 py-2 text-accent-foreground">
+              <p className="text-sm font-semibold">
+                Showing search results for <span className="font-extrabold">"{activeSearchTerm}"</span> on{" "}
+                <span className="font-extrabold">{selectedCampus}</span> ({displayProducts.length} items found)
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveSearchTerm("");
+                  setSearchQuery("");
+                }}
+                className="inline-flex min-h-11 items-center gap-1 rounded-xl px-3 text-xs font-bold hover:bg-white/40"
+              >
+                Clear filter <X className="h-3.5 w-3.5" strokeWidth={1.8} />
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* What do you need today? (the five campus toolkits) */}
+        <section className={`${PAGE_WIDTH} py-10`}>
+          <SectionHeader
+            title="What do you need today?"
+            hint="Campus Toolkits & Modules — engineered specifically for university life, academic success, and trusted student trade. 5 integrated pillars."
+          />
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-5">
+            <Tile tone="lavender" icon={Store} title="Student Marketplace" hint="Campus peer-to-peer thrift, textbooks, laptops, fridges & dorm furniture." to="/student-os/marketplace" cta="Open Market" />
+            <Tile tone="peach" icon={BadgePercent} title="Student Deals & Group Buys" hint="Verified discounts, split group orders & volume bulk price drops." to="/student-os/deals" cta="Join Group Buys" />
+            <Tile tone="rose" icon={Building2} title="Official SRC Notices" hint="Direct administrative bulletins, townhall assemblies & campus welfare updates." to="/campus-admin" cta="View SRC Notices" />
+            <Tile tone="mint" icon={BookOpen} title="Lecture Notes & Slides" hint="Solved past examination booklets, formulas, summaries & faculty slides." to="/student-os/resources" cta="Study Resources" />
+            <Tile tone="sky" icon={ShieldCheck} title="Escrow Protection Hub" hint="Zero-fraud escrow. Funds held safe until meetup inspection & 6-digit PIN release." onClick={() => setEscrowModalOpen(true)} cta="Escrow Security" />
           </div>
         </section>
-      )}
 
-      {/* 2. Module Navigation Quick-Cards (5 Pillars) */}
-      <section className="mx-auto max-w-7xl px-4 py-12">
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-              Campus Toolkits & Modules
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Engineered specifically for university life, academic success, and trusted student trade.
-            </p>
-          </div>
-          <span className="text-xs font-semibold text-sky-500">5 Integrated Pillars</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Card 1: Student Marketplace */}
-          <Link
-            to="/student-os/marketplace"
-            className="group flex flex-col justify-between rounded-2xl border bg-card p-5 hover:border-sky-500 hover:shadow-premium transition"
-          >
-            <div>
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-sky-500/10 text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition mb-3">
-                <Store className="h-6 w-6" />
-              </div>
-              <h3 className="text-base font-bold text-foreground">1. Student Marketplace</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Campus peer-to-peer thrift, textbooks, laptops, fridges & dorm furniture.
-              </p>
-            </div>
-            <div className="mt-4 pt-2 border-t flex items-center text-xs font-bold text-sky-500 group-hover:translate-x-1 transition">
-              <span>Open Market</span>
-              <ArrowRight className="ml-1 h-3.5 w-3.5" />
-            </div>
-          </Link>
-
-          {/* Card 2: Student Deals & Group Buys */}
-          <Link
-            to="/student-os/deals"
-            className="group flex flex-col justify-between rounded-2xl border bg-card p-5 hover:border-sky-500 hover:shadow-premium transition"
-          >
-            <div>
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-sky-500/10 text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition mb-3">
-                <BadgePercent className="h-6 w-6" />
-              </div>
-              <h3 className="text-base font-bold text-foreground">2. Student Deals & Group Buys</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Verified discounts, split group orders & volume bulk price drops.
-              </p>
-            </div>
-            <div className="mt-4 pt-2 border-t flex items-center text-xs font-bold text-sky-500 group-hover:translate-x-1 transition">
-              <span>Join Group Buys</span>
-              <ArrowRight className="ml-1 h-3.5 w-3.5" />
-            </div>
-          </Link>
-
-          {/* Card 3: Official SRC Notices & Campus Events */}
-          <Link
-            to="/campus-admin"
-            className="group flex flex-col justify-between rounded-2xl border bg-card p-5 hover:border-sky-500 hover:shadow-premium transition"
-          >
-            <div>
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-sky-500/10 text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition mb-3">
-                <Building2 className="h-6 w-6" />
-              </div>
-              <h3 className="text-base font-bold text-foreground">3. Official SRC Notices</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Direct administrative bulletins, townhall assemblies & campus welfare updates.
-              </p>
-            </div>
-            <div className="mt-4 pt-2 border-t flex items-center text-xs font-bold text-sky-500 group-hover:translate-x-1 transition">
-              <span>View SRC Notices</span>
-              <ArrowRight className="ml-1 h-3.5 w-3.5" />
-            </div>
-          </Link>
-
-          {/* Card 4: Lecture Notes, Past Questions & Slides */}
-          <Link
-            to="/student-os/resources"
-            className="group flex flex-col justify-between rounded-2xl border bg-card p-5 hover:border-sky-500 hover:shadow-premium transition"
-          >
-            <div>
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-sky-500/10 text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition mb-3">
-                <BookOpen className="h-6 w-6" />
-              </div>
-              <h3 className="text-base font-bold text-foreground">4. Lecture Notes & Slides</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Solved past examination booklets, formulas, summaries & faculty slides.
-              </p>
-            </div>
-            <div className="mt-4 pt-2 border-t flex items-center text-xs font-bold text-sky-500 group-hover:translate-x-1 transition">
-              <span>Study Resources</span>
-              <ArrowRight className="ml-1 h-3.5 w-3.5" />
-            </div>
-          </Link>
-
-          {/* Card 5: Escrow Protection Hub */}
-          <button
-            onClick={() => setEscrowModalOpen(true)}
-            className="group flex flex-col justify-between rounded-2xl border bg-card p-5 hover:border-sky-500 hover:shadow-premium transition text-left"
-          >
-            <div>
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-sky-500/10 text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition mb-3">
-                <ShieldCheck className="h-6 w-6" />
-              </div>
-              <h3 className="text-base font-bold text-foreground">5. Escrow Protection Hub</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Zero-fraud escrow. Funds held safe until meetup inspection & 6-digit PIN release.
-              </p>
-            </div>
-            <div className="mt-4 pt-2 border-t flex items-center text-xs font-bold text-sky-500 group-hover:translate-x-1 transition">
-              <span>Escrow Security</span>
-              <ArrowRight className="ml-1 h-3.5 w-3.5" />
-            </div>
-          </button>
-        </div>
-      </section>
-
-      {/* 3. Flash Deals & Verified Campus Discounts */}
-      <section id="deals" className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-amber-500" />
-              <h2 className="text-2xl font-black tracking-tight text-foreground">
-                Flash Deals — Verified Campus Pricing
-              </h2>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Strictly vetted prices backed by price history. No artificial pre-sale price markups.
-            </p>
-          </div>
-
-          <Button asChild variant="outline" size="sm" className="text-xs">
-            <Link to="/student-os/deals">
-              See all student drops <ChevronRight className="ml-1 h-3.5 w-3.5" />
-            </Link>
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {flash.map((p) => (
-            <div
-              key={p.id}
-              className="group flex flex-col rounded-2xl border bg-card overflow-hidden hover:shadow-premium transition"
-            >
-              <div className="relative aspect-square w-full overflow-hidden bg-muted">
-                <img
-                  src={p.image}
-                  alt={p.name}
-                  loading="lazy"
-                  className="h-full w-full object-cover group-hover:scale-105 transition duration-300"
+        {/* Almost full group buys */}
+        {groupBuys.length > 0 && (
+          <section className={`${PAGE_WIDTH} py-6`}>
+            <SectionHeader
+              title="Almost full"
+              icon={Flame}
+              hint="Student group buys with the fewest spots left."
+              action={<SectionLink to="/student-os/deals">All group buys</SectionLink>}
+            />
+            <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0">
+              {groupBuys.map((deal) => (
+                <GroupBuyCard
+                  key={deal.id}
+                  deal={deal}
+                  className="w-[78%] shrink-0 snap-start sm:w-[46%] md:w-auto"
+                  action={<Link to="/student-os/deals" className={`${secondaryBtn} w-full`}>See group buy</Link>}
                 />
-                <div className="absolute top-2 left-2 flex flex-col gap-1">
-                  <Badge className="bg-sky-500 text-white font-bold text-[10px] shadow-sm">
-                    Student Price
-                  </Badge>
-                  {p.verifiedDiscount && (
-                    <Badge className="bg-emerald-500 text-white text-[10px] gap-1 shadow-sm">
-                      <ShieldCheck className="h-3 w-3" /> Verified Seller
-                    </Badge>
-                  )}
-                </div>
-              </div>
+              ))}
+            </div>
+          </section>
+        )}
 
-              <div className="flex flex-col flex-1 p-4 gap-2">
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span className="font-semibold uppercase text-sky-500">{p.category}</span>
-                  <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                    <ShieldCheck className="h-3 w-3" /> Escrow Backed
+        {/* 3. Flash Deals & Verified Campus Discounts */}
+        <section id="deals" className={`${PAGE_WIDTH} scroll-mt-24 py-8`}>
+          <SectionHeader
+            title="Flash Deals — Verified Campus Pricing"
+            icon={Zap}
+            hint="Strictly vetted prices backed by price history. No artificial pre-sale price markups."
+            action={<SectionLink to="/student-os/deals">See all student drops</SectionLink>}
+          />
+          <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+            {flash.map((p) => (
+              <ProductTile
+                key={p.id}
+                p={p}
+                badges={
+                  <>
+                    <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">Student Price</span>
+                    {p.verifiedDiscount && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-tile-mint px-2 py-0.5 text-[10px] font-bold text-verified">
+                        <ShieldCheck className="h-3 w-3" strokeWidth={1.8} /> Verified Seller
+                      </span>
+                    )}
+                  </>
+                }
+                meta={
+                  <span className="inline-flex items-center gap-1 font-bold text-verified">
+                    <ShieldCheck className="h-3 w-3" strokeWidth={1.8} /> Escrow Backed
                   </span>
-                </div>
-
-                <h4 className="text-sm font-bold text-foreground line-clamp-1">{p.name}</h4>
-                <p className="text-xs text-muted-foreground line-clamp-2">{p.description}</p>
-
-                <div className="mt-auto pt-3 border-t flex items-center justify-between">
-                  <div>
-                    <span className="text-base font-black text-foreground">{GHS(p.price)}</span>
-                    {p.originalPrice && (
-                      <span className="ml-1.5 text-xs text-muted-foreground line-through">
-                        {GHS(p.originalPrice)}
-                      </span>
-                    )}
-                  </div>
-
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      addToCart(p.id, 1);
-                      toast.success(
-                        `${p.name} added to Escrow checkout. Meetup code generated.`
-                      );
-                    }}
-                    className="bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs h-8 px-3 shadow-sm gap-1"
-                  >
-                    <Lock className="h-3 w-3" /> Buy with Escrow
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 4. Trending Campus Products */}
-      <section className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-6 flex items-center justify-between border-b pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-sky-500" />
-              <h2 className="text-2xl font-black tracking-tight text-foreground">
-                Trending on {selectedCampus}
-              </h2>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Most requested items, electronics, and study gear among students this semester.
-            </p>
+                }
+                onBuy={() => {
+                  addToCart(p.id, 1);
+                  toast.success(`${p.name} added to Escrow checkout. Meetup code generated.`);
+                }}
+              />
+            ))}
           </div>
+        </section>
 
-          <Button asChild variant="outline" size="sm" className="text-xs">
-            <Link to="/buyer">Browse full mall</Link>
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {trending.slice(0, 8).map((p) => (
-            <div
-              key={p.id}
-              className="group flex flex-col rounded-2xl border bg-card overflow-hidden hover:shadow-premium transition"
-            >
-              <div className="relative aspect-square w-full overflow-hidden bg-muted">
-                <img
-                  src={p.image}
-                  alt={p.name}
-                  loading="lazy"
-                  className="h-full w-full object-cover group-hover:scale-105 transition duration-300"
-                />
-                <div className="absolute top-2 left-2 flex flex-col gap-1">
-                  <Badge className="bg-navy/80 text-white backdrop-blur text-[10px] gap-1">
-                    <Flame className="h-3 w-3 text-amber-400" /> High Campus Demand
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="flex flex-col flex-1 p-4 gap-2">
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span className="font-semibold uppercase text-sky-500">{p.category}</span>
-                  <Badge variant="outline" className="text-[10px] text-sky-500 border-sky-500/30">
-                    SRC Trusted
-                  </Badge>
-                </div>
-
-                <h4 className="text-sm font-bold text-foreground line-clamp-1">{p.name}</h4>
-                <p className="text-xs text-muted-foreground line-clamp-2">{p.description}</p>
-
-                <div className="mt-auto pt-3 border-t flex items-center justify-between">
-                  <div>
-                    <span className="text-base font-black text-foreground">{GHS(p.price)}</span>
-                    {p.originalPrice && (
-                      <span className="ml-1.5 text-xs text-muted-foreground line-through">
-                        {GHS(p.originalPrice)}
-                      </span>
-                    )}
-                  </div>
-
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      addToCart(p.id, 1);
-                      toast.success(
-                        `Added ${p.name} to protected Escrow order.`
-                      );
-                    }}
-                    className="bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs h-8 px-3 shadow-sm gap-1"
-                  >
-                    <Lock className="h-3 w-3" /> Buy with Escrow
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 5. Safe Escrow Explainer Section */}
-      <section id="escrow" className="mx-auto max-w-7xl px-4 py-16">
-        <div className="rounded-3xl border border-sky-500/30 bg-card p-8 sm:p-12 shadow-premium space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <Badge className="bg-sky-500/10 text-sky-500 border-sky-500/20 text-xs">
-              Campus Handover Security
-            </Badge>
-            <h2 className="text-3xl font-black tracking-tight text-foreground">
-              How Campus Escrow Protects Every Cedi
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Never worry about sending money to unknown numbers. Payment is only transferred after you
-              inspect the item in person.
-            </p>
+        {/* 4. Trending Campus Products */}
+        <section className={`${PAGE_WIDTH} py-8`}>
+          <SectionHeader
+            title={`Trending on ${selectedCampus}`}
+            icon={TrendingUp}
+            hint="Most requested items, electronics, and study gear among students this semester."
+            action={<SectionLink to="/buyer">Browse full mall</SectionLink>}
+          />
+          <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+            {trending.slice(0, 8).map((p) => (
+              <ProductTile
+                key={p.id}
+                p={p}
+                badges={
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-peach-ink">
+                    <Flame className="h-3 w-3" strokeWidth={1.8} /> High Campus Demand
+                  </span>
+                }
+                meta={<span className="rounded-full border border-border px-2 py-0.5 font-bold text-link">SRC Trusted</span>}
+                onBuy={() => {
+                  addToCart(p.id, 1);
+                  toast.success(`Added ${p.name} to protected Escrow order.`);
+                }}
+              />
+            ))}
           </div>
+        </section>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="rounded-2xl border bg-background p-6 space-y-3">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-sky-500/10 text-sky-500 font-black text-lg">
-                1
-              </div>
-              <h3 className="text-base font-bold text-foreground">Lock Funds in Escrow</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                When you click "Buy with Escrow", your payment is secured in NAFLIS Escrow. The seller
-                is notified that payment is confirmed and ready.
+        {/* 5. Safe Escrow Explainer Section */}
+        <section id="escrow" className={`${PAGE_WIDTH} scroll-mt-24 py-10`}>
+          <div className="rounded-[32px] bg-escrow p-6 text-escrow-foreground sm:p-10">
+            <div className="max-w-2xl space-y-2">
+              <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-bold">Campus Handover Security</span>
+              <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">How escrow protects every cedi</h2>
+              <p className="text-sm leading-relaxed text-white/85">
+                Never worry about sending money to unknown numbers. Payment is only transferred after you inspect the item in person.
               </p>
             </div>
+            <ol className="mt-8 grid gap-4 md:grid-cols-3">
+              {[
+                ["Lock Funds in Escrow", `When you click "Buy with Escrow", your payment is secured in NAFLIS Escrow. The seller is notified that payment is confirmed and ready.`],
+                ["Meet at Safe Campus Spot", "Meet the student seller or vendor at designated campus points (hostels, libraries, or campus cafes). Test and inspect the product thoroughly."],
+                ["Release with 6-Digit PIN", "Only when 100% satisfied, share your unique 6-digit confirmation code. If the item fails inspection, cancel instantly for full automatic refund."],
+              ].map(([title, body], i) => (
+                <li key={title} className="rounded-3xl bg-white/10 p-5">
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-base font-extrabold text-[#2F2A8F]">{i + 1}</span>
+                  <h3 className="mt-3 text-base font-bold">{title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-white/85">{body}</p>
+                </li>
+              ))}
+            </ol>
+            <button type="button" onClick={() => setEscrowModalOpen(true)} className={`${onDarkButton} mt-6`}>
+              How it works
+            </button>
+          </div>
+        </section>
 
-            <div className="rounded-2xl border bg-background p-6 space-y-3">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-sky-500/10 text-sky-500 font-black text-lg">
-                2
-              </div>
-              <h3 className="text-base font-bold text-foreground">Meet at Safe Campus Spot</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Meet the student seller or vendor at designated campus points (hostels, libraries,
-                or campus cafes). Test and inspect the product thoroughly.
+        {/* 6. Institutional / SRC Access Callout */}
+        <section className={`${PAGE_WIDTH} pb-12`}>
+          <div className="flex flex-col items-start justify-between gap-5 rounded-[32px] bg-tile-lavender p-6 sm:p-10 md:flex-row md:items-center">
+            <div className="max-w-2xl space-y-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-xs font-bold text-accent-foreground">
+                <Building2 className="h-3.5 w-3.5" strokeWidth={1.8} /> For Student Leaders &amp; Faculty Heads
+              </span>
+              <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">Student leader or faculty head?</h2>
+              <p className="text-sm font-bold text-foreground">Institutional &amp; SRC Governance Portal</p>
+              <p className="text-sm leading-relaxed text-subtle-foreground">
+                Publish official student welfare announcements, upload department lecture slides &amp; solved past questions, and
+                review campus-wide student demand intelligence.
               </p>
             </div>
-
-            <div className="rounded-2xl border bg-background p-6 space-y-3">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-sky-500/10 text-sky-500 font-black text-lg">
-                3
-              </div>
-              <h3 className="text-base font-bold text-foreground">Release with 6-Digit PIN</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Only when 100% satisfied, share your unique 6-digit confirmation code. If the item
-                fails inspection, cancel instantly for full automatic refund.
-              </p>
-            </div>
+            <Link to="/campus-admin" className={`${primaryBtn} shrink-0`}>
+              Institutional / SRC Access <ArrowRight className="h-4 w-4" strokeWidth={1.8} />
+            </Link>
           </div>
-        </div>
-      </section>
-
-      {/* 6. Institutional / SRC Access Callout */}
-      <section className="mx-auto max-w-7xl px-4 pb-16">
-        <div className="rounded-3xl gradient-hero p-8 sm:p-12 text-white shadow-premium flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-3 max-w-2xl">
-            <Badge className="bg-sky-400/30 text-sky-200 border-sky-300/40 text-xs gap-1">
-              <Building2 className="h-3.5 w-3.5" /> For Student Leaders & Faculty Heads
-            </Badge>
-            <h2 className="text-2xl sm:text-3xl font-black">
-              Institutional & SRC Governance Portal
-            </h2>
-            <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
-              Publish official student welfare announcements, upload department lecture slides & solved
-              past questions, and review campus-wide student demand intelligence.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3 shrink-0">
-            <Button
-              asChild
-              size="lg"
-              className="bg-white text-navy hover:bg-white/90 font-bold shadow-lg"
-            >
-              <Link to="/campus-admin">
-                Institutional / SRC Access <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       {/* Footer */}
-      <footer className="border-t bg-secondary/50 py-10">
-        <div className="mx-auto max-w-7xl px-4 space-y-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="space-y-3">
+      <footer className="border-t border-border-soft bg-card/60 pb-28 md:pb-0">
+        <div className={`${PAGE_WIDTH} space-y-6 py-8`}>
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+            <div className="col-span-2 space-y-2 md:col-span-1">
               <Logo />
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs leading-relaxed text-muted-foreground">
                 Smart Deal Hub · Powered by NAFLIS SmartMall reference architecture and campus escrow.
               </p>
             </div>
-
-            <div className="space-y-2">
-              <h5 className="text-xs font-bold uppercase tracking-wider text-foreground">Campus Portals</h5>
-              <ul className="space-y-1.5 text-xs text-muted-foreground">
-                <li><Link to="/student-os" className="hover:text-foreground">Student OS Hub</Link></li>
-                <li><Link to="/student-os/marketplace" className="hover:text-foreground">Campus Marketplace</Link></li>
-                <li><Link to="/student-os/deals" className="hover:text-foreground">Student Deals</Link></li>
-                <li><Link to="/student-os/resources" className="hover:text-foreground">Lecture Notes & Slides</Link></li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <h5 className="text-xs font-bold uppercase tracking-wider text-foreground">Leadership</h5>
-              <ul className="space-y-1.5 text-xs text-muted-foreground">
-                <li>
-                  <Link to="/campus-admin" className="font-bold text-sky-500 hover:underline">
-                    Institutional / SRC Access
-                  </Link>
-                </li>
-                <li><Link to="/login" className="hover:text-foreground">Executive Sign In</Link></li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <h5 className="text-xs font-bold uppercase tracking-wider text-foreground">Safety & Escrow</h5>
-              <ul className="space-y-1.5 text-xs text-muted-foreground">
-                <li><button onClick={() => setEscrowModalOpen(true)} className="hover:text-foreground">Escrow Guarantee</button></li>
-                <li><Link to="/buyer/wallet" className="hover:text-foreground">Student Wallet</Link></li>
-                <li><span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">✓ 100% Protected Handover</span></li>
-              </ul>
-            </div>
+            <FooterColumn title="Campus Portals">
+              <FooterLink to="/student-os">Student OS Hub</FooterLink>
+              <FooterLink to="/student-os/marketplace">Campus Marketplace</FooterLink>
+              <FooterLink to="/student-os/deals">Student Deals</FooterLink>
+              <FooterLink to="/student-os/resources">Lecture Notes &amp; Slides</FooterLink>
+            </FooterColumn>
+            <FooterColumn title="Leadership">
+              <FooterLink to="/campus-admin">Institutional / SRC Access</FooterLink>
+              <FooterLink to="/login">Executive Sign In</FooterLink>
+            </FooterColumn>
+            <FooterColumn title="Safety & Escrow">
+              <li>
+                <button type="button" onClick={() => setEscrowModalOpen(true)} className="inline-flex min-h-11 items-center hover:text-foreground">
+                  Escrow Guarantee
+                </button>
+              </li>
+              <FooterLink to="/buyer/wallet">Student Wallet</FooterLink>
+              <li className="inline-flex min-h-11 items-center gap-1 font-semibold text-verified">
+                <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.8} /> 100% Protected Handover
+              </li>
+            </FooterColumn>
           </div>
-
-          <div className="pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <div className="flex flex-col items-start justify-between gap-2 border-t border-border-soft pt-4 text-xs text-muted-foreground sm:flex-row sm:items-center">
             <p>© {new Date().getFullYear()} NAFLIS SmartMall Platform. All rights reserved.</p>
-            <div className="flex items-center gap-4">
-              <Link to="/campus-admin" className="font-semibold text-sky-500 hover:underline">
-                Institutional / SRC Access
-              </Link>
-              <span>•</span>
-              <button onClick={() => setEscrowModalOpen(true)} className="hover:text-foreground">
+            <div className="flex flex-wrap items-center gap-x-4">
+              <button type="button" onClick={() => setEscrowModalOpen(true)} className="inline-flex min-h-11 items-center hover:text-foreground">
                 Escrow Terms
               </button>
+              <Link to="/buyer/wallet" className="inline-flex min-h-11 items-center hover:text-foreground">Student Wallet</Link>
+              <Link to="/campus-admin" className="inline-flex min-h-11 items-center font-bold text-link hover:underline">
+                Institutional / SRC Access
+              </Link>
             </div>
           </div>
         </div>
       </footer>
 
       {/* Selected Event Details Modal */}
-      {selectedEventModal && (
-        <Dialog open={!!selectedEventModal} onOpenChange={() => setSelectedEventModal(null)}>
-          <DialogContent className="max-w-lg rounded-2xl">
-            <DialogHeader>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge className="bg-sky-500 text-white text-xs">{selectedEventModal.campus}</Badge>
-                <span className="text-xs font-bold text-sky-500">{selectedEventModal.organizer}</span>
-              </div>
-              <DialogTitle className="text-lg font-black leading-snug">
-                {selectedEventModal.title}
-              </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                Official announcement published on {new Date(selectedEventModal.createdAt).toLocaleDateString()}
-              </DialogDescription>
-            </DialogHeader>
-
-            {selectedEventModal.bannerUrl && (
-              <div className="h-44 w-full rounded-xl overflow-hidden bg-muted mt-2">
-                <img
-                  src={selectedEventModal.bannerUrl}
-                  alt={selectedEventModal.title}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            )}
-
-            <div className="space-y-2 mt-3 text-xs text-foreground/90 leading-relaxed">
-              <p>{selectedEventModal.description}</p>
-
-              <div className="rounded-xl border bg-muted/40 p-3 space-y-1 text-xs text-muted-foreground mt-3">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-3.5 w-3.5 text-sky-500" />
-                  <span>Venue: {selectedEventModal.venue}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-3.5 w-3.5 text-sky-500" />
-                  <span>Date: {new Date(selectedEventModal.eventDate).toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <Button size="sm" variant="outline" onClick={() => setSelectedEventModal(null)}>
-                Close
-              </Button>
-              <Button
-                asChild
-                size="sm"
-                className="bg-sky-500 hover:bg-sky-600 text-white font-bold"
-              >
-                <Link to="/campus-admin">Open SRC Portal</Link>
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <NoticeDialog notice={selectedEventModal} onClose={() => setSelectedEventModal(null)} />
 
       {/* Escrow Modal */}
       <Dialog open={escrowModalOpen} onOpenChange={setEscrowModalOpen}>
-        <DialogContent className="max-w-md rounded-2xl">
+        <DialogContent className="max-w-md rounded-[28px]">
           <DialogHeader>
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-sky-500/10 text-sky-500 mb-2">
-              <ShieldCheck className="h-6 w-6" />
+            <div className="mb-2 grid h-12 w-12 place-items-center rounded-full bg-primary-soft text-link">
+              <ShieldCheck className="h-6 w-6" strokeWidth={1.8} />
             </div>
-            <DialogTitle className="text-lg font-black">NAFLIS Campus Escrow Guarantee</DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              How funds are held and protected on campus.
-            </DialogDescription>
+            <DialogTitle className="text-lg font-extrabold">NAFLIS Campus Escrow Guarantee</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">How funds are held and protected on campus.</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
+          <div className="space-y-3 text-sm leading-relaxed text-subtle-foreground">
             <p>
               1. <strong className="text-foreground">Payment is Held:</strong> When you purchase an item on NAFLIS, your money doesn't go to the seller directly. It sits securely in the platform escrow vault.
             </p>
@@ -1053,16 +687,59 @@ function Landing() {
           </div>
 
           <div className="mt-4 flex justify-end">
-            <Button
-              size="sm"
-              onClick={() => setEscrowModalOpen(false)}
-              className="bg-sky-500 hover:bg-sky-600 text-white font-bold"
-            >
-              Got it, Close
-            </Button>
+            <button type="button" onClick={() => setEscrowModalOpen(false)} className={primaryBtn}>Got it, Close</button>
           </div>
         </DialogContent>
       </Dialog>
+      <MobileTabBar />
     </div>
+  );
+}
+
+function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">{title}</h2>
+      <ul className="text-sm text-muted-foreground">{children}</ul>
+    </div>
+  );
+}
+
+function FooterLink({ to, children }: { to: string; children: React.ReactNode }) {
+  return (
+    <li>
+      <Link to={to} className="inline-flex min-h-11 items-center hover:text-foreground">{children}</Link>
+    </li>
+  );
+}
+
+/** Product card used by Flash Deals and Trending: photo, badges, price and the escrow buy action. */
+function ProductTile({ p, badges, meta, onBuy }: { p: Product; badges: React.ReactNode; meta: React.ReactNode; onBuy: () => void }) {
+  return (
+    <article className="group flex flex-col overflow-hidden rounded-3xl border border-border-soft bg-card shadow-soft">
+      <div className="relative aspect-square w-full overflow-hidden bg-muted">
+        <ListingImage src={p.image} alt={p.name} className="transition duration-300 group-hover:scale-105" />
+        <div className="absolute left-2 top-2 flex flex-col items-start gap-1">{badges}</div>
+      </div>
+      <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
+        <div className="flex flex-wrap items-center justify-between gap-1 text-[11px]">
+          <span className="font-bold uppercase text-muted-foreground">{p.category}</span>
+          {meta}
+        </div>
+        <h3 className="line-clamp-1 text-sm font-bold text-foreground">{p.name}</h3>
+        <p className="line-clamp-2 text-xs text-subtle-foreground">{p.description}</p>
+        <div className="mt-auto space-y-2 pt-1">
+          <p>
+            <span className="text-base font-extrabold text-foreground">{GHS(p.price)}</span>
+            {p.originalPrice && (
+              <span className="ml-1.5 text-xs text-muted-foreground line-through">{GHS(p.originalPrice)}</span>
+            )}
+          </p>
+          <button type="button" onClick={onBuy} className={`${primaryBtn} w-full text-xs`}>
+            <Lock className="h-3.5 w-3.5" strokeWidth={1.8} /> Buy with Escrow
+          </button>
+        </div>
+      </div>
+    </article>
   );
 }

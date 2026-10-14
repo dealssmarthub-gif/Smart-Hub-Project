@@ -428,25 +428,25 @@ export function CampusAdminPortal() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4">
-          <div className="flex items-center gap-3">
-            <Logo />
-            <div className="hidden sm:flex items-center gap-1.5 rounded-lg bg-sky-500/10 px-2.5 py-1 text-xs font-bold text-sky-500 border border-sky-500/20">
-              <ShieldCheck className="h-3.5 w-3.5 text-sky-500" />
+      <header className="sticky top-0 z-40 border-b border-border-soft bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 md:h-[72px]">
+          <div className="flex min-w-0 items-center gap-3">
+            <Logo compact />
+            <div className="hidden lg:flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-xs font-bold text-link">
+              <ShieldCheck className="h-3.5 w-3.5 text-link" />
               <span>Institutional / SRC Portal</span>
             </div>
           </div>
 
           {/* Campus Selector */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex items-center">
-              <Building2 className="pointer-events-none absolute left-2.5 h-4 w-4 text-sky-500" />
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="relative flex min-w-0 items-center">
+              <Building2 className="pointer-events-none absolute left-2.5 h-4 w-4 text-link" />
               <select
                 aria-label="Campus Selector"
                 value={selectedCampus}
                 onChange={(e) => setSelectedCampus(e.target.value)}
-                className="h-9 rounded-lg border border-border bg-card pl-8 pr-7 text-xs font-semibold text-foreground focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-sm transition"
+                className="h-11 max-w-[8.5rem] rounded-full border border-border bg-card pl-8 pr-7 text-xs font-semibold text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring shadow-soft transition sm:max-w-none"
               >
                 {scope.map((c) => (
                   <option key={c} value={c}>
@@ -459,9 +459,9 @@ export function CampusAdminPortal() {
             <ThemeToggle />
             <ContextSwitcher />
 
-            <Button asChild variant="ghost" size="sm" className="text-xs">
+            <Button asChild variant="ghost" size="sm" className="text-xs" aria-label="Landing">
               <Link to="/">
-                <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Landing
+                <ArrowLeft className="h-4 w-4" strokeWidth={1.8} /> <span className="hidden sm:inline">Landing</span>
               </Link>
             </Button>
           </div>
@@ -471,18 +471,18 @@ export function CampusAdminPortal() {
       {/* Main Body */}
       <main className="flex-1 mx-auto max-w-7xl w-full px-4 py-8 space-y-8">
         {/* Hero Header Card */}
-        <div className="relative overflow-hidden rounded-3xl gradient-hero text-white p-6 sm:p-8 shadow-premium">
+        <div className="relative overflow-hidden rounded-[30px] gradient-hero text-white p-6 sm:p-8 shadow-soft">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
               <div className="flex items-center gap-2">
-                <Badge className="bg-sky-400/30 text-sky-200 border-sky-300/40 text-xs">
+                <Badge className="bg-white/15 text-white border-white/30 text-xs">
                   {selectedCampus}
                 </Badge>
-                <Badge className="bg-white/20 text-white border-white/20 text-xs gap-1">
+                <Badge className="bg-white/15 text-white border-white/20 text-xs gap-1">
                   <CheckCircle2 className="h-3 w-3 text-emerald-300" /> Scoped to {scope.length === 1 ? scope[0] : `${scope.length} campuses`}
                 </Badge>
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">
                 SRC & Institutional Leadership Console
               </h1>
               <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
@@ -495,14 +495,14 @@ export function CampusAdminPortal() {
               <Button
                 onClick={() => { setEventCampus(selectedCampus); setShowEventModal(true); }}
                 disabled={!canAnnounce}
-                className="bg-white text-navy hover:bg-white/90 font-bold text-xs sm:text-sm shadow-md gap-1.5"
+                className="bg-white text-primary-deep hover:bg-white/90 font-bold text-xs sm:text-sm shadow-md gap-1.5"
               >
-                <Plus className="h-4 w-4 text-sky-600" /> Publish Announcement
+                <Plus className="h-4 w-4 text-primary-deep" /> Publish Announcement
               </Button>
               <Button
                 onClick={() => { setResCampus(selectedCampus); setShowResourceModal(true); }}
                 disabled={!canUpload}
-                className="bg-sky-500 hover:bg-sky-400 text-white font-bold text-xs sm:text-sm shadow-md gap-1.5"
+                className="bg-white/15 border border-white/40 hover:bg-white/25 text-white font-bold text-xs sm:text-sm gap-1.5"
               >
                 <UploadCloud className="h-4 w-4" /> Upload Lecture Slides
               </Button>
@@ -512,12 +512,12 @@ export function CampusAdminPortal() {
 
         {/* Executive Metrics Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <div className="rounded-2xl border bg-card p-4 sm:p-5 shadow-sm">
+          <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4 sm:p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider">Campus Notices</span>
-              <Calendar className="h-4 w-4 text-sky-500" />
+              <Calendar className="h-4 w-4 text-link" />
             </div>
-            <p className="text-2xl sm:text-3xl font-black text-foreground">
+            <p className="text-2xl sm:text-3xl font-extrabold text-foreground">
               {filteredEvents.length}
             </p>
             <p className="text-[11px] text-muted-foreground mt-1">
@@ -525,23 +525,23 @@ export function CampusAdminPortal() {
             </p>
           </div>
 
-          <div className="rounded-2xl border bg-card p-4 sm:p-5 shadow-sm">
+          <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4 sm:p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider">Study Archives</span>
-              <BookOpen className="h-4 w-4 text-sky-500" />
+              <BookOpen className="h-4 w-4 text-link" />
             </div>
-            <p className="text-2xl sm:text-3xl font-black text-foreground">
+            <p className="text-2xl sm:text-3xl font-extrabold text-foreground">
               {filteredResources.length}
             </p>
             <p className="text-[11px] text-muted-foreground mt-1">Verified slide decks & solutions</p>
           </div>
 
-          <div className="rounded-2xl border bg-card p-4 sm:p-5 shadow-sm">
+          <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4 sm:p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider">Total Downloads</span>
               <Download className="h-4 w-4 text-emerald-500" />
             </div>
-            <p className="text-2xl sm:text-3xl font-black text-foreground">
+            <p className="text-2xl sm:text-3xl font-extrabold text-foreground">
               {filteredResources
                 .reduce((acc, r) => acc + (r.downloads || 0), 0)
                 .toLocaleString()}
@@ -549,12 +549,12 @@ export function CampusAdminPortal() {
             <p className="text-[11px] text-muted-foreground mt-1">Student study package retrievals</p>
           </div>
 
-          <div className="rounded-2xl border bg-card p-4 sm:p-5 shadow-sm">
+          <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4 sm:p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider">Campus Demand</span>
               <Flame className="h-4 w-4 text-amber-500" />
             </div>
-            <p className="text-2xl sm:text-3xl font-black text-foreground">
+            <p className="text-2xl sm:text-3xl font-extrabold text-foreground">
               {campusDemandList.length > 0 ? campusDemandList[0].query : "Laptops"}
             </p>
             <p className="text-[11px] text-muted-foreground mt-1">
@@ -565,25 +565,25 @@ export function CampusAdminPortal() {
 
         {/* Console Tabs */}
         <Tabs defaultValue="announcements" className="space-y-6">
-          <TabsList className="bg-muted p-1 rounded-xl">
+          <TabsList className="no-scrollbar h-auto max-w-full justify-start overflow-x-auto bg-muted p-1">
             <TabsTrigger value="announcements" className="text-xs font-semibold gap-1.5">
-              <Calendar className="h-3.5 w-3.5 text-sky-500" />
+              <Calendar className="h-3.5 w-3.5 text-link" />
               <span>SRC Announcements & Events</span>
             </TabsTrigger>
             <TabsTrigger value="resources" className="text-xs font-semibold gap-1.5">
-              <FileText className="h-3.5 w-3.5 text-sky-500" />
+              <FileText className="h-3.5 w-3.5 text-link" />
               <span>Academic Slides & Past Questions</span>
             </TabsTrigger>
             <TabsTrigger value="tickets" className="text-xs font-semibold gap-1.5">
-              <Tag className="h-3.5 w-3.5 text-sky-500" />
+              <Tag className="h-3.5 w-3.5 text-link" />
               <span>Events & Tickets</span>
             </TabsTrigger>
             <TabsTrigger value="checkin" className="text-xs font-semibold gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-sky-500" />
+              <ShieldCheck className="h-3.5 w-3.5 text-link" />
               <span>Ticket Check-in</span>
             </TabsTrigger>
             <TabsTrigger value="intelligence" className="text-xs font-semibold gap-1.5">
-              <BarChart3 className="h-3.5 w-3.5 text-sky-500" />
+              <BarChart3 className="h-3.5 w-3.5 text-link" />
               <span>Demand Intelligence Logs</span>
             </TabsTrigger>
           </TabsList>
@@ -610,7 +610,7 @@ export function CampusAdminPortal() {
                 </div>
                 <Button
                   onClick={() => setShowEventModal(true)}
-                  className="bg-sky-500 hover:bg-sky-600 text-white text-xs h-9 gap-1 shrink-0"
+                  className="bg-primary hover:bg-primary-deep text-white text-xs h-9 gap-1 shrink-0"
                 >
                   <Plus className="h-3.5 w-3.5" /> New Notice
                 </Button>
@@ -627,7 +627,7 @@ export function CampusAdminPortal() {
                 <Button
                   size="sm"
                   onClick={() => setShowEventModal(true)}
-                  className="bg-sky-500 hover:bg-sky-600 text-white text-xs"
+                  className="bg-primary hover:bg-primary-deep text-white text-xs"
                 >
                   Create Event
                 </Button>
@@ -637,8 +637,8 @@ export function CampusAdminPortal() {
                 {filteredEvents.map((e) => (
                   <div
                     key={e.id}
-                    className={`flex flex-col rounded-2xl border bg-card overflow-hidden shadow-sm transition hover:shadow-premium ${
-                      e.pinned ? "border-sky-500/60 ring-1 ring-sky-500/20" : ""
+                    className={`flex flex-col rounded-3xl border border-border-soft bg-card shadow-soft overflow-hidden shadow-sm transition hover:shadow-soft ${
+                      e.pinned ? "border-primary/60 ring-1 ring-ring/20" : ""
                     }`}
                   >
                     <div className="relative h-36 w-full overflow-hidden bg-muted">
@@ -648,9 +648,9 @@ export function CampusAdminPortal() {
                         className="h-full w-full object-cover"
                       />
                       <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                        <Badge className="bg-sky-500 text-white text-[10px]">{e.campus}</Badge>
+                        <Badge className="bg-primary text-white text-[10px]">{e.campus}</Badge>
                         {e.pinned && (
-                          <Badge className="bg-amber-500 text-white text-[10px] gap-1 font-bold">
+                          <Badge className="bg-tile-butter text-[#7a5200] dark:text-[#f5d27a] border-transparent text-[10px] gap-1 font-bold">
                             <Pin className="h-3 w-3" /> Pinned on Home
                           </Badge>
                         )}
@@ -659,7 +659,7 @@ export function CampusAdminPortal() {
 
                     <div className="flex flex-col flex-1 p-4 gap-2.5">
                       <div>
-                        <span className="text-[10px] font-bold uppercase text-sky-500">
+                        <span className="text-[10px] font-bold uppercase text-link">
                           {e.organizer}
                         </span>
                         <h4 className="text-base font-bold text-foreground leading-snug">
@@ -673,11 +673,11 @@ export function CampusAdminPortal() {
 
                       <div className="mt-auto space-y-1 pt-2 border-t text-xs text-muted-foreground">
                         <div className="flex items-center gap-1.5">
-                          <MapPin className="h-3.5 w-3.5 text-sky-500 shrink-0" />
+                          <MapPin className="h-3.5 w-3.5 text-link shrink-0" />
                           <span className="truncate">{e.venue}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5 text-sky-500 shrink-0" />
+                          <Calendar className="h-3.5 w-3.5 text-link shrink-0" />
                           <span>{new Date(e.eventDate).toLocaleDateString()}</span>
                         </div>
                       </div>
@@ -696,7 +696,7 @@ export function CampusAdminPortal() {
                             </>
                           ) : (
                             <>
-                              <Pin className="h-3.5 w-3.5 text-sky-500" />
+                              <Pin className="h-3.5 w-3.5 text-link" />
                               <span>Pin to Home Ticker</span>
                             </>
                           )}
@@ -742,7 +742,7 @@ export function CampusAdminPortal() {
                 </div>
                 <Button
                   onClick={() => setShowResourceModal(true)}
-                  className="bg-sky-500 hover:bg-sky-600 text-white text-xs h-9 gap-1 shrink-0"
+                  className="bg-primary hover:bg-primary-deep text-white text-xs h-9 gap-1 shrink-0"
                 >
                   <UploadCloud className="h-3.5 w-3.5" /> Upload File
                 </Button>
@@ -759,7 +759,7 @@ export function CampusAdminPortal() {
                 <Button
                   size="sm"
                   onClick={() => setShowResourceModal(true)}
-                  className="bg-sky-500 hover:bg-sky-600 text-white text-xs"
+                  className="bg-primary hover:bg-primary-deep text-white text-xs"
                 >
                   Upload Lecture Slides
                 </Button>
@@ -769,12 +769,12 @@ export function CampusAdminPortal() {
                 {filteredResources.map((r) => (
                   <div
                     key={r.id}
-                    className="flex flex-col justify-between rounded-2xl border bg-card p-5 hover:border-sky-500/50 hover:shadow-premium transition"
+                    className="flex flex-col justify-between rounded-3xl border border-border-soft bg-card shadow-soft p-5 hover:border-primary/50 hover:shadow-soft transition"
                   >
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge className="bg-sky-500/15 text-sky-500 border-sky-500/30 text-[10px]">
+                          <Badge className="bg-primary/15 text-link border-primary/30 text-[10px]">
                             {r.resourceType}
                           </Badge>
                           <Badge variant="outline" className="font-mono text-[10px]">
@@ -784,7 +784,7 @@ export function CampusAdminPortal() {
                         </div>
 
                         <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                          <Download className="h-3 w-3 text-sky-500" />
+                          <Download className="h-3 w-3 text-link" />
                           {r.downloads || 0} downloads
                         </span>
                       </div>
@@ -816,7 +816,7 @@ export function CampusAdminPortal() {
                           }}
                           className="text-xs h-8 gap-1.5"
                         >
-                          <Download className="h-3.5 w-3.5 text-sky-500" /> Download
+                          <Download className="h-3.5 w-3.5 text-link" /> Download
                         </Button>
                         <Button
                           size="sm"
@@ -843,7 +843,7 @@ export function CampusAdminPortal() {
 
           {/* TAB 3: Demand Intelligence Logs */}
           <TabsContent value="intelligence" className="space-y-4">
-            <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-4">
+            <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
@@ -853,7 +853,7 @@ export function CampusAdminPortal() {
                     Aggregated passively from student queries on {selectedCampus}. Shows what items classmates need most.
                   </p>
                 </div>
-                <Badge className="bg-sky-500/10 text-sky-500 border-sky-500/20 text-xs">
+                <Badge className="bg-primary/10 text-link border-primary/20 text-xs">
                   Live Demand Stream
                 </Badge>
               </div>
@@ -862,10 +862,10 @@ export function CampusAdminPortal() {
                 {campusDemandList.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-3.5 rounded-xl border bg-background hover:border-sky-500/40 transition"
+                    className="flex items-center justify-between p-3.5 rounded-2xl border border-border-soft bg-background hover:border-primary/40 transition"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="grid h-8 w-8 place-items-center rounded-lg bg-sky-500/10 text-sky-500 font-bold text-xs">
+                      <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-link font-bold text-xs">
                         #{idx + 1}
                       </div>
                       <div>
@@ -873,7 +873,7 @@ export function CampusAdminPortal() {
                         <p className="text-[10px] text-muted-foreground">{selectedCampus}</p>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="text-xs font-bold text-sky-500">
+                    <Badge variant="secondary" className="text-xs font-bold text-link">
                       {item.count} searches
                     </Badge>
                   </div>
@@ -887,10 +887,10 @@ export function CampusAdminPortal() {
       {/* Announcement Creator Modal */}
       {showEventModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border bg-card p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-lg rounded-3xl border border-border-soft bg-card shadow-soft p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b pb-3">
               <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-sky-500" />
+                <Calendar className="h-5 w-5 text-link" />
                 <h3 className="text-base font-bold text-foreground">
                   Publish Official Campus Announcement
                 </h3>
@@ -926,7 +926,7 @@ export function CampusAdminPortal() {
                     id="eventCampus"
                     value={eventCampus}
                     onChange={(e) => setEventCampus(e.target.value)}
-                    className="w-full h-9 rounded-lg border bg-background px-2.5 text-xs font-semibold focus:border-sky-500 focus:outline-none"
+                    className="w-full h-9 rounded-lg border bg-background px-2.5 text-xs font-semibold focus:border-ring focus:outline-none"
                   >
                     {publishCampuses.map((c) => (
                       <option key={c} value={c}>
@@ -986,7 +986,7 @@ export function CampusAdminPortal() {
                   placeholder="Outline key agenda points, requirements, and information for students..."
                   value={eventDescription}
                   onChange={(e) => setEventDescription(e.target.value)}
-                  className="w-full rounded-lg border bg-transparent p-2.5 text-xs focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-lg border bg-transparent p-2.5 text-xs focus:border-ring focus:outline-none"
                 />
               </div>
 
@@ -1021,7 +1021,7 @@ export function CampusAdminPortal() {
                   id="pinnedToggle"
                   checked={eventPinned}
                   onChange={(e) => setEventPinned(e.target.checked)}
-                  className="h-4 w-4 rounded text-sky-500 focus:ring-sky-500"
+                  className="h-4 w-4 rounded text-link focus:ring-ring"
                 />
                 <Label htmlFor="pinnedToggle" className="text-xs font-semibold cursor-pointer">
                   Pin to Homepage Dynamic Ticker Banner
@@ -1041,7 +1041,7 @@ export function CampusAdminPortal() {
                   type="submit"
                   size="sm"
                   disabled={isSubmittingEvent}
-                  className="bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs"
+                  className="bg-primary hover:bg-primary-deep text-white font-bold text-xs"
                 >
                   {isSubmittingEvent ? (
                     <>
@@ -1061,10 +1061,10 @@ export function CampusAdminPortal() {
       {/* Academic Slides / Past Question Uploader Modal */}
       {showResourceModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border bg-card p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-lg rounded-3xl border border-border-soft bg-card shadow-soft p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b pb-3">
               <div className="flex items-center gap-2">
-                <UploadCloud className="h-5 w-5 text-sky-500" />
+                <UploadCloud className="h-5 w-5 text-link" />
                 <h3 className="text-base font-bold text-foreground">
                   Upload Academic Slides & Solved Past Questions
                 </h3>
@@ -1100,7 +1100,7 @@ export function CampusAdminPortal() {
                     id="resType"
                     value={resType}
                     onChange={(e) => setResType(e.target.value)}
-                    className="w-full h-9 rounded-lg border bg-background px-2.5 text-xs font-semibold focus:border-sky-500 focus:outline-none"
+                    className="w-full h-9 rounded-lg border bg-background px-2.5 text-xs font-semibold focus:border-ring focus:outline-none"
                   >
                     <option value="Lecture Slides">Lecture Slides</option>
                     <option value="Past Questions">Past Questions</option>
@@ -1145,7 +1145,7 @@ export function CampusAdminPortal() {
                     id="resCampus"
                     value={resCampus}
                     onChange={(e) => setResCampus(e.target.value)}
-                    className="w-full h-9 rounded-lg border bg-background px-2.5 text-xs font-semibold focus:border-sky-500 focus:outline-none"
+                    className="w-full h-9 rounded-lg border bg-background px-2.5 text-xs font-semibold focus:border-ring focus:outline-none"
                   >
                     {uploadCampuses.map((c) => (
                       <option key={c} value={c}>
@@ -1166,7 +1166,7 @@ export function CampusAdminPortal() {
                   placeholder="e.g. Includes full slides on React Native state management and exam tips..."
                   value={resDescription}
                   onChange={(e) => setResDescription(e.target.value)}
-                  className="w-full rounded-lg border bg-transparent p-2.5 text-xs focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-lg border bg-transparent p-2.5 text-xs focus:border-ring focus:outline-none"
                 />
               </div>
 
@@ -1202,7 +1202,7 @@ export function CampusAdminPortal() {
                   type="submit"
                   size="sm"
                   disabled={isSubmittingRes}
-                  className="bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs"
+                  className="bg-primary hover:bg-primary-deep text-white font-bold text-xs"
                 >
                   {isSubmittingRes ? (
                     <>
@@ -1224,7 +1224,7 @@ export function CampusAdminPortal() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 text-xs text-muted-foreground sm:flex-row">
           <Logo />
           <div className="flex items-center gap-4">
-            <Link to="/campus-admin" className="font-semibold text-sky-500 hover:underline">
+            <Link to="/campus-admin" className="font-semibold text-link hover:underline">
               Institutional / SRC Access
             </Link>
             <span>•</span>

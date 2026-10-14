@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
+import { useReturnFocus } from "@/hooks/useReturnFocus";
 import {
   Store,
   Search,
@@ -7,18 +8,17 @@ import {
   MapPin,
   CheckCircle2,
   ShieldCheck,
-  PlusCircle,
   Phone,
   MessageCircle,
-  ArrowUpDown,
+  ChevronDown,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ListingImage } from "@/components/naflis/home/HomeBlocks";
+import { ShopHeader } from "@/components/naflis/shop/ShopHeader";
 import {
   useNaflis,
   CAMPUSES,
-  type StudentItemCondition,
   type StudentListing,
 } from "@/lib/naflis/store";
 import { useCategories } from "@/services/categories";
@@ -29,18 +29,37 @@ export const Route = createFileRoute("/student-os/marketplace")({
   component: StudentMarketplace,
 });
 
+type SortBy = "newest" | "price-asc" | "price-desc";
+
+const CONDITIONS = ["Brand New", "Like New", "Used - Good", "Used - Fair"] as const;
+const SORTS: { value: SortBy; label: string }[] = [
+  { value: "newest", label: "Newest First" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
+];
+
+const selectClass =
+  "h-11 w-full appearance-none rounded-xl border border-border bg-card pl-3 pr-9 text-sm font-semibold text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:w-auto";
+const primaryBtn =
+  "inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-primary px-2 text-xs font-bold text-primary-foreground shadow-soft transition hover:bg-primary-deep";
+const secondaryBtn =
+  "inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-border bg-card px-2 text-xs font-bold text-foreground transition hover:border-primary/40 hover:bg-accent";
+
 function StudentMarketplace() {
   const selectedCampus = useNaflis((s) => s.selectedCampus);
   const requestCampusSwitch = useNaflis((s) => s.requestCampusSwitch);
   const studentListings = useNaflis((s) => s.studentListings);
-  const setStudentModalOpen = useNaflis((s) => s.setStudentModalOpen);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const { names: studentCategories } = useCategories("student");
   const [selectedCondition, setSelectedCondition] = useState<string>("All");
-  const [sortBy, setSortBy] = useState<"newest" | "price-asc" | "price-desc">("newest");
+  const [sortBy, setSortBy] = useState<SortBy>("newest");
   const [contactModalItem, setContactModalItem] = useState<StudentListing | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersFocus = useReturnFocus(filtersOpen);
+  const contactFocus = useReturnFocus(!!contactModalItem);
+
 
   // Filter out pure study resources and apply filters
   const marketplaceItems = useMemo(() => {
@@ -74,92 +93,93 @@ function StudentMarketplace() {
       });
   }, [studentListings, selectedCampus, selectedCategory, selectedCondition, searchQuery, sortBy]);
 
+  // How many sheet filters differ from their defaults (badge on the phone filter button).
+  const activeFilters = (selectedCampus !== "All Campuses" ? 1 : 0) + (selectedCondition !== "All" ? 1 : 0) + (sortBy !== "newest" ? 1 : 0);
+
+  const filterControls = (
+    <>
+      {/* Campus Selector */}
+      <label className="relative block md:inline-block">
+        <span className="mb-1 block text-xs font-bold text-subtle-foreground md:sr-only">Campus</span>
+        <select value={selectedCampus} onChange={(e) => requestCampusSwitch(e.target.value, "manual")} className={selectClass}>
+          {CAMPUSES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute bottom-3.5 right-3 h-4 w-4 text-muted-foreground" strokeWidth={1.8} aria-hidden />
+      </label>
+
+      {/* Condition Filter */}
+      <label className="relative block md:inline-block">
+        <span className="mb-1 block text-xs font-bold text-subtle-foreground md:sr-only">Condition</span>
+        <select value={selectedCondition} onChange={(e) => setSelectedCondition(e.target.value)} className={selectClass}>
+          <option value="All">All Conditions</option>
+          {CONDITIONS.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute bottom-3.5 right-3 h-4 w-4 text-muted-foreground" strokeWidth={1.8} aria-hidden />
+      </label>
+
+      {/* Sort By */}
+      <label className="relative block md:inline-block">
+        <span className="mb-1 block text-xs font-bold text-subtle-foreground md:sr-only">Sort by</span>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className={selectClass}>
+          {SORTS.map((s) => (
+            <option key={s.value} value={s.value}>{s.label}</option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute bottom-3.5 right-3 h-4 w-4 text-muted-foreground" strokeWidth={1.8} aria-hidden />
+      </label>
+    </>
+  );
+
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <Store className="h-6 w-6 text-sky-500" />
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Campus Marketplace</h1>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Buy & sell textbooks, laptops, hostel appliances, and thrift fashion with fellow students.
-          </p>
-        </div>
+    <div className="space-y-5">
+      <ShopHeader
+        active="marketplace"
+        title="Campus Marketplace"
+        subtitle="Buy & sell textbooks, laptops, hostel appliances, and thrift fashion with fellow students."
+      />
 
-        <Button
-          onClick={() => setStudentModalOpen(true)}
-          className="bg-sky-500 hover:bg-sky-600 text-white font-medium text-xs sm:text-sm self-start sm:self-auto gap-1.5"
-        >
-          <PlusCircle className="h-4 w-4" /> List Item
-        </Button>
-      </div>
-
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row gap-3">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
+      {/* Search + filters */}
+      <div className="flex items-center gap-2">
+        <label className="relative flex-1">
+          <span className="sr-only">Search the campus marketplace</span>
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" strokeWidth={1.8} />
+          <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search textbooks, gadgets, calculators, mini fridges..."
-            className="pl-9 text-xs sm:text-sm"
+            className="h-12 w-full rounded-2xl border border-border-soft bg-card pl-12 pr-4 text-sm text-foreground shadow-soft placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-        </div>
-
-        {/* Filters Row */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Campus Selector */}
-          <select
-            value={selectedCampus}
-            onChange={(e) => requestCampusSwitch(e.target.value, "manual")}
-            className="h-9 rounded-lg border bg-card px-2.5 text-xs font-semibold text-foreground focus:border-sky-500 focus:outline-none"
-          >
-            {CAMPUSES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-
-          {/* Condition Filter */}
-          <select
-            value={selectedCondition}
-            onChange={(e) => setSelectedCondition(e.target.value)}
-            className="h-9 rounded-lg border bg-card px-2.5 text-xs font-semibold text-foreground focus:border-sky-500 focus:outline-none"
-          >
-            <option value="All">All Conditions</option>
-            <option value="Brand New">Brand New</option>
-            <option value="Like New">Like New</option>
-            <option value="Used - Good">Used - Good</option>
-            <option value="Used - Fair">Used - Fair</option>
-          </select>
-
-          {/* Sort By */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="h-9 rounded-lg border bg-card px-2.5 text-xs font-semibold text-foreground focus:border-sky-500 focus:outline-none"
-          >
-            <option value="newest">Newest First</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-          </select>
-        </div>
+        </label>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(true)}
+          aria-label={activeFilters ? `Filters, ${activeFilters} active` : "Filters"}
+          className="relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-border-soft bg-card text-foreground shadow-soft md:hidden"
+        >
+          <SlidersHorizontal className="h-5 w-5" strokeWidth={1.8} />
+          {activeFilters > 0 && (
+            <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">{activeFilters}</span>
+          )}
+        </button>
+        <div className="hidden items-center gap-2 md:flex">{filterControls}</div>
       </div>
 
       {/* Category Pills */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 md:mx-0 md:px-0">
         {["All", ...studentCategories].map((cat) => (
           <button
             key={cat}
+            type="button"
             onClick={() => setSelectedCategory(cat)}
-            className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition ${
+            aria-pressed={selectedCategory === cat}
+            className={`min-h-11 whitespace-nowrap rounded-full px-4 text-xs font-bold transition ${
               selectedCategory === cat
-                ? "bg-sky-500 text-white shadow-sm"
-                : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-subtle-foreground shadow-soft hover:bg-accent hover:text-accent-foreground"
             }`}
           >
             {cat}
@@ -169,164 +189,155 @@ function StudentMarketplace() {
 
       {/* Items Grid */}
       {marketplaceItems.length === 0 ? (
-        <div className="rounded-2xl border border-dashed p-12 text-center space-y-3">
-          <Store className="h-12 w-12 mx-auto text-muted-foreground opacity-40" />
-          <h3 className="text-base font-bold text-foreground">No campus items found</h3>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+        <div className="space-y-3 rounded-3xl border border-dashed bg-card p-10 text-center">
+          <Store className="mx-auto h-12 w-12 text-muted-foreground" strokeWidth={1.8} />
+          <h2 className="text-base font-bold text-foreground">No campus items found</h2>
+          <p className="mx-auto max-w-sm text-sm text-muted-foreground">
             We couldn't find any items matching your selected filters for {selectedCampus}. Try adjusting
             your search or list the first item!
           </p>
-          <Button
-            size="sm"
+          <button
+            type="button"
             onClick={() => {
               setSelectedCategory("All");
               setSelectedCondition("All");
               setSearchQuery("");
             }}
-            variant="outline"
-            className="text-xs"
+            className={secondaryBtn}
           >
             Reset Filters
-          </Button>
+          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
           {marketplaceItems.map((item) => (
-            <div
+            <article
               key={item.id}
-              className="group flex flex-col rounded-2xl border bg-card overflow-hidden hover:shadow-premium transition"
+              className="group flex flex-col overflow-hidden rounded-3xl border border-border-soft bg-card shadow-soft"
             >
               <div className="relative aspect-square w-full overflow-hidden bg-muted">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="h-full w-full object-cover group-hover:scale-105 transition duration-300"
-                />
-                <div className="absolute top-2 left-2 flex flex-col gap-1">
-                  <Badge className="bg-sky-500 text-white text-[10px] shadow-sm">
-                    {item.condition}
-                  </Badge>
-                </div>
+                <ListingImage src={item.image} alt={item.title} className="transition duration-300 group-hover:scale-105" />
+                <span className="absolute left-2 top-2 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-foreground">
+                  {item.condition}
+                </span>
                 {item.isVerifiedStudent && (
-                  <Badge
-                    variant="secondary"
-                    className="absolute top-2 right-2 bg-background/90 text-sky-500 text-[10px] backdrop-blur gap-1 shadow-sm"
-                  >
-                    <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Student
-                  </Badge>
+                  <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-tile-mint px-2 py-0.5 text-[10px] font-bold text-verified">
+                    <CheckCircle2 className="h-3 w-3" strokeWidth={1.8} /> Verified
+                  </span>
                 )}
               </div>
 
-              <div className="flex flex-col flex-1 p-4 gap-2">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                    {item.campus}
-                  </span>
-                  <h3 className="text-sm font-bold leading-snug line-clamp-2 text-foreground">
-                    {item.title}
-                  </h3>
-                </div>
-
-                <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
+              <div className="flex flex-1 flex-col gap-1.5 p-3 sm:p-4">
+                <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{item.campus}</span>
+                <h2 className="line-clamp-2 text-sm font-bold leading-snug text-foreground">{item.title}</h2>
+                <p className="line-clamp-2 text-xs text-subtle-foreground">{item.description}</p>
 
                 {item.hostelLocation && (
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1">
-                    <MapPin className="h-3.5 w-3.5 text-sky-500 shrink-0" />
+                  <p className="flex items-center gap-1 text-[11px] text-subtle-foreground">
+                    <MapPin className="h-3.5 w-3.5 shrink-0 text-link" strokeWidth={1.8} />
                     <span className="truncate">{item.hostelLocation}</span>
-                  </div>
+                  </p>
                 )}
 
-                <div className="mt-auto pt-3 border-t flex flex-col gap-2">
-                  <div className="flex items-baseline justify-between">
-                    <div>
-                      <span className="text-lg font-black text-foreground">{GHS(item.price)}</span>
+                <div className="mt-auto space-y-2 pt-2">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+                    <p>
+                      <span className="text-base font-extrabold text-foreground sm:text-lg">{GHS(item.price)}</span>
                       {item.originalPrice && item.originalPrice > item.price && (
-                        <span className="ml-1.5 text-xs text-muted-foreground line-through">
-                          {GHS(item.originalPrice)}
-                        </span>
+                        <span className="ml-1.5 text-xs text-muted-foreground line-through">{GHS(item.originalPrice)}</span>
                       )}
-                    </div>
+                    </p>
                     {item.sellerName && (
-                      <span className="text-[11px] text-muted-foreground truncate max-w-[100px]">
-                        By {item.sellerName.split(" ")[0]}
-                      </span>
+                      <span className="max-w-[100px] truncate text-[11px] text-muted-foreground">By {item.sellerName.split(" ")[0]}</span>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setContactModalItem(item)}
-                      className="text-xs h-8"
-                    >
-                      <MessageCircle className="h-3.5 w-3.5 mr-1 text-sky-500" /> Contact
-                    </Button>
-                    <Button
-                      size="sm"
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <button type="button" onClick={() => setContactModalItem(item)} className={secondaryBtn}>
+                      <MessageCircle className="h-4 w-4 text-link" strokeWidth={1.8} /> Contact
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => {
-                        toast.success(
-                          `Escrow hold secured for ${item.title}. Meetup verification code sent!`
-                        );
+                        toast.success(`Escrow hold secured for ${item.title}. Meetup verification code sent!`);
                       }}
-                      className="bg-sky-500 hover:bg-sky-600 text-white text-xs h-8 shadow-sm"
+                      className={primaryBtn}
                     >
-                      <ShieldCheck className="h-3.5 w-3.5 mr-1" /> Escrow Buy
-                    </Button>
+                      <ShieldCheck className="h-4 w-4" strokeWidth={1.8} /> Escrow Buy
+                    </button>
                   </div>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}
 
-      {/* Contact Seller Dialog */}
-      {contactModalItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl border bg-card p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-foreground">Contact Student Seller</h3>
-              <button
-                onClick={() => setContactModalItem(null)}
-                className="text-muted-foreground hover:text-foreground text-sm"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-1 border-b pb-3 text-xs">
-              <p className="font-semibold text-foreground">{contactModalItem.title}</p>
-              <p className="text-muted-foreground">
-                Seller: {contactModalItem.sellerName} · {contactModalItem.campus}
-              </p>
-              <p className="text-muted-foreground">Location: {contactModalItem.hostelLocation}</p>
-            </div>
-
-            <div className="space-y-2">
-              <a
-                href={`https://wa.me/${contactModalItem.sellerPhone?.replace(/[^0-9]/g, "") || "233240000000"}?text=Hi%20${encodeURIComponent(contactModalItem.sellerName)}%2C%20I%20saw%20your%20listing%20on%20Smart%20Hub%20Student%20OS%3A%20${encodeURIComponent(contactModalItem.title)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 py-2.5 text-xs font-semibold text-white transition shadow-sm"
-              >
-                <MessageCircle className="h-4 w-4" /> WhatsApp Seller
-              </a>
-
-              <a
-                href={`tel:${contactModalItem.sellerPhone || "+233240000000"}`}
-                className="flex items-center justify-center gap-2 w-full rounded-xl border bg-background hover:bg-muted py-2.5 text-xs font-semibold text-foreground transition"
-              >
-                <Phone className="h-4 w-4 text-sky-500" /> Call {contactModalItem.sellerPhone || "+233 24 000 0000"}
-              </a>
-            </div>
-
-            <p className="text-[11px] text-muted-foreground text-center">
-              🛡️ Always meet in well-lit public campus locations (Library, Quad, Hall porter lodge).
-            </p>
+      {/* Phone filter sheet: campus, condition and sort (category chips stay on the page). */}
+      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <SheetContent side="bottom" className="rounded-t-[28px] md:hidden" onCloseAutoFocus={filtersFocus}>
+          <SheetHeader className="text-left">
+            <SheetTitle>Filters</SheetTitle>
+            <SheetDescription>Campus, condition and sort order for the marketplace.</SheetDescription>
+          </SheetHeader>
+          <div className="mt-4 space-y-4 px-4">{filterControls}</div>
+          <div className="mt-6 grid grid-cols-2 gap-2 px-4 pb-6">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCondition("All");
+                setSortBy("newest");
+              }}
+              className={secondaryBtn}
+            >
+              Reset
+            </button>
+            <button type="button" onClick={() => setFiltersOpen(false)} className={primaryBtn}>
+              Show {marketplaceItems.length} item{marketplaceItems.length === 1 ? "" : "s"}
+            </button>
           </div>
-        </div>
-      )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Contact Seller Dialog */}
+      <Dialog open={!!contactModalItem} onOpenChange={(open) => !open && setContactModalItem(null)}>
+        <DialogContent className="max-w-sm rounded-[28px]" onCloseAutoFocus={contactFocus}>
+          {contactModalItem && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-base font-extrabold">Contact Student Seller</DialogTitle>
+                <DialogDescription className="sr-only">Seller contact details for {contactModalItem.title}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-1 border-b border-border-soft pb-3 text-sm">
+                <p className="font-semibold text-foreground">{contactModalItem.title}</p>
+                <p className="text-subtle-foreground">Seller: {contactModalItem.sellerName} · {contactModalItem.campus}</p>
+                <p className="text-subtle-foreground">Location: {contactModalItem.hostelLocation}</p>
+              </div>
+              <div className="space-y-2">
+                <a
+                  href={`https://wa.me/${contactModalItem.sellerPhone?.replace(/[^0-9]/g, "") || "233240000000"}?text=Hi%20${encodeURIComponent(contactModalItem.sellerName)}%2C%20I%20saw%20your%20listing%20on%20Smart%20Hub%20Student%20OS%3A%20${encodeURIComponent(contactModalItem.title)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-tile-mint-icon text-sm font-bold text-white transition hover:opacity-90"
+                >
+                  <MessageCircle className="h-4 w-4" strokeWidth={1.8} /> WhatsApp Seller
+                </a>
+                <a
+                  href={`tel:${contactModalItem.sellerPhone || "+233240000000"}`}
+                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-bold text-foreground transition hover:bg-accent"
+                >
+                  <Phone className="h-4 w-4 text-link" strokeWidth={1.8} /> Call {contactModalItem.sellerPhone || "+233 24 000 0000"}
+                </a>
+              </div>
+              <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+                Always meet in well-lit public campus locations (Library, Quad, Hall porter lodge).
+              </p>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+

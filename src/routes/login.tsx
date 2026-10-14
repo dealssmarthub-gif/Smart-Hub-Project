@@ -147,13 +147,13 @@ function LoginPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4">
-          <Logo />
+      <header className="border-b border-border-soft bg-background/90 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 md:h-[72px]">
+          <Logo compact />
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
               <Link to="/">
-                <ArrowLeft className="mr-1 h-4 w-4" /> Landing
+                <ArrowLeft className="h-4 w-4" strokeWidth={1.8} /> Landing
               </Link>
             </Button>
             <ThemeToggle />
@@ -162,10 +162,10 @@ function LoginPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-4 py-12">
+      <main className="flex-1 flex items-center justify-center px-4 py-10 sm:py-14">
         <div className="max-w-md w-full space-y-6">
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-black tracking-tight">
+            <h1 className="text-3xl font-extrabold tracking-tight">
               {mode === "signin" ? "Sign In" : "Create Account"}
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -176,7 +176,7 @@ function LoginPage() {
           </div>
 
           {signedInUser && (
-            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-sky-500/40 bg-sky-500/5 p-4 text-sm">
+            <div className="flex flex-wrap items-center gap-3 rounded-3xl border border-border bg-primary-soft p-4 text-sm">
               <img src={signedInUser.avatar} alt="" className="h-9 w-9 rounded-full" />
               <div className="min-w-0 flex-1">
                 <p className="font-semibold">Signed in as {signedInUser.name}</p>
@@ -192,16 +192,16 @@ function LoginPage() {
           {/* Form */}
           <form
             onSubmit={handleSubmit}
-            className="bg-card border rounded-2xl p-6 space-y-4 shadow-premium"
+            className="bg-card border border-border-soft rounded-[28px] p-6 sm:p-7 space-y-4 shadow-soft"
           >
             {/* Mode Switcher */}
-            <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-xl text-xs font-semibold">
+            <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-full text-sm font-semibold">
               <button
                 type="button"
                 onClick={() => setMode("signin")}
-                className={`py-2 rounded-lg transition ${
+                className={`min-h-10 rounded-full transition ${
                   mode === "signin"
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-card text-foreground shadow-soft"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -210,9 +210,9 @@ function LoginPage() {
               <button
                 type="button"
                 onClick={() => setMode("signup")}
-                className={`py-2 rounded-lg transition ${
+                className={`min-h-10 rounded-full transition ${
                   mode === "signup"
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-card text-foreground shadow-soft"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -292,7 +292,7 @@ function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 text-slate-400 hover:text-slate-200"
+                  className="absolute right-0 grid h-11 w-11 place-items-center rounded-xl text-muted-foreground hover:text-foreground"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -304,7 +304,7 @@ function LoginPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold" disabled={isLoading}>
+            <Button type="submit" size="lg" className="w-full font-bold" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Sparkles className="animate-spin mr-2 h-4 w-4" />
@@ -319,32 +319,32 @@ function LoginPage() {
           </form>
 
           {/* Quick Demo Role Navigation */}
-          <div className="rounded-xl border bg-card/60 p-4 text-center backdrop-blur shadow-sm space-y-2">
+          <div className="rounded-3xl border border-border-soft bg-card p-4 text-center shadow-soft space-y-3">
             <p className="text-xs font-semibold text-muted-foreground">Demo accounts — click to sign in</p>
             <div className="flex flex-wrap justify-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-8"
+                className="text-xs"
                 onClick={() => handleDemoLogin("buyer")}
               >
                 Demo Buyer
               </Button>
-              <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => handleDemoLogin("student")}>
+              <Button variant="outline" size="sm" className="text-xs" onClick={() => handleDemoLogin("student")}>
                 Demo Student
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-8"
+                className="text-xs"
                 onClick={() => handleDemoLogin("admin")}
               >
                 Demo Admin
               </Button>
-              <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => handleDemoLogin("src_head")}>
+              <Button variant="outline" size="sm" className="text-xs" onClick={() => handleDemoLogin("src_head")}>
                 Demo SRC (UG)
               </Button>
-              <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => handleDemoLogin("super_admin")}>
+              <Button variant="outline" size="sm" className="text-xs" onClick={() => handleDemoLogin("super_admin")}>
                 Demo Super Admin
               </Button>
             </div>
@@ -353,7 +353,7 @@ function LoginPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-secondary/50">
+      <footer className="border-t border-border-soft">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row">
           <p>© {new Date().getFullYear()} NAFLIS Discount Mall. Real Authentication.</p>
         </div>

@@ -3,17 +3,12 @@ import {
   Home, Search, ShoppingCart, Heart, Wallet, Bell, Package, MessageSquare, TrendingUp, Clock, GraduationCap,
   LayoutGrid, BadgePercent,
 } from "lucide-react";
-import { Logo } from "@/components/naflis/Logo";
-import { ThemeToggle } from "@/components/naflis/ThemeToggle";
-import { ContextSwitcher } from "@/components/naflis/ContextSwitcher";
-import { MobileBottomNav } from "@/components/naflis/MobileBottomNav";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
 import { useNaflis } from "@/lib/naflis/store";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 const NAV = [
   { to: "/buyer", label: "Home", icon: Home, exact: true },
@@ -31,13 +26,12 @@ const NAV = [
   { to: "/buyer/notifications", label: "Alerts", icon: Bell },
 ];
 
+/** NAFLIS Mall (B2C) pages: the shared shell plus the mall's own navigation and search. */
 export function BuyerShell() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const cart = useNaflis((s) => s.cart);
   const wishlist = useNaflis((s) => s.wishlist);
   const notifs = useNaflis((s) => s.notifications.filter((n) => !n.read).length);
-  const user = useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
-  const signOut = useNaflis((s) => s.signOut);
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const flags: Record<string, boolean> = {
@@ -62,87 +56,66 @@ export function BuyerShell() {
     "/buyer/wishlist": wishlist.length,
     "/buyer/notifications": notifs,
   };
+  const isActive = (n: (typeof NAV)[number]) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      {/* Top bar */}
-      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
-          <Logo className="shrink-0" />
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              navigate({ to: "/buyer/search", search: { q } });
-            }}
-            className="ml-2 hidden flex-1 md:block"
-          >
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search products, brands, categories, sellers…"
-                className="pl-9"
-              />
-            </div>
-          </form>
-          <div className="ml-auto flex items-center gap-2">
-            <Button asChild variant="ghost" size="icon" className="md:hidden">
-              <Link to="/buyer/search" aria-label="Search"><Search className="h-4 w-4" /></Link>
-            </Button>
-            <Button asChild variant="ghost" size="icon" className="relative md:hidden">
-              <Link to="/buyer/cart" aria-label="Cart">
-                <ShoppingCart className="h-4 w-4" />
-                {cartCount > 0 && (
-                  <span className="absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[9px] text-error-foreground">
-                    {cartCount}
-                  </span>
-                )}
+    <AppShell showCampus={false}>
+      <div className={`${PAGE_WIDTH} pt-4`}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            navigate({ to: "/buyer/search", search: { q } });
+          }}
+          role="search"
+        >
+          <label className="relative block">
+            <span className="sr-only">Search NAFLIS Mall</span>
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" strokeWidth={1.8} />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search products, brands, categories, sellers…"
+              className="h-12 rounded-2xl border-border bg-card pl-12 shadow-soft"
+            />
+          </label>
+        </form>
+        {/* Phones: the mall's sections as a scrollable row (the sidebar is desktop-only). */}
+        <nav aria-label="NAFLIS Mall" className="no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 md:hidden">
+          {nav.map((n) => {
+            const Icon = n.icon;
+            const badge = badges[n.to];
+            return (
+              <Link
+                key={n.to}
+                to={n.to}
+                className={`relative inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-xs font-bold transition ${
+                  isActive(n) ? "bg-primary text-primary-foreground" : "bg-card text-subtle-foreground hover:bg-accent"
+                }`}
+              >
+                <Icon className="h-4 w-4" strokeWidth={1.8} />
+                {n.label}
+                {badge ? <span className="grid h-5 min-w-5 place-items-center rounded-full bg-error px-1 text-[10px] text-error-foreground">{badge}</span> : null}
               </Link>
-            </Button>
-            <ThemeToggle />
-            <ContextSwitcher />
-            {user && (
-              <div className="hidden items-center gap-2 rounded-full border px-2 py-1 sm:flex">
-                <img src={user.avatar} alt="" className="h-6 w-6 rounded-full" />
-                <span className="text-xs font-medium">{user.name}</span>
-              </div>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden md:inline-flex"
-              onClick={() => {
-                signOut();
-                toast.success("Signed out successfully");
-                navigate({ to: "/" });
-              }}
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
+            );
+          })}
+        </nav>
+      </div>
 
-      <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6">
-        {/* Sidebar */}
+      <div className={`${PAGE_WIDTH} flex gap-6 py-6`}>
         <aside className="sticky top-24 hidden h-fit w-56 shrink-0 md:block">
-          <nav className="space-y-1">
+          <nav aria-label="NAFLIS Mall" className="space-y-1 rounded-3xl border border-border-soft bg-card p-2 shadow-soft">
             {nav.map((n) => {
               const Icon = n.icon;
-              const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
               const badge = badges[n.to];
               return (
                 <Link
                   key={n.to}
                   to={n.to}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
-                    active
-                      ? "bg-accent text-accent-foreground font-semibold"
-                      : "text-muted-foreground hover:bg-muted"
+                  className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition ${
+                    isActive(n) ? "bg-accent font-semibold text-accent-foreground" : "text-subtle-foreground hover:bg-muted"
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4" strokeWidth={1.8} />
                   <span className="flex-1">{n.label}</span>
                   {badge ? <Badge variant="secondary" className="h-5 min-w-5 justify-center px-1.5 text-[10px]">{badge}</Badge> : null}
                 </Link>
@@ -150,14 +123,10 @@ export function BuyerShell() {
             })}
           </nav>
         </aside>
-        {/* Content */}
         <main className="min-w-0 flex-1">
           <Outlet />
         </main>
       </div>
-
-      {/* Mobile bottom nav */}
-      <MobileBottomNav context="buyer" badges={badges} />
-    </div>
+    </AppShell>
   );
 }

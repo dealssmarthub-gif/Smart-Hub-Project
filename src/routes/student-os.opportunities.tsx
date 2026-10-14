@@ -11,6 +11,7 @@ import { LEVELS, type Opportunity, type OpportunityType } from "@/lib/naflis/stu
 import { dateOnly, startOfDay } from "@/lib/naflis/timetable";
 import { useOpportunities } from "@/services/studentOs";
 import { daysLeft, filterOpportunities } from "@/lib/naflis/opportunities";
+import { CampusHeader } from "@/components/naflis/campus/CampusBlocks";
 
 export const Route = createFileRoute("/student-os/opportunities")({
   component: OpportunitiesBoard,
@@ -28,7 +29,7 @@ const DEADLINES = [
   { id: "30", label: "Closing within 30 days" },
   { id: "later", label: "More than 30 days left" },
 ] as const;
-const select = "h-9 rounded-lg border bg-card px-2.5 text-xs font-medium";
+const select = "h-11 rounded-xl border border-border bg-card px-3 text-xs font-semibold";
 
 function OpportunitiesBoard() {
   const activeCampus = useNaflis((s) => s.selectedCampus);
@@ -69,36 +70,38 @@ function OpportunitiesBoard() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight">
-          <Briefcase className="h-6 w-6 text-sky-500" /> Campus Opportunities
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Jobs, internships and scholarships for students. Sorted by closing date.
-          {!live && <span className="text-xs"> (Sample listings — add rows to <code>opportunities</code> to go live.)</span>}
-        </p>
-      </div>
+      <CampusHeader
+        icon={Briefcase}
+        title="Campus Opportunities"
+        subtitle={
+          <>
+            Jobs, internships and scholarships for students. Sorted by closing date.
+            {!live && <span className="text-xs"> (Sample listings — add rows to <code>opportunities</code> to go live.)</span>}
+          </>
+        }
+      />
 
-      <div className="flex flex-wrap gap-2">
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 md:mx-0 md:flex-wrap md:px-0" role="group" aria-label="Opportunity type">
         {TYPES.map((t) => {
           const Icon = t.icon;
           return (
             <button
               key={t.id}
               onClick={() => setType(t.id)}
-              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${type === t.id ? "border-sky-500 bg-sky-500 text-white" : "hover:bg-muted"}`}
+              aria-pressed={type === t.id}
+              className={`flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-xs font-bold transition ${type === t.id ? "bg-primary text-primary-foreground" : "bg-card text-subtle-foreground shadow-soft hover:bg-accent"}`}
             >
               <Icon className="h-3.5 w-3.5" /> {t.label}
-              <span className={`rounded-full px-1.5 text-[10px] ${type === t.id ? "bg-white/20" : "bg-muted"}`}>{counts[t.id as keyof typeof counts]}</span>
+              <span className={`rounded-full px-1.5 text-[10px] ${type === t.id ? "bg-white/20" : "bg-muted text-foreground"}`}>{counts[t.id as keyof typeof counts]}</span>
             </button>
           );
         })}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-3">
-        <div className="relative min-w-48 flex-1">
+      <div className="flex flex-wrap items-center gap-2 rounded-3xl border border-border-soft bg-card p-3 shadow-soft">
+        <div className="relative w-full min-w-48 flex-1 sm:w-auto">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search roles, companies…" className="h-9 pl-8 text-xs" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search roles, companies…" className="h-11 rounded-xl pl-8 text-xs" />
         </div>
         <select aria-label="Institution" className={select} value={institution} onChange={(e) => setInstitution(e.target.value)}>
           {CAMPUSES.map((c) => <option key={c} value={c}>{c === "All Campuses" ? "All institutions" : c}</option>)}
@@ -114,16 +117,16 @@ function OpportunitiesBoard() {
         <select aria-label="Application deadline" className={select} value={deadline} onChange={(e) => setDeadline(e.target.value as typeof deadline)}>
           {DEADLINES.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
         </select>
-        <label className="flex items-center gap-1.5 text-xs">
-          <input type="checkbox" className="accent-sky-500" checked={savedOnly} onChange={(e) => setSavedOnly(e.target.checked)} /> Saved
+        <label className="flex min-h-11 items-center gap-1.5 px-1 text-xs font-semibold">
+          <input type="checkbox" className="accent-primary" checked={savedOnly} onChange={(e) => setSavedOnly(e.target.checked)} /> Saved
         </label>
-        <label className="flex items-center gap-1.5 text-xs">
-          <input type="checkbox" className="accent-sky-500" checked={showClosed} onChange={(e) => setShowClosed(e.target.checked)} /> Show closed
+        <label className="flex min-h-11 items-center gap-1.5 px-1 text-xs font-semibold">
+          <input type="checkbox" className="accent-primary" checked={showClosed} onChange={(e) => setShowClosed(e.target.checked)} /> Show closed
         </label>
       </div>
 
       {results.length === 0 ? (
-        <div className="rounded-2xl border border-dashed bg-card p-10 text-center">
+        <div className="rounded-3xl border border-dashed bg-card p-10 text-center">
           <p className="text-sm text-muted-foreground">No opportunities match these filters.</p>
           <Button variant="link" size="sm" onClick={reset}>Reset filters</Button>
         </div>
@@ -133,28 +136,28 @@ function OpportunitiesBoard() {
             const d = daysLeft(o, today);
             const isSaved = saved.includes(o.id);
             return (
-              <article key={o.id} className={`flex flex-col rounded-2xl border bg-card p-4 ${d < 0 ? "opacity-60" : ""}`}>
+              <article key={o.id} className={`flex flex-col rounded-3xl border border-border-soft bg-card p-4 shadow-soft ${d < 0 ? "opacity-60" : ""}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <Badge variant="secondary" className="mb-1 capitalize">{o.type}</Badge>
-                    <h3 className="font-bold leading-snug">{o.title}</h3>
+                    <h2 className="text-base font-bold leading-snug">{o.title}</h2>
                     <p className="text-sm text-muted-foreground">{o.organization}</p>
                   </div>
                   <button
                     onClick={() => { toggleSaved(o.id); toast.success(isSaved ? "Removed from saved" : "Saved"); }}
                     aria-label={isSaved ? "Unsave" : "Save"}
-                    className="shrink-0 rounded-md p-1.5 hover:bg-muted"
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full hover:bg-muted"
                   >
-                    {isSaved ? <BookmarkCheck className="h-4 w-4 text-sky-500" /> : <Bookmark className="h-4 w-4" />}
+                    {isSaved ? <BookmarkCheck className="h-4 w-4 text-link" /> : <Bookmark className="h-4 w-4" />}
                   </button>
                 </div>
                 <p className="mt-2 line-clamp-3 text-sm">{o.description}</p>
                 <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
-                  <span className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5"><MapPin className="h-3 w-3" /> {o.location} · {o.mode}</span>
-                  <span className="rounded-full bg-muted px-2 py-0.5">{o.institution === "All Campuses" ? "Open to all institutions" : o.institution}</span>
-                  <span className="rounded-full bg-muted px-2 py-0.5">{o.programmes.length ? o.programmes.join(", ") : "All programmes"}</span>
-                  <span className="rounded-full bg-muted px-2 py-0.5">{o.levels.length ? o.levels.join(", ") : "All levels"}</span>
-                  {o.value && <span className="rounded-full bg-success/15 px-2 py-0.5 font-semibold text-success">{o.value}</span>}
+                  <span className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-foreground"><MapPin className="h-3 w-3" /> {o.location} · {o.mode}</span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-foreground">{o.institution === "All Campuses" ? "Open to all institutions" : o.institution}</span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-foreground">{o.programmes.length ? o.programmes.join(", ") : "All programmes"}</span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-foreground">{o.levels.length ? o.levels.join(", ") : "All levels"}</span>
+                  {o.value && <span className="rounded-full bg-tile-mint px-2 py-0.5 font-bold text-verified">{o.value}</span>}
                 </div>
                 <div className="mt-auto flex items-center justify-between gap-2 pt-3">
                   <span className={`flex items-center gap-1 text-xs font-semibold ${d < 0 ? "text-muted-foreground" : d <= 7 ? "text-error" : "text-muted-foreground"}`}>
@@ -162,9 +165,9 @@ function OpportunitiesBoard() {
                     {d < 0 ? `Closed ${fmtDate(dateOnly(o.deadline))}` : d === 0 ? "Closes today" : `Closes in ${d} day${d === 1 ? "" : "s"} · ${fmtDate(dateOnly(o.deadline))}`}
                   </span>
                   {o.applyUrl && d >= 0 ? (
-                    <Button asChild size="sm"><a href={o.applyUrl} target="_blank" rel="noopener noreferrer">Apply</a></Button>
+                    <Button asChild size="sm" className="min-h-11 rounded-xl px-4 font-bold"><a href={o.applyUrl} target="_blank" rel="noopener noreferrer">Apply</a></Button>
                   ) : (
-                    d >= 0 && <Button size="sm" variant="outline" onClick={() => toast.info(`Apply through ${o.organization}'s careers page.`)}>How to apply</Button>
+                    d >= 0 && <Button size="sm" variant="outline" className="min-h-11 rounded-xl px-4 font-bold" onClick={() => toast.info(`Apply through ${o.organization}'s careers page.`)}>How to apply</Button>
                   )}
                 </div>
               </article>

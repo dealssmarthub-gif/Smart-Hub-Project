@@ -110,7 +110,7 @@ function SearchPage() {
 
       <div className="grid gap-6 md:grid-cols-[220px_1fr]">
         {/* Filters */}
-        <aside className="space-y-4 rounded-xl border bg-card p-4">
+        <aside className="space-y-4 rounded-2xl border border-border-soft bg-card p-4">
           <div>
             <Label className="text-xs uppercase tracking-wider">Category</Label>
             <Select value={cat} onValueChange={setCat}>
@@ -179,7 +179,7 @@ function SearchPage() {
           </div>
 
           {filtered.length === 0 ? (
-            <div className="rounded-xl border bg-card p-10 text-center">
+            <div className="rounded-2xl border border-border-soft bg-card p-10 text-center">
               <Package className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
               <h3 className="text-lg font-semibold">No matches yet</h3>
               <p className="mt-1 text-sm text-muted-foreground">

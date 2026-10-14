@@ -105,7 +105,7 @@ function ViewAsConsole() {
                 <button
                   key={r.role}
                   onClick={() => { setRole(r.role); setTargetId(null); }}
-                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${role === r.role ? "border-sky-500 bg-sky-500 text-white" : "hover:bg-muted"}`}
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${role === r.role ? "border-primary bg-primary text-white" : "hover:bg-muted"}`}
                 >
                   <Icon className="h-3.5 w-3.5" /> {r.label}
                 </button>
@@ -113,11 +113,11 @@ function ViewAsConsole() {
             })}
           </div>
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name or email…" className="max-w-sm" />
-          <div className="divide-y rounded-xl border bg-card">
+          <div className="divide-y rounded-2xl border border-border-soft bg-card">
             {candidates.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">No {ROLE_META[role].label.toLowerCase()} accounts found.</p>}
             {candidates.map(({ user }) => (
-              <label key={user.id} className={`flex cursor-pointer items-center gap-3 p-3 ${targetId === user.id ? "bg-sky-500/5" : "hover:bg-muted"}`}>
-                <input type="radio" name="target" className="accent-sky-500" checked={targetId === user.id} onChange={() => setTargetId(user.id)} />
+              <label key={user.id} className={`flex cursor-pointer items-center gap-3 p-3 ${targetId === user.id ? "bg-primary/5" : "hover:bg-muted"}`}>
+                <input type="radio" name="target" className="accent-primary" checked={targetId === user.id} onChange={() => setTargetId(user.id)} />
                 <img src={user.avatar} alt="" className="h-8 w-8 rounded-full" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{user.name}</p>
@@ -129,7 +129,7 @@ function ViewAsConsole() {
           </div>
         </section>
 
-        <aside className="h-fit space-y-3 rounded-2xl border bg-card p-5">
+        <aside className="h-fit space-y-3 rounded-3xl border border-border-soft bg-card shadow-soft p-5">
           <h2 className="font-bold">Start session</h2>
           <div className="space-y-1">
             <Label className="text-xs">Reason (recorded in the audit log)</Label>
@@ -150,7 +150,7 @@ function ViewAsConsole() {
 
       <section className="mt-8">
         <h2 className="mb-2 font-bold">Session log</h2>
-        <div className="overflow-x-auto rounded-xl border bg-card">
+        <div className="overflow-x-auto rounded-2xl border border-border-soft bg-card">
           <table className="w-full text-left text-xs">
             <thead className="bg-muted text-muted-foreground">
               <tr>

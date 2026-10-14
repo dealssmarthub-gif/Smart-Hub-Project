@@ -44,10 +44,10 @@ function StaffInvite() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b"><div className="mx-auto flex h-16 max-w-3xl items-center px-4"><Logo /></div></header>
+      <header className="border-b border-border-soft bg-background/90 backdrop-blur"><div className="mx-auto flex h-16 max-w-3xl items-center px-4 sm:px-6 md:h-[72px]"><Logo /></div></header>
       <main className="mx-auto max-w-lg px-4 py-12">
-        <div className="space-y-4 rounded-2xl border bg-card p-6">
-          <h1 className="flex items-center gap-2 text-xl font-black"><Building2 className="h-5 w-5 text-sky-500" /> Staff invitation</h1>
+        <div className="space-y-4 rounded-[28px] border border-border-soft bg-card shadow-soft p-6 sm:p-7">
+          <h1 className="flex items-center gap-3 text-xl font-extrabold"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary-soft text-link"><Building2 className="h-5 w-5" strokeWidth={1.8} /></span> Staff invitation</h1>
           {!token && <p className="text-sm text-muted-foreground">This link is missing its invitation token.</p>}
           {token && !preview && <p className="flex items-center gap-2 text-sm"><Loader2 className="h-4 w-4 animate-spin" /> Checking invitation…</p>}
           {preview && !preview.ok && <p className="flex items-center gap-2 text-sm text-error"><XCircle className="h-4 w-4" /> {preview.message}</p>}
@@ -64,8 +64,8 @@ function StaffInvite() {
                   <p key={p} className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-success" /> {PERMISSION_LABEL[p as Permission] ?? p}</p>
                 ))}
               </div>
-              <p className="flex items-start gap-1.5 rounded-lg bg-muted p-2.5 text-xs text-muted-foreground">
-                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-500" /> Access is limited to this scope. You won't see other institutions' content.
+              <p className="flex items-start gap-1.5 rounded-2xl bg-muted p-3 text-xs text-muted-foreground">
+                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-link" /> Access is limited to this scope. You won't see other institutions' content.
               </p>
               {invite.status !== "invited" ? (
                 <Badge variant="secondary" className="capitalize">Invitation {invite.status}</Badge>

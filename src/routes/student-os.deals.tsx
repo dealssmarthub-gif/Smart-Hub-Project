@@ -1,24 +1,27 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { z } from "zod";
 import {
-  BadgePercent,
   Flame,
   Users,
   ShieldCheck,
   CheckCircle2,
-  Sparkles,
   Zap,
   Tag,
   Clock,
-  ExternalLink,
+  Copy,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useNaflis, type StudentListing } from "@/lib/naflis/store";
+import { ListingImage } from "@/components/naflis/home/HomeBlocks";
+import { ShopHeader } from "@/components/naflis/shop/ShopHeader";
+import { useNaflis } from "@/lib/naflis/store";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
 
+type DealsView = "all" | "group" | "vouchers";
+
+// `view` selects the existing tab: Shop's "Group buys" → group, "Discounts" → vouchers.
 export const Route = createFileRoute("/student-os/deals")({
+  validateSearch: z.object({ view: z.enum(["all", "group", "vouchers"]).optional() }).parse,
   component: StudentDeals,
 });
 
@@ -69,13 +72,18 @@ const STATIC_STUDENT_DISCOUNTS = [
   },
 ];
 
+const primaryBtn =
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground shadow-soft transition hover:bg-primary-deep disabled:cursor-not-allowed";
+
 function StudentDeals() {
   const studentListings = useNaflis((s) => s.studentListings);
   const studentProfile = useNaflis((s) => s.studentProfile);
   const setVerifyModalOpen = useNaflis((s) => s.setVerifyModalOpen);
   const joinGroupDeal = useNaflis((s) => s.joinGroupDeal);
-
-  const [activeTab, setActiveTab] = useState<"all" | "group" | "vouchers">("all");
+  const { view } = Route.useSearch();
+  const navigate = useNavigate();
+  const activeTab: DealsView = view ?? "all";
+  const setActiveTab = (v: DealsView) => navigate({ to: "/student-os/deals", search: { view: v }, replace: true });
 
   const groupDeals = useMemo(
     () => studentListings.filter((l) => l.isGroupDeal),
@@ -87,89 +95,62 @@ function StudentDeals() {
     toast.success(`Copied promo code: ${code}`);
   };
 
+  const chip = (on: boolean) =>
+    `inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-xs font-bold transition ${
+      on ? "bg-primary text-primary-foreground" : "bg-card text-subtle-foreground shadow-soft hover:bg-accent hover:text-accent-foreground"
+    }`;
+
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <BadgePercent className="h-6 w-6 text-sky-500" />
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Verified Student Deals & Group Buys
-            </h1>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Exclusive partner discounts and collective student purchasing pools to unlock wholesale pricing.
-          </p>
-        </div>
-
-        {/* Verification Pill */}
-        <div className="flex items-center gap-2">
-          {studentProfile.isVerified ? (
-            <div className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              <span>Student ID Verified</span>
-            </div>
+    <div className="space-y-7">
+      <ShopHeader
+        active={activeTab === "all" ? "all" : activeTab}
+        title="Verified Student Deals & Group Buys"
+        subtitle="Exclusive partner discounts and collective student purchasing pools to unlock wholesale pricing."
+        aside={
+          studentProfile.isVerified ? (
+            <span className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-tile-mint px-3 text-xs font-bold text-verified">
+              <CheckCircle2 className="h-4 w-4" strokeWidth={1.8} />
+              Student ID Verified
+            </span>
           ) : (
-            <Button
-              size="sm"
+            <button
+              type="button"
               onClick={() => setVerifyModalOpen(true)}
-              className="bg-sky-500 hover:bg-sky-600 text-white text-xs gap-1.5"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground transition hover:border-primary/40"
             >
-              <ShieldCheck className="h-4 w-4" /> Verify to Unlock All Deals
-            </Button>
-          )}
-        </div>
-      </div>
+              <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> Verify to Unlock All Deals
+            </button>
+          )
+        }
+      />
 
-      {/* Tabs */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setActiveTab("all")}
-          className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
-            activeTab === "all"
-              ? "bg-sky-500 text-white shadow-sm"
-              : "bg-muted text-muted-foreground hover:bg-accent"
-          }`}
-        >
+      {/* The page's own views: All Deals, Group Buying Pools, Brand Vouchers. */}
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0" role="group" aria-label="Deal types">
+        <button type="button" onClick={() => setActiveTab("all")} aria-pressed={activeTab === "all"} className={chip(activeTab === "all")}>
           All Deals
         </button>
-        <button
-          onClick={() => setActiveTab("group")}
-          className={`rounded-xl px-4 py-2 text-xs font-bold flex items-center gap-1.5 transition ${
-            activeTab === "group"
-              ? "bg-sky-500 text-white shadow-sm"
-              : "bg-muted text-muted-foreground hover:bg-accent"
-          }`}
-        >
-          <Flame className="h-3.5 w-3.5 text-amber-500" /> Group Buying Pools
+        <button type="button" onClick={() => setActiveTab("group")} aria-pressed={activeTab === "group"} className={chip(activeTab === "group")}>
+          <Flame className="h-4 w-4" strokeWidth={1.8} /> Group Buying Pools
         </button>
-        <button
-          onClick={() => setActiveTab("vouchers")}
-          className={`rounded-xl px-4 py-2 text-xs font-bold flex items-center gap-1.5 transition ${
-            activeTab === "vouchers"
-              ? "bg-sky-500 text-white shadow-sm"
-              : "bg-muted text-muted-foreground hover:bg-accent"
-          }`}
-        >
-          <Tag className="h-3.5 w-3.5 text-sky-500" /> Brand Vouchers
+        <button type="button" onClick={() => setActiveTab("vouchers")} aria-pressed={activeTab === "vouchers"} className={chip(activeTab === "vouchers")}>
+          <Tag className="h-4 w-4" strokeWidth={1.8} /> Brand Vouchers
         </button>
       </div>
 
       {/* Group Buying Section */}
       {(activeTab === "all" || activeTab === "group") && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Flame className="h-5 w-5 text-amber-500" />
+        <section className="space-y-4">
+          <div className="flex items-start gap-2">
+            <Flame className="mt-1 h-5 w-5 shrink-0 text-link" strokeWidth={1.8} />
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-foreground">Campus Group Buying Pools</h2>
-              <p className="text-xs text-muted-foreground">
+              <h2 className="text-xl font-extrabold tracking-tight text-foreground">Campus Group Buying Pools</h2>
+              <p className="text-sm text-muted-foreground">
                 Join forces with classmates. When the target number of students is reached, the discount is unlocked for everyone!
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
             {groupDeals.map((deal) => {
               const joined = deal.groupDealJoined || 0;
               const target = deal.groupDealTarget || 10;
@@ -177,148 +158,109 @@ function StudentDeals() {
               const isFull = joined >= target;
 
               return (
-                <div
-                  key={deal.id}
-                  className="flex flex-col rounded-2xl border bg-card overflow-hidden shadow-sm hover:shadow-premium transition"
-                >
-                  <div className="relative h-44 w-full overflow-hidden bg-muted">
-                    <img src={deal.image} alt={deal.title} className="h-full w-full object-cover" />
-                    <Badge className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] gap-1">
-                      <Flame className="h-3 w-3" /> Group Pool
-                    </Badge>
-                    <Badge className="absolute top-2 right-2 bg-background/90 text-sky-500 text-[10px] backdrop-blur">
-                      {deal.campus}
-                    </Badge>
+                <article key={deal.id} className="flex flex-col overflow-hidden rounded-3xl border border-border-soft bg-card shadow-soft">
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+                    <ListingImage src={deal.image} alt={deal.title} />
+                    <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-tile-peach px-2.5 py-1 text-[11px] font-bold text-peach-ink">
+                      <Flame className="h-3 w-3" strokeWidth={1.8} /> Group Pool
+                    </span>
+                    <span className="absolute right-3 top-3 rounded-full bg-card/95 px-2.5 py-1 text-[11px] font-bold text-foreground">{deal.campus}</span>
                   </div>
 
-                  <div className="flex flex-col flex-1 p-4 gap-3">
+                  <div className="flex flex-1 flex-col gap-3 p-4">
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                        {deal.category}
-                      </span>
-                      <h3 className="text-sm font-bold text-foreground line-clamp-2 mt-0.5">
-                        {deal.title}
-                      </h3>
+                      <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{deal.category}</span>
+                      <h3 className="mt-0.5 line-clamp-2 text-sm font-bold text-foreground">{deal.title}</h3>
                     </div>
-
-                    <p className="text-xs text-muted-foreground line-clamp-2">{deal.description}</p>
+                    <p className="line-clamp-2 text-xs text-subtle-foreground">{deal.description}</p>
 
                     {/* Progress */}
-                    <div className="space-y-1.5 bg-muted/60 p-3 rounded-xl">
+                    <div className="space-y-1.5 rounded-2xl bg-muted p-3">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground flex items-center gap-1">
-                          <Users className="h-3.5 w-3.5 text-sky-500" /> Pool Progress
+                        <span className="flex items-center gap-1 text-subtle-foreground">
+                          <Users className="h-3.5 w-3.5 text-link" strokeWidth={1.8} /> Pool Progress
                         </span>
-                        <span className="font-bold text-foreground">
-                          {joined} of {target} joined
-                        </span>
+                        <span className="font-bold text-foreground">{joined} of {target} joined</span>
                       </div>
-                      <div className="h-2.5 w-full rounded-full bg-background overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-sky-500 to-amber-500 transition-all duration-500"
-                          style={{ width: `${pct}%` }}
-                        />
+                      <div className="h-2.5 w-full overflow-hidden rounded-full bg-card" role="progressbar" aria-valuemin={0} aria-valuemax={target} aria-valuenow={joined} aria-label="Pool progress">
+                        <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
-                      <p className="text-[10px] text-muted-foreground text-right">
+                      <p className="text-right text-[11px] text-subtle-foreground">
                         {isFull ? "Unlocked!" : `${target - joined} more spots needed to activate`}
                       </p>
                     </div>
 
-                    <div className="mt-auto pt-3 border-t flex items-center justify-between">
-                      <div>
-                        <span className="text-lg font-black text-foreground">{GHS(deal.price)}</span>
+                    <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+                      <p>
+                        <span className="text-lg font-extrabold text-foreground">{GHS(deal.price)}</span>
                         {deal.originalPrice && (
-                          <span className="ml-1.5 text-xs text-muted-foreground line-through">
-                            {GHS(deal.originalPrice)}
-                          </span>
+                          <span className="ml-1.5 text-xs text-muted-foreground line-through">{GHS(deal.originalPrice)}</span>
                         )}
-                      </div>
-
-                      <Button
-                        size="sm"
+                      </p>
+                      <button
+                        type="button"
                         disabled={isFull}
                         onClick={() => {
                           const res = joinGroupDeal(deal.id);
                           toast.success(res.message);
                         }}
-                        className={`text-xs h-8 px-4 ${
-                          isFull
-                            ? "bg-emerald-600 text-white"
-                            : "bg-sky-500 hover:bg-sky-600 text-white shadow-sm"
-                        }`}
+                        className={isFull ? "inline-flex min-h-11 items-center rounded-xl bg-tile-mint px-4 text-sm font-bold text-verified" : primaryBtn}
                       >
                         {isFull ? "Pool Full!" : "Join Pool"}
-                      </Button>
+                      </button>
                     </div>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Brand Vouchers Section */}
       {(activeTab === "all" || activeTab === "vouchers") && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-sky-500" />
+        <section className="space-y-4">
+          <div className="flex items-start gap-2">
+            <Zap className="mt-1 h-5 w-5 shrink-0 text-link" strokeWidth={1.8} />
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-foreground">
-                Verified Student Brand Discounts
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Exclusive promos from major education and tech partners with student ID
-              </p>
+              <h2 className="text-xl font-extrabold tracking-tight text-foreground">Verified Student Brand Discounts</h2>
+              <p className="text-sm text-muted-foreground">Exclusive promos from major education and tech partners with student ID</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
             {STATIC_STUDENT_DISCOUNTS.map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-col sm:flex-row gap-4 p-4 rounded-2xl border bg-card hover:shadow-premium transition"
-              >
-                <div className="relative h-32 w-full sm:w-32 shrink-0 rounded-xl overflow-hidden bg-muted">
-                  <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
-                  <Badge className="absolute top-2 left-2 bg-sky-500 text-white text-[9px]">
-                    Verified
-                  </Badge>
+              <article key={item.id} className="flex gap-4 rounded-3xl border border-border-soft bg-card p-3 shadow-soft sm:p-4">
+                <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-muted sm:h-32 sm:w-32">
+                  <ListingImage src={item.image} alt={item.title} />
+                  <span className="absolute left-1.5 top-1.5 rounded-full bg-tile-mint px-2 py-0.5 text-[9px] font-bold text-verified">Verified</span>
                 </div>
 
-                <div className="flex flex-col flex-1 justify-between gap-2">
+                <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
                   <div>
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="text-[10px] uppercase font-bold text-sky-500">
-                        {item.partner}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">{item.expiry}</span>
-                    </div>
-                    <h4 className="text-sm font-bold text-foreground mt-0.5">{item.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {item.description}
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-link">{item.partner}</p>
+                    <h3 className="mt-0.5 text-sm font-bold text-foreground">{item.title}</h3>
+                    <p className="mt-1 line-clamp-2 text-xs text-subtle-foreground">{item.description}</p>
+                    <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <Clock className="h-3 w-3" strokeWidth={1.8} /> {item.expiry}
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t mt-1">
-                    <div className="rounded-lg bg-sky-500/10 px-2 py-1 font-mono text-xs font-bold text-sky-500 border border-sky-500/20">
-                      {item.discount}
-                    </div>
-
-                    <Button
-                      size="sm"
-                      variant="outline"
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="rounded-xl bg-tile-peach px-2.5 py-1 font-mono text-xs font-bold text-peach-ink">{item.discount}</span>
+                    <button
+                      type="button"
                       onClick={() => copyCode(item.code)}
-                      className="text-xs h-8"
+                      className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground transition hover:border-primary/40 hover:bg-accent"
                     >
-                      Copy Code
-                    </Button>
+                      <Copy className="h-4 w-4 text-link" strokeWidth={1.8} /> Copy Code
+                    </button>
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

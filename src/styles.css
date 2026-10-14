@@ -5,15 +5,19 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
+  /* --radius is 14px: buttons (rounded-md/lg) land at 12–14px, cards (rounded-2xl) at 22px, large blocks (rounded-3xl) at 26px. */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 18px);
+
+  --shadow-soft: var(--shadow-soft-value);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -23,15 +27,21 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-deep: var(--primary-deep);
+  --color-primary-soft: var(--primary-soft);
+  /* Accent for text, icons and links. Same violet as --primary in light mode; lighter on dark backgrounds. */
+  --color-link: var(--link);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -48,6 +58,27 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* The dark indigo block used for escrow explainers. */
+  --color-escrow: var(--escrow);
+  --color-escrow-foreground: var(--escrow-foreground);
+
+  /* Pastel tiles: background + the colour of the icon circle (white icon on top). */
+  --color-tile-lavender: var(--tile-lavender);
+  --color-tile-lavender-icon: var(--tile-lavender-icon);
+  --color-tile-peach: var(--tile-peach);
+  --color-tile-peach-icon: var(--tile-peach-icon);
+  --color-tile-mint: var(--tile-mint);
+  --color-tile-mint-icon: var(--tile-mint-icon);
+  --color-tile-sky: var(--tile-sky);
+  --color-tile-sky-icon: var(--tile-sky-icon);
+  --color-tile-butter: var(--tile-butter);
+  --color-tile-butter-icon: var(--tile-butter-icon);
+  --color-tile-rose: var(--tile-rose);
+  --color-tile-rose-icon: var(--tile-rose-icon);
+  /* Text that sits on a pastel tile. */
+  --color-verified: var(--verified);
+  --color-peach-ink: var(--peach-ink);
+
   --color-navy: var(--navy);
   --color-midnight: var(--midnight);
   --color-sea-blue: var(--sea-blue);
@@ -60,102 +91,188 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-error: var(--error);
   --color-error-foreground: var(--error-foreground);
+
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 14px;
+  --shadow-soft-value: 0 6px 18px rgba(60, 40, 170, 0.07);
 
-  --navy: #07131e;
-  --midnight: #0a111e;
-  --sea-blue: #0284c7;
+  --brand-50: #f5f3ff;
+  --brand-100: #ece8ff;
+  --brand-200: #dad5f5;
+  --brand-300: #bcb0ff;
+  --brand-400: #8f7cf2;
+  --brand-500: #5b45e0;
+  --brand-600: #4733c4;
+  --brand-700: #3a29a3;
+  --brand-800: #2f2a8f;
+  --brand-900: #241d6b;
+  --brand-950: #160f45;
+
+  --navy: #2f2a8f;
+  --midnight: #1e1b3a;
+  --sea-blue: #5b45e0;
   --sea-blue-foreground: #ffffff;
   --gold: #f59e0b;
-  --gold-foreground: #07131e;
-  --success: #10b981;
+  --gold-foreground: #1e1b3a;
+  --success: #0b7a62; /* 5.3:1 on white, so it works as text too */
   --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #07131e;
-  --error: #ef4444;
+  --warning: #b45309;
+  --warning-foreground: #ffffff;
+  --error: #c62828; /* ≥ 4.5:1 on the page background */
   --error-foreground: #ffffff;
 
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: #f6f5ff;
+  --foreground: #1e1b3a;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #1e1b3a;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #0284c7;
+  --popover-foreground: #1e1b3a;
+  --primary: #5b45e0;
   --primary-foreground: #ffffff;
-  --secondary: #f0f9ff;
-  --secondary-foreground: #0369a1;
-  --muted: #f8fafc;
-  --muted-foreground: #64748b;
-  --accent: #e0f2fe;
-  --accent-foreground: #0284c7;
-  --destructive: #ef4444;
+  --primary-deep: #4733c4;
+  --primary-soft: #ece8ff;
+  --link: #5b45e0;
+  --secondary: #ece8ff;
+  --secondary-foreground: #4733c4;
+  --muted: #eeebfb;
+  --muted-foreground: #66638a;
+  --subtle-foreground: #4a4672;
+  --accent: #ece8ff;
+  --accent-foreground: #4733c4;
+  --destructive: #c62828;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #0284c7;
+  --border: #dad5f5;
+  --border-soft: #eeebfb;
+  --input: #dad5f5;
+  --ring: #5b45e0;
 
-  --chart-1: #0284c7;
-  --chart-2: #10b981;
-  --chart-3: #f59e0b;
-  --chart-4: #ef4444;
-  --chart-5: #38bdf8;
+  --escrow: #2f2a8f;
+  --escrow-foreground: #ffffff;
+
+  --tile-lavender: #ece8ff;
+  --tile-lavender-icon: #5b45e0;
+  --tile-peach: #ffe9dc;
+  --tile-peach-icon: #e8590c;
+  --tile-mint: #ddf5ec;
+  --tile-mint-icon: #0e8a6f;
+  --tile-sky: #deeeff;
+  --tile-sky-icon: #2563eb;
+  --tile-butter: #fff3cc;
+  --tile-butter-icon: #9a6700;
+  --tile-rose: #ffe3ea;
+  --tile-rose-icon: #c2255c;
+  --verified: #0b6b56;
+  --peach-ink: #a63d07;
+
+  --chart-1: #5b45e0;
+  --chart-2: #0e8a6f;
+  --chart-3: #e8590c;
+  --chart-4: #c2255c;
+  --chart-5: #2563eb;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #0284c7;
+  --sidebar-foreground: #1e1b3a;
+  --sidebar-primary: #5b45e0;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f0f9ff;
-  --sidebar-accent-foreground: #0369a1;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #0284c7;
+  --sidebar-accent: #ece8ff;
+  --sidebar-accent-foreground: #4733c4;
+  --sidebar-border: #dad5f5;
+  --sidebar-ring: #5b45e0;
 }
 
+/* Dark theme: the same palette on a deep indigo-black, with a lighter violet so text stays ≥ 4.5:1. */
 .dark {
-  --navy: #07131e;
-  --midnight: #0a111e;
-  --background: #07131e;
-  --foreground: #f8fafc;
-  --card: #0f1d2e;
-  --card-foreground: #f8fafc;
-  --popover: #0f1d2e;
-  --popover-foreground: #f8fafc;
-  --primary: #38bdf8;
-  --primary-foreground: #07131e;
-  --secondary: #132238;
-  --secondary-foreground: #38bdf8;
-  --muted: #132238;
-  --muted-foreground: #94a3b8;
-  --accent: #192d45;
-  --accent-foreground: #38bdf8;
-  --destructive: #f87171;
-  --destructive-foreground: #07131e;
-  --border: #1e334d;
-  --input: #1e334d;
-  --ring: #38bdf8;
+  --shadow-soft-value: 0 6px 18px rgba(0, 0, 0, 0.35);
 
-  --sidebar: #0a111e;
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #38bdf8;
-  --sidebar-primary-foreground: #07131e;
-  --sidebar-accent: #132238;
-  --sidebar-accent-foreground: #38bdf8;
-  --sidebar-border: #1e334d;
-  --sidebar-ring: #38bdf8;
+  --brand-50: #1d1838;
+  --brand-100: #241e45;
+  --brand-200: #3a3270;
+  --brand-300: #5d50b8;
+  --brand-400: #8f7cf2;
+  --brand-500: #5b45e0;
+  --brand-600: #4733c4;
+  --brand-700: #b9b0ff;
+  --brand-800: #d4ceff;
+  --brand-900: #e6e2ff;
+  --brand-950: #f3f1ff;
 
-  --sea-blue: #38bdf8;
-  --sea-blue-foreground: #07131e;
+  --navy: #0b0918;
+  --midnight: #110e22;
+  --sea-blue: #a99cff;
+  --sea-blue-foreground: #110e22;
   --gold: #fbbf24;
-  --success: #34d399;
+  --gold-foreground: #110e22;
+  --success: #4fd1ae;
+  --success-foreground: #110e22;
   --warning: #fbbf24;
+  --warning-foreground: #110e22;
   --error: #f87171;
+  --error-foreground: #110e22;
+
+  --background: #110e22;
+  --foreground: #f2f0ff;
+  --card: #1a1633;
+  --card-foreground: #f2f0ff;
+  --popover: #1a1633;
+  --popover-foreground: #f2f0ff;
+  /* Filled buttons keep the brand violet with white text (6.2:1) in both themes. */
+  --primary: #5b45e0;
+  --primary-foreground: #ffffff;
+  --primary-deep: #4733c4;
+  --primary-soft: #262050;
+  --link: #a99cff;
+  --secondary: #262050;
+  --secondary-foreground: #d4ceff;
+  --muted: #221d40;
+  --muted-foreground: #b9b4dc;
+  --subtle-foreground: #d4d0f0;
+  --accent: #262050;
+  --accent-foreground: #d4ceff;
+  --destructive: #f87171;
+  --destructive-foreground: #110e22;
+  --border: #322b5c;
+  --border-soft: #26204a;
+  --input: #322b5c;
+  --ring: #a99cff;
+
+  --escrow: #251f6e;
+  --escrow-foreground: #ffffff;
+
+  --tile-lavender: #262050;
+  --tile-lavender-icon: #5b45e0;
+  --tile-peach: #3a2418;
+  --tile-peach-icon: #e8590c;
+  --tile-mint: #13342c;
+  --tile-mint-icon: #0e8a6f;
+  --tile-sky: #172a4a;
+  --tile-sky-icon: #2563eb;
+  --tile-butter: #352b10;
+  --tile-butter-icon: #9a6700;
+  --tile-rose: #3b1a26;
+  --tile-rose-icon: #c2255c;
+  --verified: #6ee7c5;
+  --peach-ink: #ffb48a;
+
+  --chart-1: #a99cff;
+  --chart-2: #4fd1ae;
+  --chart-3: #ff9a5c;
+  --chart-4: #f472a6;
+  --chart-5: #7aa7ff;
+
+  --sidebar: #110e22;
+  --sidebar-foreground: #f2f0ff;
+  --sidebar-primary: #5b45e0;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #262050;
+  --sidebar-accent-foreground: #d4ceff;
+  --sidebar-border: #322b5c;
+  --sidebar-ring: #a99cff;
 }
 
 @utility gradient-hero {
-  background-image: linear-gradient(135deg, #07131e 0%, #0a1b2d 45%, #0284c7 100%);
+  background-image: linear-gradient(135deg, var(--primary-deep) 0%, var(--brand-500) 100%);
 }
 
 @utility gradient-gold {
@@ -163,12 +280,13 @@
 }
 
 @utility text-gradient-sea {
-  background-image: linear-gradient(135deg, var(--sea-blue), #38bdf8);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--link);
 }
 
+/* On dark backgrounds, violet used as text takes the lighter link shade; filled buttons keep #5B45E0. */
+.dark .text-primary {
+  color: var(--link);
+}
 @utility glass {
   background-color: color-mix(in oklab, var(--card) 70%, transparent);
   backdrop-filter: blur(12px);
@@ -176,9 +294,14 @@
 }
 
 @utility shadow-premium {
-  box-shadow:
-    0 10px 30px -12px color-mix(in oklab, var(--sea-blue) 30%, transparent),
-    0 4px 12px -6px color-mix(in oklab, var(--navy) 15%, transparent);
+  box-shadow: var(--shadow-soft-value);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {
@@ -192,5 +315,10 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+  }
+  /* Visible keyboard focus everywhere, in both themes. */
+  :where(a, button, [role="button"], [role="tab"], input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 }

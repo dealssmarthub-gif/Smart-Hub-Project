@@ -49,7 +49,7 @@ function BuyerHome() {
     <div className="space-y-8">
       {/* Hero banner */}
       <div className="rounded-2xl gradient-hero p-6 text-white shadow-premium sm:p-8">
-        <p className="text-xs uppercase tracking-widest text-white/70">Welcome back{user ? `, ${user.name.split(" ")[0]}` : ""}</p>
+        <p className="text-xs uppercase tracking-widest text-white/90">Welcome back{user ? `, ${user.name.split(" ")[0]}` : ""}</p>
         <h1 className="mt-1 text-2xl font-bold sm:text-3xl">Great deals matched to your budget</h1>
         <p className="mt-2 max-w-xl text-sm text-white/80">
           Flash sales, verified discounts, and flexible payment options — all in one place.
@@ -67,9 +67,9 @@ function BuyerHome() {
       {/* Promo strip */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {promos.map((p) => (
-          <div key={p.code} className="rounded-xl border bg-card p-3">
+          <div key={p.code} className="rounded-2xl border border-border-soft bg-card p-3">
             <div className="flex items-center gap-2">
-              <BadgePercent className="h-4 w-4 text-sky-500" />
+              <BadgePercent className="h-4 w-4 text-link" />
               <span className="font-mono text-sm font-bold">{p.code}</span>
             </div>
             <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{p.description}</p>
@@ -81,7 +81,7 @@ function BuyerHome() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-bold">Categories</h2>
-          <Link to="/buyer/categories" className="text-sm text-sky-500 hover:underline">All categories →</Link>
+          <Link to="/buyer/categories" className="text-sm text-link hover:underline">All categories →</Link>
         </div>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-6">
           {categories.slice(0, 12).map((c) => (
@@ -89,9 +89,9 @@ function BuyerHome() {
               key={c.id}
               to="/buyer/search"
               search={{ cat: c.name }}
-              className="rounded-lg border bg-card px-3 py-2 text-center text-xs font-medium transition hover:border-sky-500"
+              className="rounded-lg border bg-card px-3 py-2 text-center text-xs font-medium transition hover:border-primary"
             >
-              <Package className="mx-auto mb-1 h-4 w-4 text-sky-500" />
+              <Package className="mx-auto mb-1 h-4 w-4 text-link" />
               {c.name}
             </Link>
           ))}
@@ -124,7 +124,7 @@ function BuyerHome() {
 
       {/* Near you */}
       <section>
-        <SectionHeader icon={<Package className="h-5 w-5 text-sky-500" />} title="Popular in Accra" subtitle="Fast delivery from local sellers" />
+        <SectionHeader icon={<Package className="h-5 w-5 text-link" />} title="Popular in Accra" subtitle="Fast delivery from local sellers" />
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {nearYou.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
@@ -150,18 +150,18 @@ function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
       </div>
-      <Link to="/buyer/search" className="text-sm text-sky-500 hover:underline">See all →</Link>
+      <Link to="/buyer/search" className="text-sm text-link hover:underline">See all →</Link>
     </div>
   );
 }
 
 function PromoCard({ icon, title, body, to }: { icon: React.ReactNode; title: string; body: string; to: string }) {
   return (
-    <Link to={to} className="group rounded-2xl border bg-card p-5 transition hover:border-sky-500 hover:shadow-premium">
-      <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-accent text-sky-500">{icon}</div>
+    <Link to={to} className="group rounded-3xl border border-border-soft bg-card shadow-soft p-5 transition hover:border-primary hover:shadow-soft">
+      <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-accent text-link">{icon}</div>
       <h3 className="text-base font-semibold">{title}</h3>
       <p className="mt-1 text-sm text-muted-foreground">{body}</p>
-      <p className="mt-3 text-xs font-semibold text-sky-500 group-hover:underline">Explore →</p>
+      <p className="mt-3 text-xs font-semibold text-link group-hover:underline">Explore →</p>
     </Link>
   );
 }

@@ -30,9 +30,9 @@ function DealsPage() {
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {promos.filter((p) => p.active).map((p) => (
-          <div key={p.code} className="rounded-xl border bg-card p-3">
+          <div key={p.code} className="rounded-2xl border border-border-soft bg-card p-3">
             <div className="flex items-center gap-2">
-              <BadgePercent className="h-4 w-4 text-sky-500" />
+              <BadgePercent className="h-4 w-4 text-link" />
               <span className="font-mono text-sm font-bold">{p.code}</span>
             </div>
             <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{p.description}</p>

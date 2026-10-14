@@ -76,10 +76,10 @@ export function PurchaseOptions({ product, onChoose }: { product: Product; onCho
   if (methods.length <= 1 && methods[0] === "full") return null;
 
   return (
-    <div className="rounded-xl border bg-card p-4">
+    <div className="rounded-2xl border border-border-soft bg-card p-4">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Ways to buy</p>
       <Tabs value={tab} onValueChange={(v) => setTab(v as PurchaseMethod)}>
-        <TabsList className="h-auto w-full flex-wrap justify-start">
+        <TabsList className="h-auto w-full flex-wrap justify-start rounded-3xl">
           {methods.map((m) => {
             const Icon = ICON[m];
             return (
@@ -99,7 +99,7 @@ export function PurchaseOptions({ product, onChoose }: { product: Product; onCho
           <PlanBreakdown plan={installment} />
           <Ledger plan={installment} />
           <p className="flex items-start gap-2 rounded-lg bg-muted p-2.5 text-xs">
-            <Truck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-500" />
+            <Truck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-link" />
             <span>
               <b>Delivery terms:</b> {DELIVERY_RULE_LABEL[installment.deliveryRule]}
               {installment.deliveryRule === "after_installments" ? ` (#${installment.deliverAfterInstallments})` : ""}.
@@ -150,9 +150,9 @@ export function PurchaseOptions({ product, onChoose }: { product: Product; onCho
             <Stat label="Balance later" value={GHS(fromMinor(reservation.balanceMinor))} />
           </div>
           {activeReservation ? (
-            <div className="rounded-lg border border-sky-500/40 bg-sky-500/5 p-3 text-center">
+            <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-center">
               <p className="text-xs text-muted-foreground">You've reserved this item. Hold ends in</p>
-              <p className="mt-1 flex items-center justify-center gap-2 font-mono text-2xl font-black text-sky-500">
+              <p className="mt-1 flex items-center justify-center gap-2 font-mono text-2xl font-extrabold text-link">
                 <Timer className="h-5 w-5" /> {formatCountdown(activeReservation.expiresAt - now)}
               </p>
               <Button asChild size="sm" className="mt-2">
@@ -162,7 +162,7 @@ export function PurchaseOptions({ product, onChoose }: { product: Product; onCho
           ) : (
             <div className="rounded-lg bg-muted p-3 text-xs">
               <p className="flex items-center gap-2 font-semibold">
-                <Timer className="h-3.5 w-3.5 text-sky-500" /> Reserve now and it's held until{" "}
+                <Timer className="h-3.5 w-3.5 text-link" /> Reserve now and it's held until{" "}
                 {new Date(now + reservation.durationHours * 3_600_000).toLocaleString("en-GH", { weekday: "short", hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
               </p>
               <p className="mt-1 text-muted-foreground">

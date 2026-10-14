@@ -25,13 +25,13 @@ function WalletPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl gradient-hero p-6 text-white shadow-premium">
-        <div className="flex items-center gap-2 text-white/70">
+      <div className="rounded-[30px] gradient-hero p-6 text-white shadow-soft">
+        <div className="flex items-center gap-2 text-white/90">
           <Wallet className="h-4 w-4" />
           <span className="text-xs uppercase tracking-widest">NAFLIS Wallet</span>
         </div>
-        <p className="mt-2 text-4xl font-black">{GHS(wallet.balance)}</p>
-        <p className="text-xs text-white/70">Available balance</p>
+        <p className="mt-2 text-4xl font-extrabold">{GHS(wallet.balance)}</p>
+        <p className="text-xs text-white/90">Available balance</p>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="In escrow" value={GHS(wallet.escrow)} />
           <Stat label="Reserved" value={GHS(wallet.reserved)} />
@@ -47,7 +47,7 @@ function WalletPage() {
         <Button variant="outline"><Shield className="mr-1 h-4 w-4" /> Freeze wallet</Button>
       </div>
 
-      <div className="rounded-2xl border bg-card p-5">
+      <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-5">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h3 className="flex items-center gap-2 font-bold"><Zap className="h-4 w-4 text-gold" /> Auto-funding</h3>
@@ -65,7 +65,7 @@ function WalletPage() {
         )}
       </div>
 
-      <div className="rounded-2xl border bg-card p-5">
+      <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-5">
         <h3 className="mb-3 font-bold">Linked payment methods</h3>
         <ul className="divide-y">
           {wallet.linked.map((l) => (
@@ -83,7 +83,7 @@ function WalletPage() {
         </ul>
       </div>
 
-      <div className="rounded-2xl border bg-card">
+      <div className="rounded-3xl border border-border-soft bg-card shadow-soft">
         <div className="border-b p-5">
           <h3 className="font-bold">Recent transactions</h3>
         </div>
@@ -92,7 +92,7 @@ function WalletPage() {
             <div key={tx.id} className="flex items-center gap-3 p-4">
               <div className={`grid h-9 w-9 place-items-center rounded-full ${
                 tx.type === "credit" ? "bg-success/10 text-success" :
-                tx.type === "escrow-in" ? "bg-sky-500/10 text-sky-500" :
+                tx.type === "escrow-in" ? "bg-primary/10 text-link" :
                 "bg-muted text-muted-foreground"
               }`}>
                 {tx.type === "credit" ? <ArrowDownToLine className="h-4 w-4" /> : <ArrowUpFromLine className="h-4 w-4" />}
@@ -115,7 +115,7 @@ function WalletPage() {
 function Stat({ label, value, light }: { label: string; value: React.ReactNode; light?: boolean }) {
   return (
     <div className={`rounded-lg ${light ? "border bg-card" : "bg-white/10"} p-3`}>
-      <p className={`text-xs ${light ? "text-muted-foreground" : "text-white/70"}`}>{label}</p>
+      <p className={`text-xs ${light ? "text-muted-foreground" : "text-white"}`}>{label}</p>
       <p className={`text-lg font-bold ${light ? "" : "text-white"}`}>{value}</p>
     </div>
   );

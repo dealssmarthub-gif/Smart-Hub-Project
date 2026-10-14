@@ -90,7 +90,7 @@ function ProductDetail() {
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center py-20 min-h-[50vh]">
-        <Loader2 className="h-10 w-10 text-sky-500 animate-spin" />
+        <Loader2 className="h-10 w-10 text-link animate-spin" />
         <p className="mt-3 text-sm text-muted-foreground font-semibold">Loading product specifications...</p>
       </div>
     );
@@ -101,7 +101,7 @@ function ProductDetail() {
 
   if (!product) {
     return (
-      <div className="rounded-xl border bg-card p-10 text-center">
+      <div className="rounded-2xl border border-border-soft bg-card p-10 text-center">
         <p>Product not found.</p>
         <Button asChild className="mt-3"><Link to="/buyer">Back home</Link></Button>
       </div>
@@ -115,7 +115,7 @@ function ProductDetail() {
   return (
     <div className="space-y-6">
       <div className="grid gap-6 md:grid-cols-[1.1fr_1fr]">
-        <div className="overflow-hidden rounded-2xl border bg-card">
+        <div className="overflow-hidden rounded-3xl border border-border-soft bg-card shadow-soft">
           <img src={product.image} alt={product.name} className="aspect-[4/3] w-full object-cover" />
         </div>
 
@@ -133,7 +133,7 @@ function ProductDetail() {
               </Badge>
             )}
           </div>
-          <h1 className="text-2xl font-black leading-tight sm:text-3xl">{product.name}</h1>
+          <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl">{product.name}</h1>
 
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <span className="flex items-center gap-1">
@@ -142,8 +142,8 @@ function ProductDetail() {
             </span>
             {store && (
               <span className="flex items-center gap-1">
-                <ShieldCheck className="h-4 w-4 text-sky-500" />
-                {store.name} {store.verified && <span className="text-xs text-sky-500">(verified)</span>}
+                <ShieldCheck className="h-4 w-4 text-link" />
+                {store.name} {store.verified && <span className="text-xs text-link">(verified)</span>}
               </span>
             )}
             <span className="flex items-center gap-1"><Truck className="h-4 w-4" /> Delivery in {product.deliveryDays} days</span>
@@ -151,7 +151,7 @@ function ProductDetail() {
 
           <div className="rounded-xl bg-muted p-4">
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-black">{GHS(product.price)}</span>
+              <span className="text-3xl font-extrabold">{GHS(product.price)}</span>
               <span className="text-sm text-muted-foreground line-through">{GHS(product.originalPrice)}</span>
               {off > 0 && <Badge className="bg-error text-error-foreground">-{pct(off)}</Badge>}
             </div>
@@ -242,12 +242,12 @@ function ProductDetail() {
           <TabsTrigger value="price">Price history</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
         </TabsList>
-        <TabsContent value="details" className="rounded-xl border bg-card p-5 text-sm leading-relaxed">
+        <TabsContent value="details" className="rounded-2xl border border-border-soft bg-card p-5 text-sm leading-relaxed">
           <p>{product.description}</p>
           <p className="mt-3 text-xs text-muted-foreground">Return policy: 7-day return if the item differs from description. Warranty: {product.specs.Warranty}.</p>
         </TabsContent>
         <TabsContent value="specs">
-          <div className="grid gap-2 rounded-xl border bg-card p-5 text-sm sm:grid-cols-2">
+          <div className="grid gap-2 rounded-2xl border border-border-soft bg-card p-5 text-sm sm:grid-cols-2">
             {Object.entries(product.specs).map(([k, v]) => (
               <div key={k} className="flex justify-between border-b py-1">
                 <span className="text-muted-foreground">{k}</span>
@@ -257,7 +257,7 @@ function ProductDetail() {
           </div>
         </TabsContent>
         <TabsContent value="price">
-          <div className="rounded-xl border bg-card p-5">
+          <div className="rounded-2xl border border-border-soft bg-card p-5">
             <p className="mb-3 text-sm text-muted-foreground">30-day price history — proof of a genuine discount.</p>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
@@ -271,7 +271,7 @@ function ProductDetail() {
             </div>
           </div>
         </TabsContent>
-        <TabsContent value="reviews" className="rounded-xl border bg-card p-5">
+        <TabsContent value="reviews" className="rounded-2xl border border-border-soft bg-card p-5">
           <p className="text-sm">Verified buyer reviews average {product.rating.toFixed(1)}/5 across {product.reviews} ratings.</p>
         </TabsContent>
       </Tabs>
@@ -292,7 +292,7 @@ function ProductDetail() {
 function SignalCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-lg border bg-card p-2 text-center">
-      <div className="mx-auto mb-1 text-sky-500">{icon}</div>
+      <div className="mx-auto mb-1 text-link">{icon}</div>
       <p className="text-sm font-bold">{value}</p>
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
     </div>

@@ -87,7 +87,7 @@ function DeliveryDashboard() {
               const buyer = users.find((u) => u.id === o.buyerId);
               const firstProduct = products.find((p) => p.id === o.items[0]?.productId);
               return (
-                <div key={o.id} className="rounded-xl border bg-card p-4">
+                <div key={o.id} className="rounded-2xl border border-border-soft bg-card p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-xs text-muted-foreground">Job #{o.id.slice(2, 10)} · {fmtDate(o.createdAt)}</p>
@@ -138,7 +138,7 @@ function DeliveryDashboard() {
             <EmptyState label="No completed deliveries yet." />
           ) : (
             completed.map((o) => (
-              <div key={o.id} className="flex items-center justify-between rounded-xl border bg-card p-4">
+              <div key={o.id} className="flex items-center justify-between rounded-2xl border border-border-soft bg-card p-4">
                 <div>
                   <p className="text-xs text-muted-foreground">Job #{o.id.slice(2, 10)}</p>
                   <p className="text-sm font-semibold">Delivered · fee {GHS(o.delivery || 30)}</p>
@@ -166,7 +166,7 @@ function ActiveJob({
   const expected = order.deliveryCode ?? codeFor(order.id);
 
   return (
-    <div className="rounded-xl border bg-card p-4">
+    <div className="rounded-2xl border border-border-soft bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-xs text-muted-foreground">Job #{order.id.slice(2, 10)}</p>
@@ -204,7 +204,7 @@ function ActiveJob({
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="rounded-2xl border bg-card p-10 text-center">
+    <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-10 text-center">
       <Truck className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
       <p className="text-sm text-muted-foreground">{label}</p>
     </div>

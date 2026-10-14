@@ -165,7 +165,7 @@ export function ListStudentItemModal() {
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto border bg-card p-6 shadow-premium rounded-2xl">
         <DialogHeader className="space-y-1">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <Tag className="h-5 w-5 text-sky-500" /> List a Campus Item
+            <Tag className="h-5 w-5 text-link" /> List a Campus Item
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             Sell used textbooks, hostel appliances, tech gear, or dorm essentials to students on your campus.
@@ -192,9 +192,9 @@ export function ListStudentItemModal() {
                   </button>
                 </div>
               ))}
-              <label className="flex h-18 w-18 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sky-500/40 bg-sky-500/5 hover:bg-sky-500/10 transition">
-                <Camera className="h-5 w-5 text-sky-500" />
-                <span className="text-[10px] font-medium text-sky-500 mt-1">
+              <label className="flex h-18 w-18 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 transition">
+                <Camera className="h-5 w-5 text-link" />
+                <span className="text-[10px] font-medium text-link mt-1">
                   {uploading ? "Uploading..." : "+ Add"}
                 </span>
                 <input
@@ -233,7 +233,7 @@ export function ListStudentItemModal() {
                 id="item-cat"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 {availableCategories.map((c) => (
                   <option key={c} value={c}>
@@ -251,7 +251,7 @@ export function ListStudentItemModal() {
                 id="item-campus"
                 value={campus}
                 onChange={(e) => setCampus(e.target.value)}
-                className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 {availableCampuses.map((c) => (
                   <option key={c} value={c}>
@@ -303,7 +303,7 @@ export function ListStudentItemModal() {
                 id="item-condition"
                 value={condition}
                 onChange={(e) => setCondition(e.target.value as StudentItemCondition)}
-                className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 <option value="Brand New">Brand New</option>
                 <option value="Like New">Like New</option>
@@ -317,7 +317,7 @@ export function ListStudentItemModal() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="item-loc" className="text-xs font-semibold flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 text-sky-500" /> Hostel / Meetup Spot
+                <MapPin className="h-3.5 w-3.5 text-link" /> Hostel / Meetup Spot
               </Label>
               <Input
                 id="item-loc"
@@ -361,7 +361,7 @@ export function ListStudentItemModal() {
             <Button
               type="submit"
               size="sm"
-              className="bg-sky-500 hover:bg-sky-600 text-white"
+              className="bg-primary hover:bg-primary-deep text-white"
               disabled={submitting || uploading}
             >
               {submitting ? (

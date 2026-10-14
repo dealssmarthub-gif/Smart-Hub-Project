@@ -30,13 +30,13 @@ function CategoriesPage() {
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {tree.map((c) => (
-          <div key={c.id} className="rounded-2xl border bg-card p-4">
+          <div key={c.id} className="rounded-3xl border border-border-soft bg-card shadow-soft p-4">
             <Link
               to="/buyer/search"
               search={{ cat: c.name }}
-              className="flex items-center gap-3 font-semibold hover:text-sky-500"
+              className="flex items-center gap-3 font-semibold hover:text-link"
             >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent text-sky-500">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent text-link">
                 <Package className="h-4 w-4" />
               </span>
               <span className="min-w-0 flex-1 truncate">{c.name}</span>
@@ -50,7 +50,7 @@ function CategoriesPage() {
                     key={child.id}
                     to="/buyer/search"
                     search={{ cat: child.name }}
-                    className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground transition hover:border-sky-500 hover:text-foreground"
+                    className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground transition hover:border-primary hover:text-foreground"
                   >
                     {child.name}
                   </Link>

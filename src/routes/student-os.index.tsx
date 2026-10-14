@@ -1,27 +1,28 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   GraduationCap,
-  Sparkles,
   PlusCircle,
-  Home,
   BookOpen,
-  Zap,
-  ShieldCheck,
-  Building2,
-  Users,
   CheckCircle2,
-  ArrowRight,
   Search,
   Tag,
-  Flame,
   FileText,
-  Clock,
+  MapPin,
+  Store,
+  Users,
+  Ticket,
+  Flame,
+  ShieldCheck,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { useNaflis, CAMPUSES, type StudentListing } from "@/lib/naflis/store";
+import { ThemeToggle } from "@/components/naflis/ThemeToggle";
+import { CampusPicker } from "@/components/naflis/shell/CampusPicker";
+import {
+  EscrowBanner, GroupBuyCard, ListingImage, NotificationBell, SectionHeader, SectionLink, SrcNoticeRow, Tile, almostFull, onDarkButton,
+} from "@/components/naflis/home/HomeBlocks";
+import { useNaflis, type CampusEvent } from "@/lib/naflis/store";
+import { NoticeDialog } from "@/components/naflis/campus/CampusBlocks";
 import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
@@ -30,11 +31,15 @@ export const Route = createFileRoute("/student-os/")({
   component: StudentOSDashboard,
 });
 
+const primaryBtn =
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground shadow-soft transition hover:bg-primary-deep";
+
 function StudentOSDashboard() {
   const selectedCampus = useNaflis((s) => s.selectedCampus);
-  const setSelectedCampus = useNaflis((s) => s.setSelectedCampus);
   const studentProfile = useNaflis((s) => s.studentProfile);
   const studentListings = useNaflis((s) => s.studentListings);
+  const campusEvents = useNaflis((s) => s.campusEvents);
+  const user = useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
   const setStudentModalOpen = useNaflis((s) => s.setStudentModalOpen);
   const setVerifyModalOpen = useNaflis((s) => s.setVerifyModalOpen);
   const joinGroupDeal = useNaflis((s) => s.joinGroupDeal);
@@ -43,6 +48,7 @@ function StudentOSDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const { names: studentCategories } = useCategories("student");
+  const feedRef = useRef<HTMLElement>(null);
 
   // Filter listings based on campus, search query, and category
   const filteredListings = useMemo(() => {
@@ -74,8 +80,9 @@ function StudentOSDashboard() {
     }
   }, [searchQuery, selectedCampus, filteredListings.length, logDemandSearch]);
 
+  // Same three group deals as before, now shown fewest spots left first.
   const groupDeals = useMemo(
-    () => studentListings.filter((l) => l.isGroupDeal).slice(0, 3),
+    () => almostFull(studentListings.filter((l) => l.isGroupDeal).slice(0, 3)),
     [studentListings]
   );
 
@@ -84,252 +91,186 @@ function StudentOSDashboard() {
     [studentListings]
   );
 
+  // Pinned SRC notice for the active campus (or any campus when browsing all).
+  const notice = useMemo(
+    () =>
+      campusEvents.find((e) => e.pinned && (selectedCampus === "All Campuses" || e.campus === selectedCampus || e.campus === "All Campuses")) ??
+      campusEvents.find((e) => e.pinned),
+    [campusEvents, selectedCampus]
+  );
+
+  const [openNotice, setOpenNotice] = useState<CampusEvent | null>(null);
+  const firstName = user?.name.split(" ")[0];
+
   return (
     <div className="space-y-8">
-      {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl gradient-hero text-white p-6 sm:p-10 shadow-premium">
+      {/* Greeting header: full-bleed on phones, a rounded block from md up. */}
+      <section className="relative -mx-4 overflow-hidden rounded-b-[32px] bg-primary px-4 pb-12 pt-4 text-primary-foreground sm:-mx-6 sm:px-6 md:mx-0 md:rounded-[32px] md:px-10 md:pb-14 md:pt-8">
         <div
-          className="absolute -right-10 -top-10 h-64 w-64 rounded-full opacity-20 blur-3xl pointer-events-none"
-          style={{ backgroundColor: "oklch(0.74 0.17 225)" }}
+          className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10"
+          aria-hidden
         />
-        <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge className="bg-white/20 text-white hover:bg-white/30 backdrop-blur border-white/20 gap-1 text-xs">
-              <GraduationCap className="h-3.5 w-3.5" />
-              <span>Campus Ecosystem</span>
-            </Badge>
-            <Badge className="bg-sky-400/30 text-sky-200 border-sky-300/40 text-xs">
-              {selectedCampus}
-            </Badge>
+        {/* Phones only: from md up the top navigation carries the campus picker. */}
+        <div className="relative flex items-center justify-between gap-2 md:hidden">
+          <CampusPicker tone="onPrimary" compact />
+          <div className="flex items-center [&_button]:text-white [&_button:hover]:bg-white/15">
+            <NotificationBell tone="onPrimary" />
+            <ThemeToggle />
           </div>
-
-          <h1 className="text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-            Open Student OS & Campus Marketplace
+        </div>
+        <div className="relative mt-5 max-w-3xl space-y-2 md:mt-0">
+          <h1 className="text-[26px] font-extrabold leading-tight tracking-tight md:text-4xl">
+            Hi{firstName ? `, ${firstName}` : ""}
           </h1>
-
-          <p className="text-sm sm:text-base text-white/80 max-w-2xl leading-relaxed">
+          <p className="text-base font-semibold text-white/90 md:text-lg">What do you need today?</p>
+          <p className="max-w-2xl pt-1 text-sm leading-relaxed text-white/80">
+            <span className="font-bold text-white">Open Student OS &amp; Campus Marketplace.</span>{" "}
             Trade peer-to-peer with classmates, unlock verified student discounts, access past exam
             solutions, and protect every campus deal with smart escrow.
           </p>
-
-          <div className="pt-2 flex flex-wrap items-center gap-3">
-            <Button
-              onClick={() => setStudentModalOpen(true)}
-              className="bg-sky-500 hover:bg-sky-400 text-white font-semibold text-xs sm:text-sm shadow-md gap-1.5"
+          <div className="flex flex-wrap items-center gap-2 pt-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-bold">
+              <GraduationCap className="h-3.5 w-3.5" strokeWidth={1.8} /> Campus Ecosystem
+            </span>
+            <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-bold">{selectedCampus}</span>
+          </div>
+          <div className="flex flex-wrap gap-2 pt-3">
+            <button type="button" onClick={() => setStudentModalOpen(true)} className={onDarkButton}>
+              <PlusCircle className="h-4 w-4" strokeWidth={1.8} /> Post a Campus Listing
+            </button>
+            <Link
+              to="/student-os/deals"
+              className="inline-flex min-h-11 items-center rounded-xl border border-white/40 px-4 text-sm font-bold text-white transition hover:bg-white/10"
             >
-              <PlusCircle className="h-4 w-4" /> Post a Campus Listing
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="border-white/40 bg-white/10 text-white hover:bg-white/20 backdrop-blur font-semibold text-xs sm:text-sm"
-            >
-              <Link to="/student-os/deals">Browse Student Deals</Link>
-            </Button>
+              Browse Student Deals
+            </Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Quick-Action Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        {/* Card 1: Post Listing */}
+      {/* Search overlaps the header; it filters the marketplace feed below. */}
+      <form
+        role="search"
+        onSubmit={(e) => {
+          e.preventDefault();
+          feedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
+        className="relative z-10 -mt-[3.75rem] md:mx-10"
+      >
+        <label className="relative block">
+          <span className="sr-only">Search campus listings</span>
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" strokeWidth={1.8} />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search items, textbooks, appliances..."
+            className="h-14 w-full rounded-2xl border border-border-soft bg-card pl-12 pr-4 text-sm text-foreground shadow-soft placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </label>
+      </form>
+
+      {/* Quick access */}
+      <section>
+        <SectionHeader title="Quick access" />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          <Tile tone="lavender" icon={Store} title="Marketplace" hint="Find roommate / hostel items: dorm appliances, room items & sublets." to="/student-os/marketplace" />
+          <Tile tone="peach" icon={Users} title="Group buys" hint="Student flash deals: join group buys & unlock verified discounts." to="/student-os/deals" />
+          <Tile tone="mint" icon={BookOpen} title="Past questions" hint="Browse course notes: solved past questions & exam cheatsheets." to="/student-os/resources" />
+          <Tile tone="sky" icon={Ticket} title="Events" hint="Campus events & tickets." to="/student-os/events" />
+        </div>
         <button
+          type="button"
           onClick={() => setStudentModalOpen(true)}
-          className="group flex flex-col items-start p-4 sm:p-5 rounded-2xl border bg-card hover:border-sky-500 hover:shadow-premium text-left transition"
+          className="mt-3 flex min-h-14 w-full items-center gap-3 rounded-3xl border border-dashed border-border bg-card px-4 text-left transition hover:border-primary/50"
         >
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-sky-500/10 text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition mb-3">
-            <PlusCircle className="h-5 w-5" />
-          </div>
-          <h3 className="text-sm sm:text-base font-bold text-foreground">Post Campus Listing</h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            Sell textbooks, fridges, calculators, or thrift gear.
-          </p>
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-tile-butter-icon text-white">
+            <PlusCircle className="h-5 w-5" strokeWidth={1.8} />
+          </span>
+          <span>
+            <span className="block text-sm font-bold">Post Campus Listing</span>
+            <span className="block text-xs text-subtle-foreground">Sell textbooks, fridges, calculators, or thrift gear.</span>
+          </span>
         </button>
+      </section>
 
-        {/* Card 2: Find Roommate / Hostel */}
-        <Link
-          to="/student-os/marketplace"
-          className="group flex flex-col items-start p-4 sm:p-5 rounded-2xl border bg-card hover:border-sky-500 hover:shadow-premium text-left transition"
-        >
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-sky-500/10 text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition mb-3">
-            <Home className="h-5 w-5" />
+      {/* Escrow / safety */}
+      <EscrowBanner
+        title="Pay only after you've checked the item"
+        body={
+          <>
+            <span className="mb-1 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-white/75">
+              Campus Handover &amp; Escrow Protection
+              <span className="rounded-full bg-white/15 px-2 py-0.5 normal-case tracking-normal text-white">100% Safe</span>
+            </span>
+            Meet securely in halls or study parks. Payment is held in NAFLIS Escrow and only released
+            when you inspect the item and give your 6-digit code.
+          </>
+        }
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Link to="/" hash="escrow" className={onDarkButton}>How it works</Link>
+            <button
+              type="button"
+              onClick={() => setVerifyModalOpen(true)}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-white/40 px-4 text-sm font-bold text-white transition hover:bg-white/10"
+            >
+              {studentProfile.isVerified ? <CheckCircle2 className="h-4 w-4" strokeWidth={1.8} /> : <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />}
+              {studentProfile.isVerified ? "Verified Profile Details" : "Verify Student ID"}
+            </button>
           </div>
-          <h3 className="text-sm sm:text-base font-bold text-foreground">Find Roommate / Hostel</h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            Browse dorm appliances, room items & sublets.
-          </p>
-        </Link>
+        }
+      />
 
-        {/* Card 3: Browse Course Notes */}
-        <Link
-          to="/student-os/resources"
-          className="group flex flex-col items-start p-4 sm:p-5 rounded-2xl border bg-card hover:border-sky-500 hover:shadow-premium text-left transition"
-        >
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-sky-500/10 text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition mb-3">
-            <BookOpen className="h-5 w-5" />
-          </div>
-          <h3 className="text-sm sm:text-base font-bold text-foreground">Browse Course Notes</h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            Download solved past questions & exam cheatsheets.
-          </p>
-        </Link>
-
-        {/* Card 4: Student Flash Deals */}
-        <Link
-          to="/student-os/deals"
-          className="group flex flex-col items-start p-4 sm:p-5 rounded-2xl border bg-card hover:border-sky-500 hover:shadow-premium text-left transition"
-        >
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-sky-500/10 text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition mb-3">
-            <Zap className="h-5 w-5" />
-          </div>
-          <h3 className="text-sm sm:text-base font-bold text-foreground">Student Flash Deals</h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            Join group buys & unlock verified discounts.
-          </p>
-        </Link>
-      </div>
-
-      {/* Campus Escrow / Safety Banner */}
-      <div className="rounded-2xl border border-sky-500/20 bg-sky-500/5 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sky-500/15 text-sky-500">
-            <ShieldCheck className="h-6 w-6" />
-          </div>
-          <div>
-            <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              Campus Handover & Escrow Protection
-              <Badge variant="outline" className="text-[10px] text-sky-500 border-sky-500/30">
-                100% Safe
-              </Badge>
-            </h4>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Meet securely in halls or study parks. Payment is held in NAFLIS Escrow and only released
-              when you inspect the item and give your 6-digit code.
-            </p>
-          </div>
+      {/* Group buys, fewest spots left first */}
+      <section>
+        <SectionHeader
+          title="Almost full"
+          icon={Flame}
+          hint="Active group buys, fewest spots left first."
+          action={<SectionLink to="/student-os/deals">View all deals</SectionLink>}
+        />
+        <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0">
+          {groupDeals.map((deal) => (
+            <GroupBuyCard
+              key={deal.id}
+              deal={deal}
+              className="w-[78%] shrink-0 snap-start sm:w-[46%] md:w-auto"
+              action={
+                <button
+                  type="button"
+                  onClick={() => {
+                    const res = joinGroupDeal(deal.id);
+                    toast.success(res.message);
+                  }}
+                  className={`${primaryBtn} w-full`}
+                >
+                  Join Deal
+                </button>
+              }
+            />
+          ))}
         </div>
-        <button
-          onClick={() => setVerifyModalOpen(true)}
-          className="shrink-0 text-xs font-semibold text-sky-500 hover:text-sky-600 underline"
-        >
-          {studentProfile.isVerified ? "Verified Profile Details →" : "Verify Student ID →"}
-        </button>
-      </div>
+      </section>
 
-      {/* Group Deals Spotlight */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Flame className="h-5 w-5 text-amber-500" />
-            <h2 className="text-lg sm:text-xl font-black tracking-tight">Active Group Buys</h2>
-          </div>
-          <Link
-            to="/student-os/deals"
-            className="text-xs font-semibold text-sky-500 hover:text-sky-600 flex items-center gap-1"
-          >
-            View all deals <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {groupDeals.map((deal) => {
-            const joined = deal.groupDealJoined || 0;
-            const target = deal.groupDealTarget || 10;
-            const pct = Math.min(100, Math.round((joined / target) * 100));
-
-            return (
-              <div
-                key={deal.id}
-                className="flex flex-col rounded-2xl border bg-card overflow-hidden shadow-sm hover:shadow-premium transition"
-              >
-                <div className="relative h-36 w-full overflow-hidden bg-muted">
-                  <img src={deal.image} alt={deal.title} className="h-full w-full object-cover" />
-                  <Badge className="absolute top-2 left-2 bg-amber-500 text-white text-[10px]">
-                    Group Buy Deal
-                  </Badge>
-                </div>
-                <div className="flex flex-col flex-1 p-4 gap-3">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-sky-500">{deal.campus}</span>
-                    <h4 className="text-sm font-bold line-clamp-1 text-foreground">{deal.title}</h4>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Progress</span>
-                      <span className="font-semibold text-foreground">
-                        {joined}/{target} students joined
-                      </span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-sky-500 transition-all duration-500"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-between pt-2 border-t">
-                    <div>
-                      <span className="text-base font-black text-foreground">{GHS(deal.price)}</span>
-                      {deal.originalPrice && (
-                        <span className="ml-1.5 text-xs text-muted-foreground line-through">
-                          {GHS(deal.originalPrice)}
-                        </span>
-                      )}
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        const res = joinGroupDeal(deal.id);
-                        toast.success(res.message);
-                      }}
-                      className="bg-sky-500 hover:bg-sky-600 text-white text-xs h-8"
-                    >
-                      Join Deal
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {notice && <SrcNoticeRow title={notice.title} campus={notice.campus} onOpen={() => setOpenNotice(notice)} />}
+      <NoticeDialog notice={openNotice} onClose={() => setOpenNotice(null)} />
 
       {/* Campus Marketplace Feed Section */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
-              <Tag className="h-5 w-5 text-sky-500" /> Campus Marketplace Feed
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Peer-to-peer listings on {selectedCampus}
-            </p>
-          </div>
-
-          {/* Search bar */}
-          <div className="relative w-full sm:w-72">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search items, textbooks, appliances..."
-              className="pl-8 text-xs h-9"
-            />
-          </div>
-        </div>
+      <section ref={feedRef} className="scroll-mt-24">
+        <SectionHeader title="Campus Marketplace Feed" icon={Tag} hint={`Peer-to-peer listings on ${selectedCampus}`} />
 
         {/* Category Pills */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+        <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
           {["All", ...studentCategories].map((cat) => (
             <button
               key={cat}
+              type="button"
               onClick={() => setSelectedCategory(cat)}
-              className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition ${
+              aria-pressed={selectedCategory === cat}
+              className={`min-h-11 whitespace-nowrap rounded-full px-4 text-xs font-bold transition ${
                 selectedCategory === cat
-                  ? "bg-sky-500 text-white"
-                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-subtle-foreground shadow-soft hover:bg-accent hover:text-accent-foreground"
               }`}
             >
               {cat}
@@ -339,142 +280,107 @@ function StudentOSDashboard() {
 
         {/* Product Grid */}
         {filteredListings.length === 0 ? (
-          <div className="rounded-2xl border border-dashed p-10 text-center space-y-3">
-            <GraduationCap className="h-10 w-10 mx-auto text-muted-foreground opacity-50" />
+          <div className="mt-4 space-y-3 rounded-3xl border border-dashed bg-card p-10 text-center">
+            <GraduationCap className="mx-auto h-10 w-10 text-muted-foreground" strokeWidth={1.8} />
             <h3 className="text-sm font-bold text-foreground">No listings found</h3>
-            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            <p className="mx-auto max-w-sm text-xs text-muted-foreground">
               No items match this filter for {selectedCampus}. Be the first to list a student item!
             </p>
-            <Button
-              size="sm"
-              onClick={() => setStudentModalOpen(true)}
-              className="bg-sky-500 hover:bg-sky-600 text-white text-xs"
-            >
+            <button type="button" onClick={() => setStudentModalOpen(true)} className={primaryBtn}>
               List an Item Now
-            </Button>
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
             {filteredListings.map((item) => (
-              <div
+              <article
                 key={item.id}
-                className="group flex flex-col rounded-2xl border bg-card overflow-hidden hover:shadow-premium transition"
+                className="group flex flex-col overflow-hidden rounded-3xl border border-border-soft bg-card shadow-soft"
               >
                 <div className="relative aspect-square w-full overflow-hidden bg-muted">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="h-full w-full object-cover group-hover:scale-105 transition duration-300"
-                  />
-                  <div className="absolute top-2 left-2 flex flex-col gap-1">
-                    <Badge className="bg-sky-500/90 text-white text-[10px] backdrop-blur">
-                      {item.condition}
-                    </Badge>
-                  </div>
+                  <ListingImage src={item.image} alt={item.title} className="transition duration-300 group-hover:scale-105" />
+                  <span className="absolute left-2 top-2 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-foreground">
+                    {item.condition}
+                  </span>
                   {item.isVerifiedStudent && (
-                    <Badge
-                      variant="secondary"
-                      className="absolute top-2 right-2 bg-background/90 text-sky-500 text-[10px] backdrop-blur gap-1"
-                    >
-                      <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Student Verified
-                    </Badge>
+                    <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-tile-mint px-2 py-0.5 text-[10px] font-bold text-verified">
+                      <CheckCircle2 className="h-3 w-3" strokeWidth={1.8} /> <span className="hidden sm:inline">Student </span>Verified
+                    </span>
                   )}
                 </div>
 
-                <div className="flex flex-col flex-1 p-3.5 gap-2">
+                <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                      {item.campus}
-                    </span>
-                    <h4 className="text-sm font-bold leading-snug line-clamp-2 text-foreground">
-                      {item.title}
-                    </h4>
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{item.campus}</span>
+                    <h3 className="line-clamp-2 text-sm font-bold leading-snug text-foreground">{item.title}</h3>
                   </div>
 
                   {item.hostelLocation && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-1">
-                      📍 {item.hostelLocation}
+                    <p className="flex items-center gap-1 text-[11px] text-subtle-foreground">
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-link" strokeWidth={1.8} />
+                      <span className="line-clamp-1">{item.hostelLocation}</span>
                     </p>
                   )}
 
-                  <div className="mt-auto pt-2 border-t flex items-center justify-between">
-                    <div>
-                      <span className="text-base font-black text-foreground">{GHS(item.price)}</span>
+                  <div className="mt-auto space-y-2 pt-1">
+                    <p>
+                      <span className="text-base font-extrabold text-foreground">{GHS(item.price)}</span>
                       {item.originalPrice && item.originalPrice > item.price && (
-                        <span className="ml-1 text-[11px] text-muted-foreground line-through">
-                          {GHS(item.originalPrice)}
-                        </span>
+                        <span className="ml-1.5 text-[11px] text-muted-foreground line-through">{GHS(item.originalPrice)}</span>
                       )}
-                    </div>
-                    <Button
-                      size="sm"
+                    </p>
+                    <button
+                      type="button"
                       onClick={() => {
                         toast.success(`Escrow order created for ${item.title}. Meetup code generated.`);
                       }}
-                      className="bg-sky-500 hover:bg-sky-600 text-white text-xs h-7 px-2.5"
+                      className={`${primaryBtn} w-full text-xs`}
                     >
-                      Escrow Buy
-                    </Button>
+                      <ShieldCheck className="h-4 w-4" strokeWidth={1.8} /> Escrow Buy
+                    </button>
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         )}
-      </div>
+      </section>
 
       {/* Study Materials & Toolkits Preview */}
-      <div className="rounded-2xl border bg-card p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-sky-500" />
-            <div>
-              <h3 className="text-base font-bold text-foreground">Top Study Materials & Past Exams</h3>
-              <p className="text-xs text-muted-foreground">
-                Verified lecture summaries, formulas, and examination archives
-              </p>
-            </div>
-          </div>
-          <Button asChild variant="outline" size="sm" className="text-xs">
-            <Link to="/student-os/resources">Open Resource Hub →</Link>
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <section className="rounded-[28px] border border-border-soft bg-card p-5 shadow-soft sm:p-6">
+        <SectionHeader
+          title="Top Study Materials & Past Exams"
+          icon={FileText}
+          hint="Verified lecture summaries, formulas, and examination archives"
+          action={<SectionLink to="/student-os/resources">Open Resource Hub</SectionLink>}
+        />
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {studyResources.map((res) => (
-            <div
-              key={res.id}
-              className="flex items-start gap-3 rounded-xl border p-3.5 bg-background hover:border-sky-500 transition"
-            >
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-sky-500/10 text-sky-500 font-mono font-bold text-xs">
+            <div key={res.id} className="flex items-center gap-3 rounded-2xl bg-background p-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-tile-mint font-mono text-xs font-bold text-verified">
                 PDF
-              </div>
+              </span>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <Badge variant="outline" className="text-[10px] text-sky-500 border-sky-500/30">
-                    {res.resourceType}
-                  </Badge>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Badge variant="outline" className="border-border text-[10px] text-subtle-foreground">{res.resourceType}</Badge>
                   <span className="text-[10px] text-muted-foreground">{res.campus}</span>
                 </div>
-                <h5 className="text-xs font-bold text-foreground line-clamp-1 mt-1">{res.title}</h5>
-                <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                  {res.description}
-                </p>
+                <h4 className="mt-1 line-clamp-1 text-xs font-bold text-foreground">{res.title}</h4>
+                <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{res.description}</p>
               </div>
-              <Button
-                size="sm"
-                variant="ghost"
+              <button
+                type="button"
                 onClick={() => {
                   toast.success(`Downloaded: ${res.title}`);
                 }}
-                className="text-xs text-sky-500 hover:text-sky-600 hover:bg-sky-500/10 shrink-0"
+                className="inline-flex min-h-11 shrink-0 items-center rounded-xl px-3 text-xs font-bold text-link hover:bg-accent"
               >
                 Download
-              </Button>
+              </button>
             </div>
           ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

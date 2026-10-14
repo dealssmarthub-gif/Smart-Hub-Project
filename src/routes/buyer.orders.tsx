@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useChildMatches } from "@tanstack/react-router";
 import { Package } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNaflis } from "@/lib/naflis/store";
@@ -7,16 +8,23 @@ import { orderStateLabel } from "@/lib/naflis/orderMachine";
 import { GHS, fmtDate } from "@/lib/naflis/format";
 
 export const Route = createFileRoute("/buyer/orders")({
-  component: OrdersPage,
+  component: OrdersRoute,
 });
 
+// /buyer/orders is also the parent of /buyer/orders/$orderId: show the order page when one is open.
+function OrdersRoute() {
+  const child = useChildMatches();
+  return child.length > 0 ? <Outlet /> : <OrdersPage />;
+}
+
 function OrdersPage() {
-  const orders = useNaflis((s) => s.orders.filter((o) => o.buyerId === s.currentUserId));
+  // useShallow keeps the filtered list stable between reads (a fresh array each read loops forever in zustand 5).
+  const orders = useNaflis(useShallow((s) => s.orders.filter((o) => o.buyerId === s.currentUserId)));
   const products = useNaflis((s) => s.products);
 
   if (orders.length === 0) {
     return (
-      <div className="rounded-2xl border bg-card p-10 text-center">
+      <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-10 text-center">
         <Package className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
         <h2 className="text-xl font-bold">No orders yet</h2>
         <p className="mt-1 text-sm text-muted-foreground">Complete a purchase to see it here.</p>
@@ -33,7 +41,7 @@ function OrdersPage() {
           key={o.id}
           to="/buyer/orders/$orderId"
           params={{ orderId: o.id }}
-          className="block rounded-2xl border bg-card p-5 transition hover:border-sky-500"
+          className="block rounded-3xl border border-border-soft bg-card shadow-soft p-5 transition hover:border-primary"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>

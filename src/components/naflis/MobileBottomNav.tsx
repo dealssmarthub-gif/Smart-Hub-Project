@@ -92,7 +92,7 @@ export function MobileBottomNav({
   const moreBadge = more.reduce((a, n) => a + (badges[n.to] ?? 0), 0);
   const tabClass = (active: boolean) =>
     `relative flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] ${
-      active ? "text-sky-500" : "text-muted-foreground"
+      active ? "text-link" : "text-muted-foreground"
     }`;
 
   return (
@@ -135,9 +135,9 @@ export function MobileBottomNav({
                   key={n.to}
                   to={n.to}
                   onClick={() => setOpen(false)}
-                  className="relative flex flex-col items-center gap-1.5 rounded-xl border bg-card px-2 py-3 text-center text-xs font-medium"
+                  className="relative flex flex-col items-center gap-1.5 rounded-2xl border border-border-soft bg-card px-2 py-3 text-center text-xs font-medium"
                 >
-                  <Icon className="h-5 w-5 text-sky-500" />
+                  <Icon className="h-5 w-5 text-link" />
                   {n.label}
                   {badge ? <NavBadge count={badge} /> : null}
                 </Link>
@@ -214,7 +214,7 @@ function SheetRow({
         active ? "bg-accent font-semibold text-accent-foreground" : "hover:bg-muted"
       }`}
     >
-      <Icon className="h-4 w-4 shrink-0 text-sky-500" />
+      <Icon className="h-4 w-4 shrink-0 text-link" />
       <span className="flex-1">{label}</span>
       {hint && <span className="truncate text-xs text-muted-foreground">{hint}</span>}
     </button>

@@ -17,8 +17,8 @@ function ReservePage() {
   const sample = (reservable.length ? reservable : products).slice(0, 3);
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border bg-card p-6">
-        <div className="flex items-center gap-2 text-sky-500">
+      <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-6">
+        <div className="flex items-center gap-2 text-link">
           <Clock className="h-5 w-5" />
           <span className="text-xs font-semibold uppercase tracking-widest">Reserve & Pay</span>
         </div>
@@ -35,7 +35,7 @@ function ReservePage() {
           { title: "2. Beat the timer", body: "Each product shows how long it's held. The fee usually counts towards the price." },
           { title: "3. Complete & receive", body: "Pay the balance and the order goes to the seller for dispatch. Lapsed holds release the stock." },
         ].map((s) => (
-          <div key={s.title} className="rounded-xl border bg-card p-5">
+          <div key={s.title} className="rounded-2xl border border-border-soft bg-card p-5">
             <p className="font-semibold">{s.title}</p>
             <p className="mt-1 text-sm text-muted-foreground">{s.body}</p>
           </div>
@@ -48,7 +48,7 @@ function ReservePage() {
         <h2 className="mb-3 text-lg font-bold">Popular products for Reserve & Pay</h2>
         <div className="grid gap-3 md:grid-cols-3">
           {sample.map((p) => (
-            <div key={p.id} className="flex gap-3 rounded-xl border bg-card p-3">
+            <div key={p.id} className="flex gap-3 rounded-2xl border border-border-soft bg-card p-3">
               <img src={p.image} className="h-20 w-20 rounded-lg object-cover" alt="" />
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-sm font-medium">{p.name}</p>

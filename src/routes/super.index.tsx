@@ -62,10 +62,10 @@ function SuperDashboard() {
 
         <TabsContent value="flags" className="mt-4 space-y-2">
           {flags.map((f) => (
-            <div key={f.key} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
+            <div key={f.key} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-soft bg-card p-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Flag className="h-4 w-4 text-sky-500" />
+                  <Flag className="h-4 w-4 text-link" />
                   <p className="font-semibold">{f.label}</p>
                   <Badge variant={f.enabled ? "default" : "outline"}>{f.enabled ? "ON" : "OFF"}</Badge>
                   {f.roles?.length ? <Badge variant="secondary">{f.roles.join(", ")}</Badge> : null}
@@ -88,9 +88,9 @@ function SuperDashboard() {
 
         <TabsContent value="regions" className="mt-4 grid gap-2 md:grid-cols-2">
           {regionState.map((r) => (
-            <div key={r.name} className="flex items-center justify-between gap-2 rounded-xl border bg-card p-4">
+            <div key={r.name} className="flex items-center justify-between gap-2 rounded-2xl border border-border-soft bg-card p-4">
               <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-sky-500" />
+                <Globe className="h-4 w-4 text-link" />
                 <div>
                   <p className="font-semibold">{r.name}</p>
                   <p className="text-xs text-muted-foreground">GMV 30d: {r.gmv}</p>
@@ -110,7 +110,7 @@ function SuperDashboard() {
 
         <TabsContent value="admins" className="mt-4 space-y-2">
           {admins.map((u) => (
-            <div key={u.id} className="flex items-center justify-between gap-2 rounded-xl border bg-card p-3">
+            <div key={u.id} className="flex items-center justify-between gap-2 rounded-2xl border border-border-soft bg-card p-3">
               <div className="flex items-center gap-3">
                 <img src={u.avatar} alt="" className="h-10 w-10 rounded-full border" />
                 <div>
@@ -130,7 +130,7 @@ function SuperDashboard() {
             { title: "Credit underwriting", body: "Take Now Pay Later requires KYC + credit score ≥ 600 + wallet history ≥ 30 days." },
             { title: "Dispute SLA", body: "Officers must respond within 12h; resolution target 48h. Escalated cases go to admin queue." },
           ].map((p) => (
-            <div key={p.title} className="rounded-xl border bg-card p-4">
+            <div key={p.title} className="rounded-2xl border border-border-soft bg-card p-4">
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-gold" />
                 <p className="font-semibold">{p.title}</p>

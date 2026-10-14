@@ -17,6 +17,7 @@ import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as DisputeRouteImport } from './routes/dispute'
 import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MeRouteImport } from './routes/me'
 import { Route as SellerRouteImport } from './routes/seller'
 import { Route as StaffInviteRouteImport } from './routes/staff-invite'
 import { Route as StudentOsRouteImport } from './routes/student-os'
@@ -88,6 +89,11 @@ const FinanceRoute = FinanceRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeRoute = MeRouteImport.update({
+  id: '/me',
+  path: '/me',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SellerRoute = SellerRouteImport.update({
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/dispute': typeof DisputeRoute
   '/finance': typeof FinanceRoute
   '/login': typeof LoginRoute
+  '/me': typeof MeRoute
   '/seller': typeof SellerRouteWithChildren
   '/staff-invite': typeof StaffInviteRoute
   '/student-os': typeof StudentOsRouteWithChildren
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/dispute': typeof DisputeRoute
   '/finance': typeof FinanceRoute
   '/login': typeof LoginRoute
+  '/me': typeof MeRoute
   '/seller': typeof SellerRouteWithChildren
   '/staff-invite': typeof StaffInviteRoute
   '/buyer/cart': typeof BuyerCartRoute
@@ -342,6 +350,7 @@ export interface FileRoutesById {
   '/dispute': typeof DisputeRoute
   '/finance': typeof FinanceRoute
   '/login': typeof LoginRoute
+  '/me': typeof MeRoute
   '/seller': typeof SellerRouteWithChildren
   '/staff-invite': typeof StaffInviteRoute
   '/student-os': typeof StudentOsRouteWithChildren
@@ -386,6 +395,7 @@ export interface FileRouteTypes {
     | '/dispute'
     | '/finance'
     | '/login'
+    | '/me'
     | '/seller'
     | '/staff-invite'
     | '/student-os'
@@ -427,6 +437,7 @@ export interface FileRouteTypes {
     | '/dispute'
     | '/finance'
     | '/login'
+    | '/me'
     | '/seller'
     | '/staff-invite'
     | '/buyer/cart'
@@ -467,6 +478,7 @@ export interface FileRouteTypes {
     | '/dispute'
     | '/finance'
     | '/login'
+    | '/me'
     | '/seller'
     | '/staff-invite'
     | '/student-os'
@@ -510,6 +522,7 @@ export interface RootRouteChildren {
   DisputeRoute: typeof DisputeRoute
   FinanceRoute: typeof FinanceRoute
   LoginRoute: typeof LoginRoute
+  MeRoute: typeof MeRoute
   SellerRoute: typeof SellerRouteWithChildren
   StaffInviteRoute: typeof StaffInviteRoute
   StudentOsRoute: typeof StudentOsRouteWithChildren
@@ -572,6 +585,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/me': {
+      id: '/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof MeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/seller': {
@@ -921,6 +941,7 @@ const rootRouteChildren: RootRouteChildren = {
   DisputeRoute: DisputeRoute,
   FinanceRoute: FinanceRoute,
   LoginRoute: LoginRoute,
+  MeRoute: MeRoute,
   SellerRoute: SellerRouteWithChildren,
   StaffInviteRoute: StaffInviteRoute,
   StudentOsRoute: StudentOsRouteWithChildren,
