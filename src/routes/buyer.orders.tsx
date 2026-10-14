@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useChildMatches } from "@tanstack/react-router";
 import { Package } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNaflis } from "@/lib/naflis/store";
@@ -7,11 +8,18 @@ import { orderStateLabel } from "@/lib/naflis/orderMachine";
 import { GHS, fmtDate } from "@/lib/naflis/format";
 
 export const Route = createFileRoute("/buyer/orders")({
-  component: OrdersPage,
+  component: OrdersRoute,
 });
 
+// /buyer/orders is also the parent of /buyer/orders/$orderId: show the order page when one is open.
+function OrdersRoute() {
+  const child = useChildMatches();
+  return child.length > 0 ? <Outlet /> : <OrdersPage />;
+}
+
 function OrdersPage() {
-  const orders = useNaflis((s) => s.orders.filter((o) => o.buyerId === s.currentUserId));
+  // useShallow keeps the filtered list stable between reads (a fresh array each read loops forever in zustand 5).
+  const orders = useNaflis(useShallow((s) => s.orders.filter((o) => o.buyerId === s.currentUserId)));
   const products = useNaflis((s) => s.products);
 
   if (orders.length === 0) {

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Bell, CheckCheck } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { Button } from "@/components/ui/button";
 import { useNaflis } from "@/lib/naflis/store";
 
@@ -8,7 +9,8 @@ export const Route = createFileRoute("/buyer/notifications")({
 });
 
 function NotifPage() {
-  const list = useNaflis((s) => s.notifications.filter((n) => n.userId === s.currentUserId));
+  // useShallow keeps the filtered list stable between reads (a fresh array each read loops forever in zustand 5).
+  const list = useNaflis(useShallow((s) => s.notifications.filter((n) => n.userId === s.currentUserId)));
   const markRead = useNaflis((s) => s.markNotifRead);
   const clearAll = useNaflis((s) => s.clearNotifs);
 
