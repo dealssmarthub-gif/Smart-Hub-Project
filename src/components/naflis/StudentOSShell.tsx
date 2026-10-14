@@ -12,19 +12,13 @@ import {
   Building2,
   ShieldCheck,
   CheckCircle2,
-  ArrowLeft,
-  Search,
+  ShoppingBag,
 } from "lucide-react";
-import { Logo } from "@/components/naflis/Logo";
-import { ThemeToggle } from "@/components/naflis/ThemeToggle";
-import { ContextSwitcher } from "@/components/naflis/ContextSwitcher";
-import { MobileBottomNav } from "@/components/naflis/MobileBottomNav";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useNaflis, CAMPUSES } from "@/lib/naflis/store";
+import { useNaflis } from "@/lib/naflis/store";
 import { ListStudentItemModal } from "@/components/naflis/ListStudentItemModal";
 import { StudentVerificationModal } from "@/components/naflis/StudentVerificationModal";
-import { CampusContextBar, CampusSwitchPrompt } from "@/components/naflis/CampusContext";
+import { CampusSwitchPrompt, useSuggestRegisteredCampus } from "@/components/naflis/CampusContext";
+import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
 
 const TABS = [
   { to: "/student-os", label: "Hub Overview", icon: GraduationCap, exact: true },
@@ -40,108 +34,79 @@ const TABS = [
 
 export function StudentOSShell() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const selectedCampus = useNaflis((s) => s.selectedCampus);
-  const setSelectedCampus = useNaflis((s) => s.setSelectedCampus);
   const studentProfile = useNaflis((s) => s.studentProfile);
   const setStudentModalOpen = useNaflis((s) => s.setStudentModalOpen);
   const setVerifyModalOpen = useNaflis((s) => s.setVerifyModalOpen);
   const role = useNaflis((s) => s.role);
+  useSuggestRegisteredCampus();
+
+  const pill = (active: boolean) =>
+    `inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-4 text-xs font-bold transition ${
+      active ? "bg-primary text-primary-foreground shadow-soft" : "bg-card text-subtle-foreground hover:bg-accent hover:text-accent-foreground"
+    }`;
 
   return (
-    <div className="min-h-screen bg-background pb-20 text-foreground md:pb-0">
-      {/* Top Header */}
-      <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
-          <div className="flex items-center gap-3">
-            <Logo />
-            <span className="hidden sm:inline-block rounded-md bg-sky-500/10 px-2 py-0.5 text-xs font-bold text-sky-500 border border-sky-500/20">
-              Student OS
-            </span>
-          </div>
-
-          {/* Campus Selector Dropdown */}
-          <div className="flex items-center gap-2">
-            <CampusContextBar />
-
-            {/* Student Verification Badge / Trigger */}
+    <AppShell>
+      {/* Student OS section bar: every Student OS page, plus verification and selling. */}
+      <div className="border-b border-border-soft bg-background">
+        <div className={`${PAGE_WIDTH} flex flex-wrap items-center gap-2 pt-3`}>
+          <span className="hidden items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-accent-foreground sm:inline-flex">
+            <GraduationCap className="h-3.5 w-3.5" strokeWidth={1.8} /> Student OS
+          </span>
+          <div className="flex w-full items-center justify-end gap-2 sm:ml-auto sm:w-auto">
             <button
+              type="button"
               onClick={() => setVerifyModalOpen(true)}
-              className="hidden md:flex items-center gap-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 px-2.5 py-1.5 text-xs font-semibold text-sky-500 hover:bg-sky-500/20 transition"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold text-subtle-foreground transition hover:border-primary/40"
             >
               {studentProfile.isVerified ? (
                 <>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                  <span>Verified Student</span>
+                  <CheckCircle2 className="h-4 w-4 text-verified" strokeWidth={1.8} />
+                  <span>Verified<span className="hidden sm:inline"> Student</span></span>
                 </>
               ) : (
                 <>
-                  <ShieldCheck className="h-3.5 w-3.5 text-sky-500" />
-                  <span>Verify Student ID</span>
+                  <ShieldCheck className="h-4 w-4 text-primary" strokeWidth={1.8} />
+                  <span>Verify<span className="hidden sm:inline"> Student ID</span></span>
                 </>
               )}
             </button>
-          </div>
-
-          {/* Header Actions */}
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
+            <button
+              type="button"
               onClick={() => setStudentModalOpen(true)}
-              className="bg-sky-500 hover:bg-sky-600 text-white font-medium text-xs shadow-sm gap-1.5"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-soft transition hover:bg-primary-deep"
             >
-              <PlusCircle className="h-4 w-4" />
+              <PlusCircle className="h-4 w-4" strokeWidth={1.8} />
               <span className="hidden sm:inline">List Student Item</span>
               <span className="sm:hidden">Sell</span>
-            </Button>
-
-            <ThemeToggle />
-            <ContextSwitcher />
-
-            <Button asChild variant="ghost" size="sm" className="hidden text-xs md:inline-flex">
-              <Link to={role === "guest" ? "/" : "/buyer"}>
-                <ArrowLeft className="mr-1 h-3.5 w-3.5" />
-                <span className="hidden md:inline">Main Mall</span>
+            </button>
+          </div>
+        </div>
+        <nav aria-label="Student OS" className={`${PAGE_WIDTH} no-scrollbar flex gap-2 overflow-x-auto py-3`}>
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            const active = t.exact ? pathname === t.to : pathname.startsWith(t.to);
+            return (
+              <Link key={t.to} to={t.to} className={pill(active)}>
+                <Icon className="h-4 w-4" strokeWidth={1.8} />
+                <span>{t.label}</span>
               </Link>
-            </Button>
-          </div>
-        </div>
+            );
+          })}
+          <Link to={role === "guest" ? "/" : "/buyer"} className={pill(false)}>
+            <ShoppingBag className="h-4 w-4" strokeWidth={1.8} />
+            <span>Main Mall</span>
+          </Link>
+        </nav>
+      </div>
 
-        {/* Sub-Navigation Tabs */}
-        <div className="border-t bg-card/60 backdrop-blur">
-          <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-1.5 no-scrollbar">
-            {TABS.map((t) => {
-              const Icon = t.icon;
-              const active = t.exact ? pathname === t.to : pathname.startsWith(t.to);
-              return (
-                <Link
-                  key={t.to}
-                  to={t.to}
-                  className={`flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-                    active
-                      ? "bg-sky-500 text-white shadow-sm"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  <span>{t.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </header>
-
-      {/* Main Outlet */}
-      <main className="mx-auto max-w-7xl px-4 py-6">
+      <main className={`${PAGE_WIDTH} py-6`}>
         <Outlet />
       </main>
 
-      <MobileBottomNav context="student" />
       <CampusSwitchPrompt />
-
-      {/* Modals */}
       <ListStudentItemModal />
       <StudentVerificationModal />
-    </div>
+    </AppShell>
   );
 }

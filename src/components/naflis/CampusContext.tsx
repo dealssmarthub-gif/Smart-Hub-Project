@@ -34,21 +34,21 @@ export function nearestCampus(pos: { lat: number; lng: number }): { campus: stri
   return best;
 }
 
-/** Header control: registered institution badge, active-campus selector, location check. */
-export function CampusContextBar() {
-  const activeCampus = useNaflis((s) => s.selectedCampus);
-  const registered = useNaflis((s) => s.registeredInstitution);
-  const verified = useNaflis((s) => s.studentProfile.isVerified);
-  const requestCampusSwitch = useNaflis((s) => s.requestCampusSwitch);
-  const [locating, setLocating] = useState(false);
-
-  // Entering Student OS while browsing another campus: offer the registered one (respects "Not now").
+/** Entering Student OS while browsing another campus: offer the registered one (respects "Not now"). */
+export function useSuggestRegisteredCampus() {
   useEffect(() => {
     const s = useNaflis.getState();
     if (s.studentProfile.isVerified && s.registeredInstitution && s.selectedCampus !== s.registeredInstitution) {
       s.requestCampusSwitch(s.registeredInstitution, "registered");
     }
   }, []);
+}
+
+/** "Use my location": finds the nearest supported campus and offers to switch to it. */
+export function useLocateCampus() {
+  const activeCampus = useNaflis((s) => s.selectedCampus);
+  const requestCampusSwitch = useNaflis((s) => s.requestCampusSwitch);
+  const [locating, setLocating] = useState(false);
 
   const locate = () => {
     if (!("geolocation" in navigator)) return toast.error("Location isn't available in this browser.");
@@ -68,6 +68,18 @@ export function CampusContextBar() {
       { enableHighAccuracy: false, timeout: 10_000, maximumAge: 300_000 },
     );
   };
+
+  return { locate, locating };
+}
+
+/** Header control: registered institution badge, active-campus selector, location check. */
+export function CampusContextBar() {
+  const activeCampus = useNaflis((s) => s.selectedCampus);
+  const registered = useNaflis((s) => s.registeredInstitution);
+  const verified = useNaflis((s) => s.studentProfile.isVerified);
+  const requestCampusSwitch = useNaflis((s) => s.requestCampusSwitch);
+  const { locate, locating } = useLocateCampus();
+  useSuggestRegisteredCampus();
 
   return (
     <div className="flex items-center gap-2">

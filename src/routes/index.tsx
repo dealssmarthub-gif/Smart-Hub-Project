@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/naflis/Logo";
+import { MobileTabBar, TopNav } from "@/components/naflis/shell/AppShell";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { ProductCard } from "@/components/naflis/ProductCard";
 import { roleHome } from "@/lib/naflis/roles";
@@ -238,7 +239,7 @@ function Landing() {
   const currentPinnedEvent = pinnedEvents[activeTickerIndex] || pinnedEvents[0];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background pb-28 text-foreground md:pb-0">
       {/* 1. Pinned SRC Announcement Banner Ticker */}
       {currentPinnedEvent && (
         <aside
@@ -303,80 +304,8 @@ function Landing() {
         </aside>
       )}
 
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4">
-          <Logo />
+      <TopNav onEscrowClick={() => setEscrowModalOpen(true)} />
 
-          <nav className="hidden items-center gap-6 lg:flex">
-            <Link
-              to="/student-os"
-              className="flex items-center gap-1.5 text-sm font-bold text-sky-500 hover:text-sky-400 transition"
-            >
-              <GraduationCap className="h-4 w-4" />
-              <span>Student OS</span>
-            </Link>
-            <Link
-              to="/student-os/marketplace"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              Marketplace
-            </Link>
-            <Link
-              to="/student-os/deals"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              Student Deals
-            </Link>
-            <button
-              onClick={() => setEscrowModalOpen(true)}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1"
-            >
-              <ShieldCheck className="h-3.5 w-3.5 text-sky-500" />
-              <span>Safe Escrow</span>
-            </button>
-            <Link
-              to="/campus-admin"
-              className="text-sm font-semibold text-sky-500 hover:underline flex items-center gap-1"
-            >
-              <Building2 className="h-3.5 w-3.5" />
-              <span>Institutional / SRC Access</span>
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            {currentUserId ? (
-              <>
-                {loggedInUser && (
-                  <span className="hidden xl:inline text-xs font-semibold text-muted-foreground">
-                    {loggedInUser.name}
-                  </span>
-                )}
-                <Button asChild size="sm" variant="outline">
-                  <Link to={roleHome(role)}>
-                    Dashboard
-                  </Link>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    signOut();
-                    toast.success("Signed out successfully");
-                  }}
-                >
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <Button asChild size="sm" className="bg-sky-500 hover:bg-sky-600 text-white font-bold">
-                <Link to="/login">Sign In</Link>
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden gradient-hero text-white">
@@ -1063,6 +992,7 @@ function Landing() {
           </div>
         </DialogContent>
       </Dialog>
+      <MobileTabBar />
     </div>
   );
 }
