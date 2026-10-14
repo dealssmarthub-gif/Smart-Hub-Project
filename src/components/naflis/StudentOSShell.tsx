@@ -42,19 +42,30 @@ export function StudentOSShell() {
   // The student Home draws its own phone header (greeting, campus pill, search).
   const isHome = pathname === "/student-os" || pathname === "/student-os/";
   // Shop pages carry their own phone header (tabs, search, Sell button).
-  const isShop = pathname.startsWith("/student-os/marketplace") || pathname.startsWith("/student-os/deals");
+  const isShop =
+    pathname.startsWith("/student-os/marketplace") || pathname.startsWith("/student-os/deals");
   // Campus pages carry their own pill row (Resources, Calendar, Events, Opportunities, Lost & Found).
-  const isCampus = ["/student-os/resources", "/student-os/calendar", "/student-os/events", "/student-os/opportunities", "/student-os/lost-found"].some((p) => pathname.startsWith(p));
+  const isCampus = [
+    "/student-os/resources",
+    "/student-os/calendar",
+    "/student-os/events",
+    "/student-os/opportunities",
+    "/student-os/lost-found",
+  ].some((p) => pathname.startsWith(p));
 
   const pill = (active: boolean) =>
     `inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-4 text-xs font-bold transition ${
-      active ? "bg-primary text-primary-foreground shadow-soft" : "bg-card text-subtle-foreground hover:bg-accent hover:text-accent-foreground"
+      active
+        ? "bg-primary text-primary-foreground shadow-soft"
+        : "bg-card text-subtle-foreground hover:bg-accent hover:text-accent-foreground"
     }`;
 
   return (
     <AppShell mobileHeader={!isHome}>
       {/* Student OS section bar: every Student OS page, plus verification and selling. */}
-      <div className={`border-b border-border-soft bg-background ${isHome || isShop || isCampus ? "hidden md:block" : ""}`}>
+      <div
+        className={`border-b border-border-soft bg-background ${isHome || isShop || isCampus ? "hidden md:block" : ""}`}
+      >
         <div className={`${PAGE_WIDTH} flex flex-wrap items-center gap-2 pt-3`}>
           <span className="hidden items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-accent-foreground sm:inline-flex">
             <GraduationCap className="h-3.5 w-3.5" strokeWidth={1.8} /> Student OS
@@ -68,12 +79,16 @@ export function StudentOSShell() {
               {studentProfile.isVerified ? (
                 <>
                   <CheckCircle2 className="h-4 w-4 text-verified" strokeWidth={1.8} />
-                  <span>Verified<span className="hidden sm:inline"> Student</span></span>
+                  <span>
+                    Verified<span className="hidden sm:inline"> Student</span>
+                  </span>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} />
-                  <span>Verify<span className="hidden sm:inline"> Student ID</span></span>
+                  <span>
+                    Verify<span className="hidden sm:inline"> Student ID</span>
+                  </span>
                 </>
               )}
             </button>
@@ -88,7 +103,10 @@ export function StudentOSShell() {
             </button>
           </div>
         </div>
-        <nav aria-label="Student OS" className={`${PAGE_WIDTH} no-scrollbar flex gap-2 overflow-x-auto py-3`}>
+        <nav
+          aria-label="Student OS"
+          className={`${PAGE_WIDTH} no-scrollbar flex gap-2 overflow-x-auto py-3`}
+        >
           {TABS.map((t) => {
             const Icon = t.icon;
             const active = t.exact ? pathname === t.to : pathname.startsWith(t.to);

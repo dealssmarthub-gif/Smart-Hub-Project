@@ -79,7 +79,7 @@ export function PurchaseOptions({ product, onChoose }: { product: Product; onCho
     <div className="rounded-2xl border border-border-soft bg-card p-4">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Ways to buy</p>
       <Tabs value={tab} onValueChange={(v) => setTab(v as PurchaseMethod)}>
-        <TabsList className="h-auto w-full flex-wrap justify-start">
+        <TabsList className="h-auto w-full flex-wrap justify-start rounded-3xl">
           {methods.map((m) => {
             const Icon = ICON[m];
             return (

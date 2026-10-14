@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
+import { useReturnFocus } from "@/hooks/useReturnFocus";
 import {
   Store,
   Search,
@@ -56,6 +57,9 @@ function StudentMarketplace() {
   const [sortBy, setSortBy] = useState<SortBy>("newest");
   const [contactModalItem, setContactModalItem] = useState<StudentListing | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersFocus = useReturnFocus(filtersOpen);
+  const contactFocus = useReturnFocus(!!contactModalItem);
+
 
   // Filter out pure study resources and apply filters
   const marketplaceItems = useMemo(() => {
@@ -271,7 +275,7 @@ function StudentMarketplace() {
 
       {/* Phone filter sheet: campus, condition and sort (category chips stay on the page). */}
       <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
-        <SheetContent side="bottom" className="rounded-t-[28px] md:hidden">
+        <SheetContent side="bottom" className="rounded-t-[28px] md:hidden" onCloseAutoFocus={filtersFocus}>
           <SheetHeader className="text-left">
             <SheetTitle>Filters</SheetTitle>
             <SheetDescription>Campus, condition and sort order for the marketplace.</SheetDescription>
@@ -297,7 +301,7 @@ function StudentMarketplace() {
 
       {/* Contact Seller Dialog */}
       <Dialog open={!!contactModalItem} onOpenChange={(open) => !open && setContactModalItem(null)}>
-        <DialogContent className="max-w-sm rounded-[28px]">
+        <DialogContent className="max-w-sm rounded-[28px]" onCloseAutoFocus={contactFocus}>
           {contactModalItem && (
             <>
               <DialogHeader>

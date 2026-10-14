@@ -29,25 +29,44 @@ export function useHomePath(): "/" | "/student-os" {
   return signedIn && studentOs && held.includes("student") ? "/student-os" : "/";
 }
 
-export function TopNav({ onEscrowClick, showCampus = true, mobile = true }: { onEscrowClick?: () => void; showCampus?: boolean; mobile?: boolean }) {
+export function TopNav({
+  onEscrowClick,
+  showCampus = true,
+  mobile = true,
+}: {
+  onEscrowClick?: () => void;
+  showCampus?: boolean;
+  mobile?: boolean;
+}) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const studentOs = useFeatureFlag("student_os");
   const active = placeFor(pathname);
   const link = (id: PlaceId) =>
     `inline-flex h-11 items-center rounded-full px-4 text-sm font-semibold transition ${
-      active === id ? "bg-primary-soft text-accent-foreground" : "text-subtle-foreground hover:bg-accent hover:text-accent-foreground"
+      active === id
+        ? "bg-primary-soft text-accent-foreground"
+        : "text-subtle-foreground hover:bg-accent hover:text-accent-foreground"
     }`;
   const shop = PLACES.find((p) => p.id === "shop")!;
   const campus = PLACES.find((p) => p.id === "campus")!;
-  const escrowClass = "inline-flex h-11 items-center whitespace-nowrap gap-1.5 rounded-full px-4 text-sm font-semibold text-subtle-foreground transition hover:bg-accent hover:text-accent-foreground";
+  const escrowClass =
+    "inline-flex h-11 items-center whitespace-nowrap gap-1.5 rounded-full px-4 text-sm font-semibold text-subtle-foreground transition hover:bg-accent hover:text-accent-foreground";
 
   return (
-    <header className={`sticky top-0 z-40 border-b border-border-soft ${mobile ? "" : "hidden md:block"} bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75`}>
+    <header
+      className={`sticky top-0 z-40 border-b border-border-soft ${mobile ? "" : "hidden md:block"} bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75`}
+    >
       <div className={`${PAGE_WIDTH} flex h-16 items-center gap-3 md:h-[72px]`}>
         <Logo className="shrink-0" compact />
         <nav aria-label="Main" className="ml-4 hidden items-center gap-1 md:flex">
-          <Link to={studentOs ? shop.to : "/buyer"} className={link("shop")}>Shop</Link>
-          {studentOs && <Link to={campus.to} className={link("campus")}>Campus</Link>}
+          <Link to={studentOs ? shop.to : "/buyer"} className={link("shop")}>
+            Shop
+          </Link>
+          {studentOs && (
+            <Link to={campus.to} className={link("campus")}>
+              Campus
+            </Link>
+          )}
           {onEscrowClick ? (
             <button type="button" onClick={onEscrowClick} className={escrowClass}>
               <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> How escrow works
@@ -62,7 +81,9 @@ export function TopNav({ onEscrowClick, showCampus = true, mobile = true }: { on
           {showCampus && <CampusPicker compact />}
           <NotificationBell />
           <ThemeToggle />
-          <div className="hidden md:block"><UserMenu /></div>
+          <div className="hidden md:block">
+            <UserMenu />
+          </div>
         </div>
       </div>
     </header>
@@ -75,9 +96,9 @@ export function MobileTabBar() {
   const studentOs = useFeatureFlag("student_os");
   const home = useHomePath();
   const active = placeFor(pathname);
-  const places = PLACES.map((p) => (p.id === "home" ? { ...p, to: home } : p)).filter((p) => studentOs || p.id !== "campus").map((p) =>
-    p.id === "shop" && !studentOs ? { ...p, to: "/buyer" } : p,
-  );
+  const places = PLACES.map((p) => (p.id === "home" ? { ...p, to: home } : p))
+    .filter((p) => studentOs || p.id !== "campus")
+    .map((p) => (p.id === "shop" && !studentOs ? { ...p, to: "/buyer" } : p));
 
   return (
     <nav
@@ -94,7 +115,9 @@ export function MobileTabBar() {
                 to={p.to}
                 aria-current={on ? "page" : undefined}
                 className={`flex h-12 items-center justify-center gap-1.5 rounded-full px-2 text-[11px] font-bold transition ${
-                  on ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  on
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Icon className="h-5 w-5 shrink-0" strokeWidth={1.8} />
@@ -111,17 +134,29 @@ export function MobileTabBar() {
 /** Slim footer with the secondary destinations that used to sit in the top menus. */
 export function SiteFooter() {
   const year = new Date().getFullYear();
-  const linkClass = "inline-flex min-h-11 items-center hover:text-foreground";
+  const linkClass = "inline-flex min-h-11 min-w-11 items-center hover:text-foreground";
   return (
     <footer className="border-t border-border-soft bg-card/60">
-      <div className={`${PAGE_WIDTH} flex flex-col gap-2 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between`}>
+      <div
+        className={`${PAGE_WIDTH} flex flex-col gap-2 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between`}
+      >
         <p>© {year} NAFLIS Mall · Verified student commerce</p>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5">
-          <Link to="/" hash="escrow" className={linkClass}>Escrow terms</Link>
-          <Link to="/buyer/wallet" className={linkClass}>Student wallet</Link>
-          <Link to="/student-os" className={linkClass}>Student OS</Link>
-          <Link to="/campus-admin" className={linkClass}>SRC access</Link>
-          <Link to="/login" className={linkClass}>Sign in</Link>
+          <Link to="/" hash="escrow" className={linkClass}>
+            Escrow terms
+          </Link>
+          <Link to="/buyer/wallet" className={linkClass}>
+            Student wallet
+          </Link>
+          <Link to="/student-os" className={linkClass}>
+            Student OS
+          </Link>
+          <Link to="/campus-admin" className={linkClass}>
+            SRC access
+          </Link>
+          <Link to="/login" className={linkClass}>
+            Sign in
+          </Link>
         </nav>
       </div>
     </footer>
@@ -132,7 +167,13 @@ export function SiteFooter() {
  * The consumer shell: top nav, page content, footer, and the mobile tab bar.
  * Content gets bottom padding on phones so nothing sits behind the tab bar.
  */
-export function AppShell({ children, onEscrowClick, showCampus, footer = true, mobileHeader = true }: {
+export function AppShell({
+  children,
+  onEscrowClick,
+  showCampus,
+  footer = true,
+  mobileHeader = true,
+}: {
   children: ReactNode;
   onEscrowClick?: () => void;
   showCampus?: boolean;
@@ -144,7 +185,11 @@ export function AppShell({ children, onEscrowClick, showCampus, footer = true, m
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <TopNav onEscrowClick={onEscrowClick} showCampus={showCampus} mobile={mobileHeader} />
       <div className={`flex-1 ${footer ? "" : "pb-28 md:pb-0"}`}>{children}</div>
-      {footer && <div className="pb-28 md:pb-0"><SiteFooter /></div>}
+      {footer && (
+        <div className="pb-28 md:pb-0">
+          <SiteFooter />
+        </div>
+      )}
       <MobileTabBar />
     </div>
   );

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
+import { useReturnFocus } from "@/hooks/useReturnFocus";
 import {
   BookOpen,
   Search,
@@ -71,6 +72,8 @@ function StudentResources() {
   const [selectedType, setSelectedType] = useState<string>("All Types");
   const [previewResource, setPreviewResource] = useState<StudentListing | null>(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const previewFocus = useReturnFocus(!!previewResource);
+  const uploadFocus = useReturnFocus(uploadModalOpen);
   const [openNotice, setOpenNotice] = useState<CampusEvent | null>(null);
 
   // New resource upload state
@@ -296,7 +299,7 @@ function StudentResources() {
 
       {/* Preview Dialog */}
       <Dialog open={!!previewResource} onOpenChange={(open) => !open && setPreviewResource(null)}>
-        <DialogContent className="max-w-lg rounded-[28px]">
+        <DialogContent className="max-w-lg rounded-[28px]" onCloseAutoFocus={previewFocus}>
           {previewResource && (
             <>
               <DialogHeader>
@@ -332,7 +335,7 @@ function StudentResources() {
 
       {/* Upload Modal */}
       <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
-        <DialogContent className="max-w-md rounded-[28px]">
+        <DialogContent className="max-w-md rounded-[28px]" onCloseAutoFocus={uploadFocus}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base font-extrabold">
               <UploadCloud className="h-5 w-5 text-link" strokeWidth={1.8} /> Upload Study Material

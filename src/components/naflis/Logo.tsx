@@ -2,9 +2,19 @@ import { Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 
 /** `compact` hides the wordmark on phones (icon only), keeping it from sm up. */
-export function Logo({ className = "", compact = false }: { className?: string; compact?: boolean }) {
+export function Logo({
+  className = "",
+  compact = false,
+}: {
+  className?: string;
+  compact?: boolean;
+}) {
   return (
-    <Link to="/" aria-label="NAFLIS Mall home" className={`inline-flex min-h-11 items-center gap-2 ${className}`}>
+    <Link
+      to="/"
+      aria-label="NAFLIS Mall home"
+      className={`inline-flex min-h-11 min-w-11 items-center gap-2 ${className}`}
+    >
       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg gradient-hero shadow-premium">
         <Sparkles className="h-4 w-4 text-white" />
       </span>

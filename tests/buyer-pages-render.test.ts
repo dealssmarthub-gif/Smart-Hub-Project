@@ -12,14 +12,17 @@ import { routeTree } from "@/routeTree.gen";
 import { useNaflis } from "@/lib/naflis/store";
 import * as W from "@/services/walletService";
 
-const origSES = ReactCJS.useSyncExternalStore;
-(ReactCJS as any).useSyncExternalStore = (sub: any, get: () => unknown) => {
+type SES = typeof ReactCJS.useSyncExternalStore;
+const react = ReactCJS as unknown as { useSyncExternalStore: SES };
+const origSES = react.useSyncExternalStore;
+react.useSyncExternalStore = ((sub: Parameters<SES>[0], get: () => unknown) => {
   const first = get();
-  if (!Object.is(first, get())) throw new Error("Unstable store snapshot: the selector returns a new value on every read");
+  if (!Object.is(first, get()))
+    throw new Error("Unstable store snapshot: the selector returns a new value on every read");
   return origSES(sub, get, get);
-};
+}) as SES;
 afterAll(() => {
-  (ReactCJS as any).useSyncExternalStore = origSES;
+  react.useSyncExternalStore = origSES;
 });
 
 async function renderAt(path: string) {
@@ -30,7 +33,9 @@ async function renderAt(path: string) {
     isServer: true,
   });
   await router.load();
-  const html = renderToString(React.createElement(RouterProvider, { router } as any)).replace(/<!-- -->/g, "");
+  const html = renderToString(
+    React.createElement(RouterProvider, { router } as Parameters<typeof RouterProvider>[0]),
+  ).replace(/<!-- -->/g, "");
   expect(html).not.toContain("Unstable store snapshot");
   expect(html).not.toContain("server rendering errored");
   return { html, pathname: router.state.location.pathname };
@@ -48,7 +53,12 @@ describe("buyer orders and alerts pages", () => {
     st().setRole("buyer");
     const cheap = st().products.find((p) => p.price < 300)!;
     const { orderId } = await W.checkout({
-      request: { deliveryMethod: "standard", paymentMethod: "wallet", address: "Osu, Accra", lines: [{ productId: cheap.id, qty: 1, method: "full" }] },
+      request: {
+        deliveryMethod: "standard",
+        paymentMethod: "wallet",
+        address: "Osu, Accra",
+        lines: [{ productId: cheap.id, qty: 1, method: "full" }],
+      },
       idempotencyKey: W.newIdempotencyKey(),
     });
 

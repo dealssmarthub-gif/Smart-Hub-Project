@@ -565,7 +565,7 @@ export function CampusAdminPortal() {
 
         {/* Console Tabs */}
         <Tabs defaultValue="announcements" className="space-y-6">
-          <TabsList className="bg-muted p-1 rounded-xl">
+          <TabsList className="no-scrollbar h-auto max-w-full justify-start overflow-x-auto bg-muted p-1">
             <TabsTrigger value="announcements" className="text-xs font-semibold gap-1.5">
               <Calendar className="h-3.5 w-3.5 text-link" />
               <span>SRC Announcements & Events</span>
@@ -650,7 +650,7 @@ export function CampusAdminPortal() {
                       <div className="absolute top-2 left-2 flex items-center gap-1.5">
                         <Badge className="bg-primary text-white text-[10px]">{e.campus}</Badge>
                         {e.pinned && (
-                          <Badge className="bg-amber-500 text-white text-[10px] gap-1 font-bold">
+                          <Badge className="bg-tile-butter text-[#7a5200] dark:text-[#f5d27a] border-transparent text-[10px] gap-1 font-bold">
                             <Pin className="h-3 w-3" /> Pinned on Home
                           </Badge>
                         )}

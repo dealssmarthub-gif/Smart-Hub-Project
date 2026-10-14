@@ -3,13 +3,26 @@ import { Check, ChevronDown, LayoutDashboard, LogOut, PlusCircle, User } from "l
 import { toast } from "sonner";
 import { ROLE_ICONS, useWorkspaces } from "@/components/naflis/ContextSwitcher";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ROLE_META, roleHome, type Role } from "@/lib/naflis/roles";
 import { useNaflis, useUserRoles } from "@/lib/naflis/store";
 
 /** Staff workspaces, each with its own dashboard. */
-export const STAFF_ROLES: Role[] = ["src_head", "dean", "delivery", "finance", "dispute", "admin", "super_admin"];
+export const STAFF_ROLES: Role[] = [
+  "src_head",
+  "dean",
+  "delivery",
+  "finance",
+  "dispute",
+  "admin",
+  "super_admin",
+];
 
 /** Signs out exactly as the old shells did. */
 export function useSignOut() {
@@ -60,29 +73,47 @@ export function UserMenu() {
       <DropdownMenuContent align="end" className="w-72 rounded-2xl p-2">
         <DropdownMenuLabel className="font-normal">
           <p className="truncate text-sm font-bold">{user.name}</p>
-          <p className="truncate text-xs text-muted-foreground">{user.email} · {ROLE_META[ws.active].label}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {user.email} · {ROLE_META[ws.active].label}
+          </p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="min-h-11 gap-3 rounded-xl" onSelect={() => navigate({ to: "/me" })}>
+        <DropdownMenuItem
+          className="min-h-11 gap-3 rounded-xl"
+          onSelect={() => navigate({ to: "/me" })}
+        >
           <User className="h-4 w-4 text-link" strokeWidth={1.8} /> Me — wallet, orders & more
         </DropdownMenuItem>
         {staff.map((r) => (
-          <DropdownMenuItem key={`dash-${r}`} className="min-h-11 gap-3 rounded-xl" onSelect={() => ws.switchTo(r)}>
-            <LayoutDashboard className="h-4 w-4 text-link" strokeWidth={1.8} /> {ROLE_META[r].label} dashboard
+          <DropdownMenuItem
+            key={`dash-${r}`}
+            className="min-h-11 gap-3 rounded-xl"
+            onSelect={() => ws.switchTo(r)}
+          >
+            <LayoutDashboard className="h-4 w-4 text-link" strokeWidth={1.8} /> {ROLE_META[r].label}{" "}
+            dashboard
           </DropdownMenuItem>
         ))}
         {ws.roles.length > 1 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Switch workspace</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Switch workspace
+            </DropdownMenuLabel>
             {ws.roles.map((r) => {
               const Icon = ROLE_ICONS[r];
               return (
-                <DropdownMenuItem key={r} className="min-h-11 gap-3 rounded-xl" onSelect={() => ws.switchTo(r)}>
+                <DropdownMenuItem
+                  key={r}
+                  className="min-h-11 gap-3 rounded-xl"
+                  onSelect={() => ws.switchTo(r)}
+                >
                   <Icon className="h-4 w-4 shrink-0 text-link" strokeWidth={1.8} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium">{ROLE_META[r].label}</span>
-                    <span className="block truncate text-xs text-muted-foreground">{ROLE_META[r].description}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {ROLE_META[r].description}
+                    </span>
                   </span>
                   {r === ws.active && <Check className="h-4 w-4 shrink-0" />}
                 </DropdownMenuItem>
@@ -92,7 +123,8 @@ export function UserMenu() {
         )}
         {ws.canJoinStudentOs && (
           <DropdownMenuItem className="min-h-11 gap-3 rounded-xl" onSelect={ws.joinStudentOs}>
-            <PlusCircle className="h-4 w-4 text-muted-foreground" strokeWidth={1.8} /> Join Student OS
+            <PlusCircle className="h-4 w-4 text-muted-foreground" strokeWidth={1.8} /> Join Student
+            OS
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />

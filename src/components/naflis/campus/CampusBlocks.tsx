@@ -1,8 +1,23 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, Briefcase, Calendar, CalendarDays, MapPin, SearchCheck, Ticket } from "lucide-react";
+import { useReturnFocus } from "@/hooks/useReturnFocus";
+import {
+  BookOpen,
+  Briefcase,
+  Calendar,
+  CalendarDays,
+  MapPin,
+  SearchCheck,
+  Ticket,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ListingImage } from "@/components/naflis/home/HomeBlocks";
 import type { CampusEvent } from "@/lib/naflis/store";
 
@@ -18,7 +33,10 @@ const CAMPUS_PAGES: { to: string; label: string; icon: LucideIcon }[] = [
 export function CampusNav() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   return (
-    <nav aria-label="Campus" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 md:mx-0 md:px-0">
+    <nav
+      aria-label="Campus"
+      className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 md:mx-0 md:px-0"
+    >
       {CAMPUS_PAGES.map((p) => {
         const Icon = p.icon;
         const on = pathname.startsWith(p.to);
@@ -28,7 +46,9 @@ export function CampusNav() {
             to={p.to}
             aria-current={on ? "page" : undefined}
             className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-xs font-bold transition ${
-              on ? "bg-primary text-primary-foreground shadow-soft" : "bg-card text-subtle-foreground shadow-soft hover:bg-accent hover:text-accent-foreground"
+              on
+                ? "bg-primary text-primary-foreground shadow-soft"
+                : "bg-card text-subtle-foreground shadow-soft hover:bg-accent hover:text-accent-foreground"
             }`}
           >
             <Icon className="h-4 w-4" strokeWidth={1.8} /> {p.label}
@@ -40,7 +60,17 @@ export function CampusNav() {
 }
 
 /** Title, subtitle and actions for a Campus page, above the Campus pill row. */
-export function CampusHeader({ icon: Icon, title, subtitle, actions }: { icon: LucideIcon; title: string; subtitle: ReactNode; actions?: ReactNode }) {
+export function CampusHeader({
+  icon: Icon,
+  title,
+  subtitle,
+  actions,
+}: {
+  icon: LucideIcon;
+  title: string;
+  subtitle: ReactNode;
+  actions?: ReactNode;
+}) {
   return (
     <header className="space-y-4">
       <CampusNav />
@@ -70,18 +100,31 @@ export const campusCard = "rounded-3xl border border-border-soft bg-card shadow-
  * title, publish date, banner, description, venue and date, with a link to the
  * SRC portal. `children` replaces the default actions.
  */
-export function NoticeDialog({ notice, onClose, children }: { notice: CampusEvent | null; onClose: () => void; children?: ReactNode }) {
+export function NoticeDialog({
+  notice,
+  onClose,
+  children,
+}: {
+  notice: CampusEvent | null;
+  onClose: () => void;
+  children?: ReactNode;
+}) {
+  const returnFocus = useReturnFocus(!!notice);
   return (
     <Dialog open={!!notice} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg rounded-[28px]">
+      <DialogContent className="max-w-lg rounded-[28px]" onCloseAutoFocus={returnFocus}>
         {notice && (
           <>
             <DialogHeader>
               <div className="mb-2 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-primary-foreground">{notice.campus}</span>
+                <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-primary-foreground">
+                  {notice.campus}
+                </span>
                 <span className="text-xs font-bold text-link">{notice.organizer}</span>
               </div>
-              <DialogTitle className="text-lg font-extrabold leading-snug">{notice.title}</DialogTitle>
+              <DialogTitle className="text-lg font-extrabold leading-snug">
+                {notice.title}
+              </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
                 Official announcement published on {new Date(notice.createdAt).toLocaleDateString()}
               </DialogDescription>
@@ -107,8 +150,12 @@ export function NoticeDialog({ notice, onClose, children }: { notice: CampusEven
             <div className="mt-4 flex flex-wrap justify-end gap-2">
               {children ?? (
                 <>
-                  <button type="button" onClick={onClose} className={campusSecondaryBtn}>Close</button>
-                  <Link to="/campus-admin" className={campusPrimaryBtn}>Open SRC Portal</Link>
+                  <button type="button" onClick={onClose} className={campusSecondaryBtn}>
+                    Close
+                  </button>
+                  <Link to="/campus-admin" className={campusPrimaryBtn}>
+                    Open SRC Portal
+                  </Link>
                 </>
               )}
             </div>

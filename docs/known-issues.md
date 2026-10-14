@@ -113,14 +113,15 @@ The redesign changes presentation and navigation only. Behaviour and data issues
 
 ## Found in Phase 5 (Me, wallet/orders, staff and auth pages)
 
-### 28. Orders page and every order detail page crash ("This page didn't load")
+### 28. ✅ Fixed in Phase 6 — Orders page and every order detail page crash ("This page didn't load")
+- **Fix:** commit "fix: stop infinite render loop on buyer orders and alerts pages" (`useShallow` selector; the orders route now renders the order page through an `<Outlet />` when one is open). Regression test: `tests/buyer-pages-render.test.ts`. The original report follows.
 - **Where:** `/buyer/orders` and `/buyer/orders/<id>` (same on `main`).
 - **Reproduce:** sign in with **Demo Buyer** → open **Me → Orders & escrow** (or **Track order** on the Me active-order card).
 - **What happens:** the error screen appears; the console shows "The result of getSnapshot should be cached" then "Maximum update depth exceeded".
 - **Cause:** `buyer.orders.tsx` selects `s.orders.filter(...)` inside `useNaflis`, which returns a new array on every read (zustand 5 loops on this). `buyer.orders.tsx` is also the *parent* route of `buyer.orders.$orderId.tsx`, so the detail page crashes too, and it has no `<Outlet />`, so the detail page would not render even without the crash.
 - **Knock-on:** the order page's **Confirm delivery & release escrow** and the demo **Simulate next status** button can't be reached, so an order can't be moved to "Delivered" from the buyer UI.
 
-### 29. Alerts page uses the same crashing selector
+### 29. ✅ Fixed in Phase 6 — Alerts page uses the same crashing selector
 - **Where:** `/buyer/notifications` selects `s.notifications.filter(...)` in `useNaflis` (same pattern as #28). Reproduce: Demo Buyer → **Me → Alerts**.
 
 ### 30. No buyer-side "Open a dispute" action
@@ -136,7 +137,36 @@ The redesign changes presentation and navigation only. Behaviour and data issues
 ### 33. Expensive first cart item blocks wallet checkout
 - **Where:** `/buyer` → first **Add to cart** is the iPhone 16 Pro Max (GH₵18,500) while the demo wallet holds GH₵4,200, so **Pay** with the wallet is disabled ("Short by … top up first"). Not a bug as such, but the demo flow needs Mobile Money/Card (simulated in demo mode) to place an order.
 
+## Found in Phase 6 (final QA) — all also present on `main`
+
+### 34. Mall product, Reserve & Pay and Installments scroll sideways at tablet width
+- **Where:** `/buyer/product/<id>` (page 873–877px wide), `/buyer/reserve` and `/buyer/installments` (780px) at a 768px window. The mall sidebar appears from 768px and the page content is laid out for a wider area.
+- **Reproduce:** Demo Buyer → open any mall product → resize the window to 768px → the page scrolls horizontally; the "Flash sale" badge and the old price sit off the right edge.
+
+### 35. Product page action buttons overlap
+- **Where:** `/buyer/product/<id>` → the row under **Buy now / Add to cart** (**Wishlist**, **Price alert**, **Ask**, **Share**) when the content column is narrow (e.g. 768px window). Labels and icons draw over each other because the row doesn't wrap.
+
+### 36. Mall product cards cut off prices on phones
+- **Where:** `/buyer`, `/buyer/deals`, `/buyer/search` product grid at 360–390px: the struck-through old price (and at 768px, some prices and the **View** button) run past the card edge.
+
+### 37. Dark theme logs a hydration warning on every page
+- **Where:** every route, dark theme only. The server renders the light theme, then the browser switches to dark before React hydrates, so React warns "A tree hydrated but some attributes of the server rendered HTML didn't match". No visible effect.
+
+### 38. Accessibility gaps found by axe-core
+- Switches without a name: wallet **Auto-funding** (`/buyer/wallet`) and every feature-flag switch on `/super`.
+- Icon-only delete button on SRC notice cards (`/campus-admin`) has no accessible name.
+- Catalog bars on `/admin` are `progressbar`s without a name.
+- Order page totals (`/buyer/orders/<id>`) use `<dt>/<dd>` without a `<dl>`.
+
+### 39. Mall sidebar Alerts badge counts every account's notifications
+- **Where:** `BuyerShell` counts `notifications.filter((n) => !n.read)` without filtering by the signed-in user, so the sidebar can say 12 while the bell (which filters by user) says 8.
+
+### 40. No demo account reaches Finance, Dispute or Delivery
+- **Where:** `/finance`, `/dispute`, `/delivery`. The five demo buttons don't hold these roles and **View as** only offers buyer, student and SRC accounts, so these dashboards can only be opened with real staff accounts (or by editing the local demo store, which is how Phase 6 checked their layout).
+
 ## Code health (pre-existing)
 
 ### 14. Lint baseline
-- `npm run lint` already reports many errors in untouched files (mostly `@typescript-eslint/no-explicit-any` and Prettier formatting). New redesign files add none beyond React "fast refresh" warnings of the same kind the project already has.
+- `npm run lint` already reports many errors in untouched files (mostly Prettier formatting and `@typescript-eslint/no-explicit-any`).
+- Phase 6 measurement (`eslint src tests supabase`, both checkouts with LF line endings): `main` 2,863 errors / 14 warnings; branch 3,188 errors / 21 warnings before the Phase 6 clean-up. After formatting every file the redesign created or that was Prettier-clean on `main`, and typing the new test, the redesign-owned files have **0 errors**; the remainder are formatting differences inside lines the redesign touched in files that were already unformatted on `main` (reformatting those would rewrite unrelated lines), plus 7 React "fast refresh" warnings from files that export a hook or constant next to components — the same pattern the project already uses.
+- On a Windows checkout with `core.autocrlf=true` the Prettier count is inflated (every CRLF line ending is reported); compare on LF checkouts.
