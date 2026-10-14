@@ -21,7 +21,8 @@ import { CampusPicker } from "@/components/naflis/shell/CampusPicker";
 import {
   EscrowBanner, GroupBuyCard, ListingImage, NotificationBell, SectionHeader, SectionLink, SrcNoticeRow, Tile, almostFull, onDarkButton,
 } from "@/components/naflis/home/HomeBlocks";
-import { useNaflis } from "@/lib/naflis/store";
+import { useNaflis, type CampusEvent } from "@/lib/naflis/store";
+import { NoticeDialog } from "@/components/naflis/campus/CampusBlocks";
 import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
@@ -98,6 +99,7 @@ function StudentOSDashboard() {
     [campusEvents, selectedCampus]
   );
 
+  const [openNotice, setOpenNotice] = useState<CampusEvent | null>(null);
   const firstName = user?.name.split(" ")[0];
 
   return (
@@ -250,7 +252,8 @@ function StudentOSDashboard() {
         </div>
       </section>
 
-      {notice && <SrcNoticeRow title={notice.title} campus={notice.campus} to="/student-os/events" />}
+      {notice && <SrcNoticeRow title={notice.title} campus={notice.campus} onOpen={() => setOpenNotice(notice)} />}
+      <NoticeDialog notice={openNotice} onClose={() => setOpenNotice(null)} />
 
       {/* Campus Marketplace Feed Section */}
       <section ref={feedRef} className="scroll-mt-24">

@@ -23,6 +23,7 @@ import {
 } from "@/lib/naflis/timetable";
 import { useAcademicCalendar } from "@/services/studentOs";
 import { useNow } from "@/components/naflis/PurchaseOptions";
+import { CampusHeader } from "@/components/naflis/campus/CampusBlocks";
 
 export const Route = createFileRoute("/student-os/calendar")({
   component: AcademicCalendar,
@@ -118,41 +119,43 @@ function AcademicCalendar() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight">
-            <CalendarDays className="h-6 w-6 text-sky-500" /> Academic Calendar
-          </h1>
-          <p className="text-sm text-muted-foreground">
+      <CampusHeader
+        icon={CalendarDays}
+        title="Academic Calendar"
+        subtitle={
+          <>
             Lectures, labs, exams and SRC events for {activeCampus}.{" "}
             {!live && <span className="text-xs">(Showing sample timetable — publish rows to <code>timetable_entries</code> to go live.)</span>}
-          </p>
-        </div>
-        {nextExam && (
-          <div className="rounded-xl border border-error/30 bg-error/5 px-3 py-2 text-xs">
-            <p className="font-semibold text-error">Next exam · {Math.ceil((nextExam.start - now) / 86_400_000)} days</p>
-            <p>{nextExam.courseCode} {nextExam.kindLabel} · {new Date(nextExam.start).toLocaleDateString("en-GH", { weekday: "short", day: "numeric", month: "short" })}</p>
-          </div>
-        )}
-      </div>
+          </>
+        }
+        actions={
+          nextExam && (
+            <div className="rounded-2xl bg-tile-rose px-4 py-2.5 text-xs text-foreground">
+              <p className="font-bold text-[#9d1d4b] dark:text-[#ff9fbd]">Next exam · {Math.ceil((nextExam.start - now) / 86_400_000)} days</p>
+              <p>{nextExam.courseCode} {nextExam.kindLabel} · {new Date(nextExam.start).toLocaleDateString("en-GH", { weekday: "short", day: "numeric", month: "short" })}</p>
+            </div>
+          )
+        }
+      />
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-3">
-        <div className="flex rounded-lg bg-muted p-1">
+      <div className="flex flex-wrap items-center gap-2 rounded-3xl border border-border-soft bg-card p-3 shadow-soft">
+        <div className="flex rounded-full bg-muted p-1" role="group" aria-label="Calendar view">
           {VIEWS.map((v) => (
             <button
               key={v.id}
               onClick={() => setView(v.id)}
-              className={`rounded-md px-3 py-1 text-xs font-semibold transition ${view === v.id ? "bg-background shadow-sm" : "text-muted-foreground"}`}
+              aria-pressed={view === v.id}
+              className={`min-h-10 rounded-full px-4 text-xs font-bold transition ${view === v.id ? "bg-primary text-primary-foreground shadow-soft" : "text-subtle-foreground hover:text-foreground"}`}
             >
               {v.label}
             </button>
           ))}
         </div>
         <div className="flex items-center gap-1">
-          <Button size="icon" variant="ghost" onClick={() => step(-1)} aria-label="Previous"><ChevronLeft className="h-4 w-4" /></Button>
-          <Button size="sm" variant="outline" onClick={() => setAnchor(startOfDay(Date.now()))}>Today</Button>
-          <Button size="icon" variant="ghost" onClick={() => step(1)} aria-label="Next"><ChevronRight className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => step(-1)} aria-label="Previous" className="h-11 w-11 rounded-full"><ChevronLeft className="h-4 w-4" strokeWidth={1.8} /></Button>
+          <Button size="sm" variant="outline" onClick={() => setAnchor(startOfDay(Date.now()))} className="min-h-11 rounded-xl px-4 font-bold">Today</Button>
+          <Button size="icon" variant="ghost" onClick={() => step(1)} aria-label="Next" className="h-11 w-11 rounded-full"><ChevronRight className="h-4 w-4" strokeWidth={1.8} /></Button>
           <span className="ml-1 text-sm font-semibold">{rangeLabel}</span>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -162,21 +165,22 @@ function AcademicCalendar() {
               <button
                 key={t}
                 onClick={() => setTypes((x) => ({ ...x, [t]: !x[t] }))}
-                className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${types[t] ? "border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400" : "text-muted-foreground"}`}
+                aria-pressed={types[t]}
+                className={`flex min-h-10 items-center gap-1 rounded-full border px-3 text-xs font-bold ${types[t] ? "border-transparent bg-primary-soft text-accent-foreground" : "border-border text-subtle-foreground"}`}
               >
                 <Icon className="h-3.5 w-3.5" /> {TYPE_META[t].label}
               </button>
             );
           })}
           {myProgramme && (
-            <label className="flex items-center gap-1.5 text-xs">
+            <label className="flex min-h-10 items-center gap-1.5 text-xs font-semibold">
               <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} className="accent-sky-500" />
               My programme only
             </label>
           )}
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Course code, lecturer…" className="h-8 w-48 pl-8 text-xs" />
+            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Course code, lecturer…" className="h-11 w-full rounded-xl pl-8 text-xs sm:w-56" />
           </div>
         </div>
       </div>
@@ -189,7 +193,7 @@ function AcademicCalendar() {
             const items = byDay.get(toIsoDate(day)) ?? [];
             const isToday = toIsoDate(day) === toIsoDate(now);
             return (
-              <div key={day} className={`min-w-0 rounded-xl border bg-card p-2 ${isToday ? "border-sky-500" : ""}`}>
+              <div key={day} className={`min-w-0 rounded-2xl border bg-card p-2 shadow-soft ${isToday ? "border-primary" : "border-border-soft"}`}>
                 <p className={`mb-2 text-xs font-semibold ${isToday ? "text-sky-500" : "text-muted-foreground"}`}>
                   {DOW[i]} {new Date(day).getDate()}
                 </p>
@@ -240,7 +244,7 @@ function DayAgenda({ day, items, clashes, now }: { day: number; items: Occurrenc
 function OccurrenceCard({ o, clash, compact }: { o: Occurrence; clash?: boolean; compact?: boolean }) {
   const meta = TYPE_META[o.type];
   return (
-    <article className={`rounded-lg border border-l-4 bg-background p-2.5 ${meta.tone}`}>
+    <article className={`rounded-xl border border-l-4 border-border-soft bg-background p-2.5 ${meta.tone}`}>
       <div className="flex flex-wrap items-center gap-1.5">
         {o.courseCode && <Badge variant="outline" className="font-mono text-[10px]">{o.courseCode}</Badge>}
         <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{o.kindLabel}</span>
@@ -267,7 +271,7 @@ function MonthGrid({ anchor, gridStart, byDay, now, onPick }: {
 }) {
   const month = new Date(anchor).getMonth();
   return (
-    <div className="overflow-hidden rounded-2xl border bg-card">
+    <div className="overflow-hidden rounded-3xl border border-border-soft bg-card shadow-soft">
       <div className="grid grid-cols-7 border-b bg-muted text-center text-[11px] font-semibold text-muted-foreground">
         {DOW.map((d) => <div key={d} className="py-1.5">{d}</div>)}
       </div>
@@ -300,8 +304,8 @@ function MonthGrid({ anchor, gridStart, byDay, now, onPick }: {
 
 function Empty({ label = "Nothing scheduled in this range." }: { label?: string }) {
   return (
-    <div className="rounded-2xl border border-dashed bg-card p-10 text-center">
-      <CalendarDays className="mx-auto mb-3 h-10 w-10 text-muted-foreground opacity-50" />
+    <div className="rounded-3xl border border-dashed bg-card p-10 text-center">
+      <CalendarDays className="mx-auto mb-3 h-10 w-10 text-muted-foreground" strokeWidth={1.8} />
       <p className="text-sm text-muted-foreground">{label}</p>
     </div>
   );

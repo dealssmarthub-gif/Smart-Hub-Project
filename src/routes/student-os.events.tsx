@@ -9,6 +9,8 @@ import { useShallow } from "zustand/react/shallow";
 import { useNaflis, type CampusEvent } from "@/lib/naflis/store";
 import { GHS } from "@/lib/naflis/format";
 import { TicketQR } from "@/components/naflis/TicketQR";
+import { CampusHeader } from "@/components/naflis/campus/CampusBlocks";
+import { ListingImage } from "@/components/naflis/home/HomeBlocks";
 import { buyTicket, describePaymentError, newIdempotencyKey, ticketQrPayload, type PaymentMethod } from "@/services/walletService";
 
 export const Route = createFileRoute("/student-os/events")({
@@ -29,26 +31,27 @@ function CampusEventsTickets() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight"><TicketIcon className="h-6 w-6 text-sky-500" /> Campus Events</h1>
-        <p className="text-sm text-muted-foreground">Events at {activeCampus}. Tickets carry a unique QR code checked once at the gate.</p>
-      </div>
+      <CampusHeader
+        icon={TicketIcon}
+        title="Campus Events"
+        subtitle={<>Events at {activeCampus}. Tickets carry a unique QR code checked once at the gate.</>}
+      />
       <Tabs defaultValue="events">
-        <TabsList>
-          <TabsTrigger value="events">Upcoming ({events.length})</TabsTrigger>
-          <TabsTrigger value="mine">My tickets ({myTickets.length})</TabsTrigger>
+        <TabsList className="h-auto rounded-full bg-card p-1 shadow-soft">
+          <TabsTrigger value="events" className="min-h-10 rounded-full px-4 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Upcoming ({events.length})</TabsTrigger>
+          <TabsTrigger value="mine" className="min-h-10 rounded-full px-4 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">My tickets ({myTickets.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="events" className="mt-4 grid gap-4 md:grid-cols-2">
-          {events.length === 0 && <p className="rounded-2xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground md:col-span-2">No upcoming events here.</p>}
+          {events.length === 0 && <p className="rounded-3xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground md:col-span-2">No upcoming events here.</p>}
           {events.map((e) => <EventCard key={e.id} event={e} />)}
         </TabsContent>
         <TabsContent value="mine" className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {myTickets.length === 0 && <p className="rounded-2xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3">No tickets yet.</p>}
+          {myTickets.length === 0 && <p className="rounded-3xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3">No tickets yet.</p>}
           {myTickets.map((t) => {
             const ev = allEvents.find((e) => e.id === t.eventId);
             const tier = ev?.ticketing?.tiers.find((x) => x.id === t.tierId);
             return (
-              <div key={t.id} className="flex flex-col items-center gap-2 rounded-2xl border bg-card p-4 text-center">
+              <div key={t.id} className="flex flex-col items-center gap-2 rounded-3xl border border-border-soft bg-card p-4 text-center shadow-soft">
                 <p className="font-semibold">{ev?.title ?? "Event"}</p>
                 <p className="text-xs text-muted-foreground">{tier?.name} · {ev ? new Date(ev.eventDate).toLocaleString("en-GH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}</p>
                 {t.status === "valid" ? (
@@ -97,17 +100,17 @@ function EventCard({ event }: { event: CampusEvent }) {
   };
 
   return (
-    <article className="overflow-hidden rounded-2xl border bg-card">
-      {event.bannerUrl && <img src={event.bannerUrl} alt="" className="h-32 w-full object-cover" />}
+    <article className="overflow-hidden rounded-3xl border border-border-soft bg-card shadow-soft">
+      {event.bannerUrl && <div className="h-36 w-full"><ListingImage src={event.bannerUrl} alt="" /></div>}
       <div className="space-y-2 p-4">
-        <p className="text-[11px] font-semibold uppercase text-sky-500">{event.organizer}</p>
-        <h3 className="font-bold leading-snug">{event.title}</h3>
-        <p className="flex items-center gap-1 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" /> {new Date(event.eventDate).toLocaleString("en-GH", { weekday: "long", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
-        <p className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3.5 w-3.5" /> {event.venue}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wide text-link">{event.organizer}</p>
+        <h2 className="text-base font-bold leading-snug">{event.title}</h2>
+        <p className="flex items-center gap-1 text-xs text-subtle-foreground"><CalendarDays className="h-3.5 w-3.5 text-link" strokeWidth={1.8} /> {new Date(event.eventDate).toLocaleString("en-GH", { weekday: "long", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+        <p className="flex items-center gap-1 text-xs text-subtle-foreground"><MapPin className="h-3.5 w-3.5 text-link" strokeWidth={1.8} /> {event.venue}</p>
         <p className="line-clamp-2 text-sm">{event.description}</p>
         {event.ticketing ? (
-          <div className="flex flex-wrap items-center gap-2 border-t pt-3">
-            <select aria-label="Ticket type" className="h-9 rounded-md border bg-background px-2 text-xs" value={tierId} onChange={(e) => setTierId(e.target.value)}>
+          <div className="flex flex-wrap items-center gap-2 border-t border-border-soft pt-3">
+            <select aria-label="Ticket type" className="h-11 rounded-xl border border-border bg-background px-3 text-xs font-semibold" value={tierId} onChange={(e) => setTierId(e.target.value)}>
               {event.ticketing.tiers.map((t) => (
                 <option key={t.id} value={t.id} disabled={t.sold >= t.capacity}>
                   {t.name} · {t.price ? GHS(t.price) : "Free"}{t.sold >= t.capacity ? " (sold out)" : ` · ${t.capacity - t.sold} left`}
@@ -115,13 +118,13 @@ function EventCard({ event }: { event: CampusEvent }) {
               ))}
             </select>
             {tier && tier.price > 0 && (
-              <select aria-label="Pay with" className="h-9 rounded-md border bg-background px-2 text-xs" value={method} onChange={(e) => setMethod(e.target.value as PaymentMethod)}>
+              <select aria-label="Pay with" className="h-11 rounded-xl border border-border bg-background px-3 text-xs font-semibold" value={method} onChange={(e) => setMethod(e.target.value as PaymentMethod)}>
                 <option value="wallet">NAFLIS Wallet</option>
                 <option value="card">Card</option>
                 <option value="momo">Mobile Money</option>
               </select>
             )}
-            <Button size="sm" onClick={buy} disabled={busy || !signedIn || closed || !tier || tier.sold >= tier.capacity}>
+            <Button size="sm" className="min-h-11 rounded-xl px-4 font-bold" onClick={buy} disabled={busy || !signedIn || closed || !tier || tier.sold >= tier.capacity}>
               {busy && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
               {closed ? "Sales closed" : tier?.price ? `Buy · ${GHS(tier.price)}` : "Get ticket"}
             </Button>

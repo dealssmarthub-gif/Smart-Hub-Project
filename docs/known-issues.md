@@ -81,6 +81,36 @@ The redesign changes presentation and navigation only. Behaviour and data issues
 ### 20. Two different "Escrow Buy" messages
 - **Where:** the marketplace says "Escrow hold secured … Meetup verification code sent!"; the student Home says "Escrow order created … Meetup code generated." Neither creates anything (see #3).
 
+## Found in Phase 4 (Campus)
+
+### 21. "Download PDF" on the Resource Hub doesn't download a file
+- **Where:** `/student-os/resources` → **Download PDF** and, in **Preview**, **Download Full Document**.
+- **What happens:** the download count goes up and a toast says "File saved to your downloads", but no file is downloaded; resources have no file attached.
+- **Reproduce:** Demo Student → Resources → **Download PDF** → the count increases, the browser downloads nothing.
+
+### 22. "Upload Material" takes no file
+- **Where:** `/student-os/resources` → **Upload Material**.
+- **What happens:** the form has title, type, course code, campus and description but no file field. Publishing creates a resource with a stock photo, seller "Campus Contributor" and a fixed seller id (`u_student`) regardless of who is signed in.
+
+### 23. Every resource claims to be verified
+- **Where:** resource rows ("Verified Exam Pack") and Preview ("✓ Full questions & marking scheme verified by peer study group", "✓ Step-by-step calculation breakdowns included").
+- **What happens:** the same claims are shown for every resource, including ones just uploaded through the form above.
+
+### 24. SRC notices are not on the Events page
+- **Where:** `/student-os/events` filters out announcements (`kind !== "announcement"`).
+- **What happens:** students read SRC notices only in the landing-page ticker, the Calendar (as pinned events), and, since this redesign, the notice cards on the student Home and the Resource Hub (these open the same notice dialog as the landing page).
+
+### 25. "How to apply" on Opportunities only shows a message
+- **Where:** opportunity cards without an `applyUrl` → **How to apply**.
+- **What happens:** a toast says "Apply through <organisation>'s careers page." with no link.
+
+### 26. Ticket buttons are disabled for guests with no explanation
+- **Where:** `/student-os/events` → event cards.
+- **What happens:** when signed out, the **Buy / Get ticket** button is greyed out without saying that signing in is required.
+
+### 27. Lost & Found claim panel re-renders on any store change
+- **Where:** `ClaimPanel` in `student-os.lost-found.tsx` calls `useNaflis()` with no selector, so every card re-renders whenever anything in the app store changes. A performance note only; behaviour is correct.
+
 ## Code health (pre-existing)
 
 ### 14. Lint baseline

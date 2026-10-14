@@ -132,11 +132,11 @@
   --sea-blue-foreground: #ffffff;
   --gold: #f59e0b;
   --gold-foreground: #1e1b3a;
-  --success: #0e8a6f;
+  --success: #0b7a62; /* 5.3:1 on white, so it works as text too */
   --success-foreground: #ffffff;
   --warning: #b45309;
   --warning-foreground: #ffffff;
-  --error: #dc2626;
+  --error: #c62828; /* ≥ 4.5:1 on the page background */
   --error-foreground: #ffffff;
 
   --background: #f6f5ff;
@@ -157,7 +157,7 @@
   --subtle-foreground: #4a4672;
   --accent: #ece8ff;
   --accent-foreground: #4733c4;
-  --destructive: #dc2626;
+  --destructive: #c62828;
   --destructive-foreground: #ffffff;
   --border: #dad5f5;
   --border-soft: #eeebfb;

@@ -17,7 +17,6 @@ import {
   Search,
   Building2,
   Pin,
-  Calendar,
   MapPin,
   BookOpen,
   Lock,
@@ -30,6 +29,7 @@ import { MobileTabBar, PAGE_WIDTH, TopNav } from "@/components/naflis/shell/AppS
 import {
   GroupBuyCard, ListingImage, SectionHeader, SectionLink, Tile, almostFull, onDarkButton,
 } from "@/components/naflis/home/HomeBlocks";
+import { NoticeDialog } from "@/components/naflis/campus/CampusBlocks";
 import { fetchSellerProducts } from "@/services/sellerApi";
 import { ESCROW_HELD_STATES } from "@/lib/naflis/orderMachine";
 import {
@@ -661,47 +661,7 @@ function Landing() {
       </footer>
 
       {/* Selected Event Details Modal */}
-      {selectedEventModal && (
-        <Dialog open={!!selectedEventModal} onOpenChange={() => setSelectedEventModal(null)}>
-          <DialogContent className="max-w-lg rounded-[28px]">
-            <DialogHeader>
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-primary-foreground">{selectedEventModal.campus}</span>
-                <span className="text-xs font-bold text-link">{selectedEventModal.organizer}</span>
-              </div>
-              <DialogTitle className="text-lg font-extrabold leading-snug">{selectedEventModal.title}</DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                Official announcement published on {new Date(selectedEventModal.createdAt).toLocaleDateString()}
-              </DialogDescription>
-            </DialogHeader>
-
-            {selectedEventModal.bannerUrl && (
-              <div className="mt-2 h-44 w-full overflow-hidden rounded-2xl bg-muted">
-                <img src={selectedEventModal.bannerUrl} alt={selectedEventModal.title} className="h-full w-full object-cover" />
-              </div>
-            )}
-
-            <div className="mt-3 space-y-2 text-sm leading-relaxed text-foreground/90">
-              <p>{selectedEventModal.description}</p>
-              <div className="mt-3 space-y-1 rounded-2xl bg-muted p-3 text-xs text-subtle-foreground">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-3.5 w-3.5 text-link" strokeWidth={1.8} />
-                  <span>Venue: {selectedEventModal.venue}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-3.5 w-3.5 text-link" strokeWidth={1.8} />
-                  <span>Date: {new Date(selectedEventModal.eventDate).toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => setSelectedEventModal(null)} className={secondaryBtn}>Close</button>
-              <Link to="/campus-admin" className={primaryBtn}>Open SRC Portal</Link>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <NoticeDialog notice={selectedEventModal} onClose={() => setSelectedEventModal(null)} />
 
       {/* Escrow Modal */}
       <Dialog open={escrowModalOpen} onOpenChange={setEscrowModalOpen}>
