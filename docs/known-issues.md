@@ -47,12 +47,39 @@ The redesign changes presentation and navigation only. Behaviour and data issues
 | 11 | Landing products when loaded from Supabase | old price, "High Campus Demand", flash sale | `originalPrice = price × 1.25`, `demand: 85` and an 8-hour flash sale are set in code for every product (`src/routes/index.tsx`, `fetchApprovedProducts`). |
 | 12 | Group-buy "spots left" | e.g. "1 spot left" | Seed listings have fixed joined/target counts; nothing closes or fills over time. |
 
+> **Prices must come from real data.** Rows 8 and 11 are invented pricing/savings logic. They are left exactly as they are during the redesign; the agreed follow-up is to show **real original prices only** (no computed "old price", no multiplied savings) — to be fixed in a later, separate change.
+
+| # | Where | Value | Why it looks off |
+|---|---|---|---|
+| 15 | Group-buy cards on `/student-os/deals` | struck-through old price | Shown whenever `originalPrice` exists, without checking it is higher than the price (the marketplace and Home cards do check). Seed data happens to be consistent today. |
+| 16 | Brand voucher cards | "Verified" badge on every voucher | Hard-coded on all four static vouchers; nothing is verified per voucher. The vouchers, codes and validity text are static data in `student-os.deals.tsx`. |
+
 ## Broken content
 
 ### 13. Broken seed image (HTTP 404)
 - **URL:** `https://images.unsplash.com/photo-1585659722983-3a681d0e1e2f?w=800&q=80` (`IMG.microwave` in `src/lib/naflis/store.ts`).
 - **Used by:** "Bruhm Microwave Oven" (mall product) and "Group Buy: Hostel Induction Cooker + 3-Piece Non-Stick Cooking Pots" (student listing).
 - **Effect:** before the redesign the browser showed the image's alt text over a blank box; now the card shows a neutral placeholder. Replace the URL in the seed data to fix.
+- **Second broken image (found in Phase 3):** `https://images.unsplash.com/photo-1614680376593-902f749f7ffc?w=800&q=80` (HTTP 404), used by the "Spotify Premium Student" brand voucher in `src/routes/student-os.deals.tsx` (`STATIC_STUDENT_DISCOUNTS`). Shows the neutral placeholder.
+
+## Found in Phase 3 (Shop)
+
+### 17. Contact falls back to a placeholder phone number
+- **Where:** marketplace **Contact** dialog (`/student-os/marketplace`).
+- **What happens:** when a listing has no `sellerPhone`, the WhatsApp link goes to `233240000000` and the call button to `+233 24 000 0000`, numbers that belong to nobody in the app.
+- **Reproduce:** Demo Student → **Sell an item** without a phone number → marketplace → **Contact** on that listing → the dialog offers "Call +233 24 000 0000".
+
+### 18. "Copy Code" always reports success
+- **Where:** brand voucher cards on `/student-os/deals`.
+- **What happens:** `navigator.clipboard.writeText` is not awaited or checked, so the "Copied promo code" toast shows even when the browser refuses clipboard access (plain `http://` on a non-localhost address, or clipboard permission denied) and nothing was copied.
+- **Reproduce:** open the site over a LAN address (`http://192.168.x.x:…`) → Discounts → **Copy Code** → the toast says copied, the clipboard is unchanged.
+
+### 19. "Verify to Unlock All Deals" doesn't lock anything
+- **Where:** `/student-os/deals` header.
+- **What happens:** unverified students can already join pools and copy every code; verification only changes the badge.
+
+### 20. Two different "Escrow Buy" messages
+- **Where:** the marketplace says "Escrow hold secured … Meetup verification code sent!"; the student Home says "Escrow order created … Meetup code generated." Neither creates anything (see #3).
 
 ## Code health (pre-existing)
 

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Bell, ChevronRight, ImageOff, Pin, ShieldCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { GHS } from "@/lib/naflis/format";
 import { useNaflis, type StudentListing } from "@/lib/naflis/store";
 
@@ -11,6 +11,12 @@ import { useNaflis, type StudentListing } from "@/lib/naflis/store";
  */
 export function ListingImage({ src, alt, className = "" }: { src?: string; alt: string; className?: string }) {
   const [failed, setFailed] = useState(false);
+  const ref = useRef<HTMLImageElement>(null);
+  // A server-rendered image can fail before React attaches onError: check once on mount.
+  useEffect(() => {
+    const img = ref.current;
+    if (img && img.complete && img.naturalWidth === 0) setFailed(true);
+  }, [src]);
   if (!src || failed) {
     return (
       <div role="img" aria-label={alt} className={`grid h-full w-full place-items-center bg-muted text-muted-foreground ${className}`}>
@@ -18,7 +24,7 @@ export function ListingImage({ src, alt, className = "" }: { src?: string; alt: 
       </div>
     );
   }
-  return <img src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} className={`h-full w-full object-cover ${className}`} />;
+  return <img ref={ref} src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} className={`h-full w-full object-cover ${className}`} />;
 }
 
 export type TileTone = "lavender" | "peach" | "mint" | "sky" | "butter" | "rose";

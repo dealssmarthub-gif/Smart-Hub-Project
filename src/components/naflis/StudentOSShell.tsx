@@ -41,6 +41,8 @@ export function StudentOSShell() {
   useSuggestRegisteredCampus();
   // The student Home draws its own phone header (greeting, campus pill, search).
   const isHome = pathname === "/student-os" || pathname === "/student-os/";
+  // Shop pages carry their own phone header (tabs, search, Sell button).
+  const isShop = pathname.startsWith("/student-os/marketplace") || pathname.startsWith("/student-os/deals");
 
   const pill = (active: boolean) =>
     `inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-4 text-xs font-bold transition ${
@@ -50,7 +52,7 @@ export function StudentOSShell() {
   return (
     <AppShell mobileHeader={!isHome}>
       {/* Student OS section bar: every Student OS page, plus verification and selling. */}
-      <div className={`border-b border-border-soft bg-background ${isHome ? "hidden md:block" : ""}`}>
+      <div className={`border-b border-border-soft bg-background ${isHome || isShop ? "hidden md:block" : ""}`}>
         <div className={`${PAGE_WIDTH} flex flex-wrap items-center gap-2 pt-3`}>
           <span className="hidden items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-accent-foreground sm:inline-flex">
             <GraduationCap className="h-3.5 w-3.5" strokeWidth={1.8} /> Student OS
