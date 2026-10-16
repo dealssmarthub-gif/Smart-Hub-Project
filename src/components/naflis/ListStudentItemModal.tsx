@@ -51,11 +51,15 @@ export function ListStudentItemModal() {
       const file = files[i];
       const fileExt = file.name.split(".").pop();
       const fileName = `student_${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-      const filePath = `student-items/${fileName}`;
-
       let uploadedUrl = "";
       if (supabase) {
         try {
+          // Storage policy: uploads go in the signed-in user's own folder.
+          const {
+            data: { user: authUser },
+          } = await supabase.auth.getUser();
+          if (!authUser) throw new Error("not signed in");
+          const filePath = `${authUser.id}/${fileName}`;
           const { error: uploadError } = await supabase.storage
             .from("product-images")
             .upload(filePath, file, { cacheControl: "3600", upsert: false });

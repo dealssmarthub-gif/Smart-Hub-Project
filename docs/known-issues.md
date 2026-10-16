@@ -164,6 +164,15 @@ The redesign changes presentation and navigation only. Behaviour and data issues
 ### 40. No demo account reaches Finance, Dispute or Delivery
 - **Where:** `/finance`, `/dispute`, `/delivery`. The five demo buttons don't hold these roles and **View as** only offers buyer, student and SRC accounts, so these dashboards can only be opened with real staff accounts (or by editing the local demo store, which is how Phase 6 checked their layout).
 
+## Found during security hardening
+
+### 41. Student listings are never saved to Supabase
+- **Where:** `src/components/naflis/ListStudentItemModal.tsx`, `handleSubmit` → `supabase.from("products").insert(...)`.
+- **What happens:** the insert sends no `vendor_id`, but `products.vendor_id` is NOT NULL and the INSERT policy requires the caller to own that vendor. The insert always fails. The code doesn't check the returned `{ error }` (the `try/catch` only catches thrown errors), so the failure is silent: the listing appears in the local store only and is gone on another device.
+- **Also:** a student usually has no `vendors` row, so a fix needs to decide which vendor a student listing belongs to (create one on first listing, or a separate table).
+- **Reproduce:** with Supabase configured, sign in as a real (non-demo) user → **Sell an item** → submit → the toast says posted, `select count(*) from products` is unchanged, and the network tab shows the insert returning an error.
+- **Status:** logged only; to be fixed separately from the security migrations.
+
 ## Code health (pre-existing)
 
 ### 14. Lint baseline
