@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/lib/supabase";
+import { LIVE_MISCONFIGURED } from "@/lib/appMode";
 import { useNaflis } from "@/lib/naflis/store";
 import { ImpersonationBanner } from "@/components/naflis/ImpersonationBanner";
 
@@ -126,6 +127,20 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+/** Live mode without Supabase settings: say so instead of quietly running the demo. */
+function NotConfigured() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-2xl font-bold text-foreground">Site not configured</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          This deployment runs in live mode but has no Supabase settings (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY).
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const syncUser = useNaflis((s) => s.syncUser);
@@ -158,6 +173,8 @@ function RootComponent() {
       };
     }
   }, [syncUser]);
+
+  if (LIVE_MISCONFIGURED) return <NotConfigured />;
 
   return (
     <QueryClientProvider client={queryClient}>
