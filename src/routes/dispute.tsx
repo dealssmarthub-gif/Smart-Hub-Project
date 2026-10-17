@@ -10,6 +10,7 @@ import { useNaflis } from "@/lib/naflis/store";
 import { DISPUTABLE_STATES } from "@/lib/naflis/orderMachine";
 import { runOrderTransition } from "@/services/orderService";
 import { GHS, fmtDate, uid } from "@/lib/naflis/format";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/dispute")({
   beforeLoad: () => {
@@ -66,7 +67,7 @@ function DisputeDashboard() {
         <MetricCard label="Eligible orders" value={String(eligible.length)} hint="Can be disputed" />
       </div>
 
-      {eligible.length > 0 && (
+      {!IS_LIVE && eligible.length > 0 && (
         <div className="mt-6 rounded-2xl border border-border-soft bg-card p-4">
           <p className="text-sm font-semibold">Seed a demo dispute from a delivered order</p>
           <div className="mt-2 flex flex-wrap gap-2">

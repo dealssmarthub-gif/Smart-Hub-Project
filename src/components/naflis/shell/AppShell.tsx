@@ -9,6 +9,7 @@ import { NotificationBell } from "@/components/naflis/home/HomeBlocks";
 import { CampusPicker } from "./CampusPicker";
 import { PLACES, placeFor, type PlaceId } from "./places";
 import { UserMenu } from "./UserMenu";
+import { IS_LIVE } from "@/lib/appMode";
 
 /** Max content width of every page in the consumer shell. */
 export const PAGE_WIDTH = "mx-auto w-full max-w-[1160px] px-4 sm:px-6";
@@ -67,7 +68,7 @@ export function TopNav({
               Campus
             </Link>
           )}
-          {onEscrowClick ? (
+          {IS_LIVE ? null : onEscrowClick ? (
             <button type="button" onClick={onEscrowClick} className={escrowClass}>
               <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> How escrow works
             </button>
@@ -142,12 +143,16 @@ export function SiteFooter() {
       >
         <p>© {year} NAFLIS Mall · Verified student commerce</p>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5">
-          <Link to="/" hash="escrow" className={linkClass}>
-            Escrow terms
-          </Link>
-          <Link to="/buyer/wallet" className={linkClass}>
-            Student wallet
-          </Link>
+          {!IS_LIVE && (
+            <>
+              <Link to="/" hash="escrow" className={linkClass}>
+                Escrow terms
+              </Link>
+              <Link to="/buyer/wallet" className={linkClass}>
+                Student wallet
+              </Link>
+            </>
+          )}
           <Link to="/student-os" className={linkClass}>
             Student OS
           </Link>

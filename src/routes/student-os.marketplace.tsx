@@ -24,6 +24,7 @@ import {
 import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/student-os/marketplace")({
   component: StudentMarketplace,
@@ -252,19 +253,22 @@ function StudentMarketplace() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div className={`grid grid-cols-1 gap-2 ${IS_LIVE ? "" : "sm:grid-cols-2"}`}>
                     <button type="button" onClick={() => setContactModalItem(item)} className={secondaryBtn}>
                       <MessageCircle className="h-4 w-4 text-link" strokeWidth={1.8} /> Contact
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toast.success(`Escrow hold secured for ${item.title}. Meetup verification code sent!`);
-                      }}
-                      className={primaryBtn}
-                    >
-                      <ShieldCheck className="h-4 w-4" strokeWidth={1.8} /> Escrow Buy
-                    </button>
+                    {/* Demo only: escrow isn't wired to payments yet. */}
+                    {!IS_LIVE && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          toast.success(`Escrow hold secured for ${item.title}. Meetup verification code sent!`);
+                        }}
+                        className={primaryBtn}
+                      >
+                        <ShieldCheck className="h-4 w-4" strokeWidth={1.8} /> Escrow Buy
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

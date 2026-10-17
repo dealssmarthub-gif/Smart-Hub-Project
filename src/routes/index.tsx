@@ -48,6 +48,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -286,7 +287,7 @@ function Landing() {
         </aside>
       )}
 
-      <TopNav onEscrowClick={() => setEscrowModalOpen(true)} />
+      <TopNav onEscrowClick={IS_LIVE ? undefined : () => setEscrowModalOpen(true)} />
 
       <main className="flex-1 pb-28 md:pb-0">
         {/* Hero */}
@@ -304,7 +305,7 @@ function Landing() {
             <p className="max-w-xl text-base leading-relaxed text-subtle-foreground">
               <span className="font-bold text-foreground">Smart Campus Commerce &amp; Student Hub</span>, the verified campus &amp;
               student commerce operating system. Trade peer-to-peer thrift, join bulk student group buys, download verified
-              lecture notes, and lock in zero-risk escrow transactions across Ghanaian universities.
+              lecture notes{IS_LIVE ? "" : ", and lock in zero-risk escrow transactions"} across Ghanaian universities.
             </p>
 
             {/* Search: campus + query + button */}
@@ -379,9 +380,11 @@ function Landing() {
               <Link to="/student-os/deals" className={primaryBtn}>
                 <BadgePercent className="h-4 w-4" strokeWidth={1.8} /> Browse Student Deals
               </Link>
-              <button type="button" onClick={() => setEscrowModalOpen(true)} className={secondaryBtn}>
-                <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> Safe Escrow
-              </button>
+              {!IS_LIVE && (
+                <button type="button" onClick={() => setEscrowModalOpen(true)} className={secondaryBtn}>
+                  <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> Safe Escrow
+                </button>
+              )}
               <Link to="/student-os" className={secondaryBtn}>
                 <GraduationCap className="h-4 w-4 text-link" strokeWidth={1.8} /> Student OS
               </Link>
@@ -420,14 +423,18 @@ function Landing() {
                 </p>
               </div>
             )}
-            <div className="absolute bottom-2 left-10 flex items-center gap-3 rounded-2xl bg-escrow px-4 py-3 text-escrow-foreground shadow-soft">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15"><Lock className="h-4 w-4" strokeWidth={1.8} /></span>
-              <span className="text-sm font-bold">Funds held in escrow</span>
-            </div>
+            {!IS_LIVE && (
+              <div className="absolute bottom-2 left-10 flex items-center gap-3 rounded-2xl bg-escrow px-4 py-3 text-escrow-foreground shadow-soft">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15"><Lock className="h-4 w-4" strokeWidth={1.8} /></span>
+                <span className="text-sm font-bold">Funds held in escrow</span>
+              </div>
+            )}
           </div>
         </section>
 
         {/* Quick metrics (values as computed before this redesign) */}
+        {/* Demo only: these figures are computed from the in-browser store. */}
+        {!IS_LIVE && (
         <section className={`${PAGE_WIDTH} pb-4`}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <Metric icon={Users} label="Active shoppers" value={compact(activeShoppersCount)} />
@@ -438,6 +445,7 @@ function Landing() {
             <Metric icon={Lock} label="Protected in escrow" value={GHS(inEscrowAmount)} />
           </div>
         </section>
+        )}
 
         {/* Active Search Results Indicator */}
         {activeSearchTerm && (
@@ -472,7 +480,7 @@ function Landing() {
             <Tile tone="peach" icon={BadgePercent} title="Student Deals & Group Buys" hint="Verified discounts, split group orders & volume bulk price drops." to="/student-os/deals" cta="Join Group Buys" />
             <Tile tone="rose" icon={Building2} title="Official SRC Notices" hint="Direct administrative bulletins, townhall assemblies & campus welfare updates." to="/campus-admin" cta="View SRC Notices" />
             <Tile tone="mint" icon={BookOpen} title="Lecture Notes & Slides" hint="Solved past examination booklets, formulas, summaries & faculty slides." to="/student-os/resources" cta="Study Resources" />
-            <Tile tone="sky" icon={ShieldCheck} title="Escrow Protection Hub" hint="Zero-fraud escrow. Funds held safe until meetup inspection & 6-digit PIN release." onClick={() => setEscrowModalOpen(true)} cta="Escrow Security" />
+            {!IS_LIVE && <Tile tone="sky" icon={ShieldCheck} title="Escrow Protection Hub" hint="Zero-fraud escrow. Funds held safe until meetup inspection & 6-digit PIN release." onClick={() => setEscrowModalOpen(true)} cta="Escrow Security" />}
           </div>
         </section>
 
@@ -522,9 +530,11 @@ function Landing() {
                   </>
                 }
                 meta={
-                  <span className="inline-flex items-center gap-1 font-bold text-verified">
-                    <ShieldCheck className="h-3 w-3" strokeWidth={1.8} /> Escrow Backed
-                  </span>
+                  IS_LIVE ? null : (
+                    <span className="inline-flex items-center gap-1 font-bold text-verified">
+                      <ShieldCheck className="h-3 w-3" strokeWidth={1.8} /> Escrow Backed
+                    </span>
+                  )
                 }
                 onBuy={() => {
                   addToCart(p.id, 1);
@@ -563,7 +573,8 @@ function Landing() {
           </div>
         </section>
 
-        {/* 5. Safe Escrow Explainer Section */}
+        {/* 5. Safe Escrow Explainer Section (demo only: escrow isn't live yet) */}
+        {!IS_LIVE && (
         <section id="escrow" className={`${PAGE_WIDTH} scroll-mt-24 py-10`}>
           <div className="rounded-[32px] bg-escrow p-6 text-escrow-foreground sm:p-10">
             <div className="max-w-2xl space-y-2">
@@ -591,6 +602,7 @@ function Landing() {
             </button>
           </div>
         </section>
+        )}
 
         {/* 6. Institutional / SRC Access Callout */}
         <section className={`${PAGE_WIDTH} pb-12`}>
@@ -620,7 +632,7 @@ function Landing() {
             <div className="col-span-2 space-y-2 md:col-span-1">
               <Logo />
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Smart Deal Hub · Powered by NAFLIS SmartMall reference architecture and campus escrow.
+                Smart Deal Hub · Powered by NAFLIS SmartMall{IS_LIVE ? "." : " reference architecture and campus escrow."}
               </p>
             </div>
             <FooterColumn title="Campus Portals">
@@ -633,6 +645,7 @@ function Landing() {
               <FooterLink to="/campus-admin">Institutional / SRC Access</FooterLink>
               <FooterLink to="/login">Executive Sign In</FooterLink>
             </FooterColumn>
+            {!IS_LIVE && (
             <FooterColumn title="Safety & Escrow">
               <li>
                 <button type="button" onClick={() => setEscrowModalOpen(true)} className="inline-flex min-h-11 items-center hover:text-foreground">
@@ -644,14 +657,19 @@ function Landing() {
                 <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.8} /> 100% Protected Handover
               </li>
             </FooterColumn>
+            )}
           </div>
           <div className="flex flex-col items-start justify-between gap-2 border-t border-border-soft pt-4 text-xs text-muted-foreground sm:flex-row sm:items-center">
             <p>© {new Date().getFullYear()} NAFLIS SmartMall Platform. All rights reserved.</p>
             <div className="flex flex-wrap items-center gap-x-4">
-              <button type="button" onClick={() => setEscrowModalOpen(true)} className="inline-flex min-h-11 items-center hover:text-foreground">
-                Escrow Terms
-              </button>
-              <Link to="/buyer/wallet" className="inline-flex min-h-11 items-center hover:text-foreground">Student Wallet</Link>
+              {!IS_LIVE && (
+                <>
+                  <button type="button" onClick={() => setEscrowModalOpen(true)} className="inline-flex min-h-11 items-center hover:text-foreground">
+                    Escrow Terms
+                  </button>
+                  <Link to="/buyer/wallet" className="inline-flex min-h-11 items-center hover:text-foreground">Student Wallet</Link>
+                </>
+              )}
               <Link to="/campus-admin" className="inline-flex min-h-11 items-center font-bold text-link hover:underline">
                 Institutional / SRC Access
               </Link>
@@ -735,9 +753,16 @@ function ProductTile({ p, badges, meta, onBuy }: { p: Product; badges: React.Rea
               <span className="ml-1.5 text-xs text-muted-foreground line-through">{GHS(p.originalPrice)}</span>
             )}
           </p>
-          <button type="button" onClick={onBuy} className={`${primaryBtn} w-full text-xs`}>
-            <Lock className="h-3.5 w-3.5" strokeWidth={1.8} /> Buy with Escrow
-          </button>
+          {IS_LIVE ? (
+            // Live: no escrow checkout yet, so the tile only opens the product page.
+            <Link to="/buyer/product/$id" params={{ id: p.id }} className={`${primaryBtn} w-full text-xs`}>
+              View item
+            </Link>
+          ) : (
+            <button type="button" onClick={onBuy} className={`${primaryBtn} w-full text-xs`}>
+              <Lock className="h-3.5 w-3.5" strokeWidth={1.8} /> Buy with Escrow
+            </button>
+          )}
         </div>
       </div>
     </article>

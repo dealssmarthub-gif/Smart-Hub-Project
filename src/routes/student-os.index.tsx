@@ -26,6 +26,7 @@ import { NoticeDialog } from "@/components/naflis/campus/CampusBlocks";
 import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/student-os/")({
   component: StudentOSDashboard,
@@ -126,7 +127,7 @@ function StudentOSDashboard() {
           <p className="max-w-2xl pt-1 text-sm leading-relaxed text-white/80">
             <span className="font-bold text-white">Open Student OS &amp; Campus Marketplace.</span>{" "}
             Trade peer-to-peer with classmates, unlock verified student discounts, access past exam
-            solutions, and protect every campus deal with smart escrow.
+            solutions{IS_LIVE ? "." : ", and protect every campus deal with smart escrow."}
           </p>
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-bold">
@@ -193,7 +194,8 @@ function StudentOSDashboard() {
         </button>
       </section>
 
-      {/* Escrow / safety */}
+      {/* Escrow / safety (demo only: escrow isn't live yet) */}
+      {!IS_LIVE && (
       <EscrowBanner
         title="Pay only after you've checked the item"
         body={
@@ -220,6 +222,7 @@ function StudentOSDashboard() {
           </div>
         }
       />
+      )}
 
       {/* Group buys, fewest spots left first */}
       <section>
@@ -329,15 +332,18 @@ function StudentOSDashboard() {
                         <span className="ml-1.5 text-[11px] text-muted-foreground line-through">{GHS(item.originalPrice)}</span>
                       )}
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toast.success(`Escrow order created for ${item.title}. Meetup code generated.`);
-                      }}
-                      className={`${primaryBtn} w-full text-xs`}
-                    >
-                      <ShieldCheck className="h-4 w-4" strokeWidth={1.8} /> Escrow Buy
-                    </button>
+                    {/* Demo only: escrow isn't wired to payments yet. */}
+                    {!IS_LIVE && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          toast.success(`Escrow order created for ${item.title}. Meetup code generated.`);
+                        }}
+                        className={`${primaryBtn} w-full text-xs`}
+                      >
+                        <ShieldCheck className="h-4 w-4" strokeWidth={1.8} /> Escrow Buy
+                      </button>
+                    )}
                   </div>
                 </div>
               </article>
