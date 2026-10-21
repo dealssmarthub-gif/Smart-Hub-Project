@@ -31,6 +31,7 @@ import {
 } from "@/components/naflis/home/HomeBlocks";
 import { NoticeDialog } from "@/components/naflis/campus/CampusBlocks";
 import { fetchSellerProducts } from "@/services/sellerApi";
+import { mapDbEvent } from "@/services/campusContent";
 import { ESCROW_HELD_STATES } from "@/lib/naflis/orderMachine";
 import {
   useNaflis,
@@ -113,16 +114,10 @@ function Landing() {
       try {
         const data = await fetchSellerProducts();
 
+        // Real products only carry what the database holds: no invented old price, demand or flash sale.
         if (data && data.length > 0) {
-          const mapped = data.map((p) => ({
-            ...p,
-            originalPrice: Math.round(p.price * 1.25),
-            demand: 85,
-            flashSale: { endsAt: Date.now() + 8 * 3_600_000 },
-            location: "Greater Accra",
-          }));
-          setProducts(mapped);
-          useNaflis.setState({ products: mapped });
+          setProducts(data);
+          useNaflis.setState({ products: data });
         }
       } catch (err) {
         console.warn("Notice: Loaded local product catalog:", err);
@@ -139,19 +134,7 @@ function Landing() {
           .order("created_at", { ascending: false });
 
         if (data && data.length > 0) {
-          const mapped: CampusEvent[] = data.map((e: any) => ({
-            id: e.id,
-            title: e.title,
-            description: e.description || "",
-            eventDate: e.event_date || new Date().toISOString(),
-            venue: e.venue || "Campus Main Hall",
-            bannerUrl: e.banner_url || "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&q=80",
-            campus: e.campus || "UG - Legon",
-            pinned: true,
-            organizer: e.organizer || "Official SRC",
-            createdAt: new Date(e.created_at).getTime(),
-          }));
-          setPinnedEvents(mapped);
+          setPinnedEvents(data.map(mapDbEvent));
         }
       } catch (err) {
         console.warn("Notice: Loaded local pinned events:", err);
@@ -214,7 +197,10 @@ function Landing() {
   }, [products, activeSearchTerm]);
 
   const flash = displayProducts.filter((p) => p.flashSale).slice(0, 4);
-  const trending = [...displayProducts].sort((a, b) => (b.demand || 0) - (a.demand || 0)).slice(0, 8);
+  // Live has no demand data, so "trending" becomes newest first.
+  const trending = [...displayProducts]
+    .sort((a, b) => (IS_LIVE ? (b.createdAt || 0) - (a.createdAt || 0) : (b.demand || 0) - (a.demand || 0)))
+    .slice(0, 8);
 
   const totalSaved = products.reduce((a, p) => a + (p.originalPrice - p.price) * 15, 0);
   const activeShoppersCount = users.filter((u) => u.role === "buyer").length;
@@ -295,18 +281,25 @@ function Landing() {
           <div className="space-y-5">
             <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3.5 py-1.5 text-xs font-bold text-accent-foreground">
               <GraduationCap className="h-4 w-4" strokeWidth={1.8} />
-              Verified student commerce
+              Campus marketplace &amp; student hub
             </span>
             <h1 className="text-[40px] font-extrabold leading-[1.05] tracking-tight text-foreground md:text-[56px]">
               Buy smarter.
               <br />
               <span className="text-link">Study smarter.</span>
             </h1>
-            <p className="max-w-xl text-base leading-relaxed text-subtle-foreground">
-              <span className="font-bold text-foreground">Smart Campus Commerce &amp; Student Hub</span>, the verified campus &amp;
-              student commerce operating system. Trade peer-to-peer thrift, join bulk student group buys, download verified
-              lecture notes{IS_LIVE ? "" : ", and lock in zero-risk escrow transactions"} across Ghanaian universities.
-            </p>
+            {IS_LIVE ? (
+              <p className="max-w-xl text-base leading-relaxed text-subtle-foreground">
+                <span className="font-bold text-foreground">Smart Campus Commerce &amp; Student Hub</span>. Buy and sell with
+                students on your campus, find lecture notes and past questions, and keep up with SRC notices and campus events.
+              </p>
+            ) : (
+              <p className="max-w-xl text-base leading-relaxed text-subtle-foreground">
+                <span className="font-bold text-foreground">Smart Campus Commerce &amp; Student Hub</span>, the verified campus &amp;
+                student commerce operating system. Trade peer-to-peer thrift, join bulk student group buys, download verified
+                lecture notes, and lock in zero-risk escrow transactions across Ghanaian universities.
+              </p>
+            )}
 
             {/* Search: campus + query + button */}
             <form
@@ -506,7 +499,8 @@ function Landing() {
           </section>
         )}
 
-        {/* 3. Flash Deals & Verified Campus Discounts */}
+        {/* 3. Flash Deals & Verified Campus Discounts (only when there are some) */}
+        {flash.length > 0 && (
         <section id="deals" className={`${PAGE_WIDTH} scroll-mt-24 py-8`}>
           <SectionHeader
             title="Flash Deals — Verified Campus Pricing"
@@ -544,13 +538,15 @@ function Landing() {
             ))}
           </div>
         </section>
+        )}
 
-        {/* 4. Trending Campus Products */}
+        {/* 4. Trending Campus Products (live: newest from approved sellers; hidden when there are none) */}
+        {trending.length > 0 && (
         <section className={`${PAGE_WIDTH} py-8`}>
           <SectionHeader
-            title={`Trending on ${selectedCampus}`}
-            icon={TrendingUp}
-            hint="Most requested items, electronics, and study gear among students this semester."
+            title={IS_LIVE ? "New in the mall" : `Trending on ${selectedCampus}`}
+            icon={IS_LIVE ? Store : TrendingUp}
+            hint={IS_LIVE ? "The latest products from approved sellers." : "Most requested items, electronics, and study gear among students this semester."}
             action={<SectionLink to="/buyer">Browse full mall</SectionLink>}
           />
           <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
@@ -559,11 +555,13 @@ function Landing() {
                 key={p.id}
                 p={p}
                 badges={
-                  <span className="inline-flex items-center gap-1 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-peach-ink">
-                    <Flame className="h-3 w-3" strokeWidth={1.8} /> High Campus Demand
-                  </span>
+                  IS_LIVE ? null : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-peach-ink">
+                      <Flame className="h-3 w-3" strokeWidth={1.8} /> High Campus Demand
+                    </span>
+                  )
                 }
-                meta={<span className="rounded-full border border-border px-2 py-0.5 font-bold text-link">SRC Trusted</span>}
+                meta={IS_LIVE ? null : <span className="rounded-full border border-border px-2 py-0.5 font-bold text-link">SRC Trusted</span>}
                 onBuy={() => {
                   addToCart(p.id, 1);
                   toast.success(`Added ${p.name} to protected Escrow order.`);
@@ -572,6 +570,7 @@ function Landing() {
             ))}
           </div>
         </section>
+        )}
 
         {/* 5. Safe Escrow Explainer Section (demo only: escrow isn't live yet) */}
         {!IS_LIVE && (
@@ -749,7 +748,7 @@ function ProductTile({ p, badges, meta, onBuy }: { p: Product; badges: React.Rea
         <div className="mt-auto space-y-2 pt-1">
           <p>
             <span className="text-base font-extrabold text-foreground">{GHS(p.price)}</span>
-            {p.originalPrice && (
+            {p.originalPrice > p.price && (
               <span className="ml-1.5 text-xs text-muted-foreground line-through">{GHS(p.originalPrice)}</span>
             )}
           </p>

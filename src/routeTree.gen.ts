@@ -47,6 +47,7 @@ import { Route as StudentOsOpportunitiesRouteImport } from './routes/student-os.
 import { Route as StudentOsResourcesRouteImport } from './routes/student-os.resources'
 import { Route as SuperIndexRouteImport } from './routes/super.index'
 import { Route as SuperStaffRouteImport } from './routes/super.staff'
+import { Route as SuperVendorsRouteImport } from './routes/super.vendors'
 import { Route as SuperViewAsRouteImport } from './routes/super.view-as'
 import { Route as BuyerOrdersOrderIdRouteImport } from './routes/buyer.orders.$orderId'
 import { Route as BuyerProductIdRouteImport } from './routes/buyer.product.$id'
@@ -241,6 +242,11 @@ const SuperStaffRoute = SuperStaffRouteImport.update({
   path: '/staff',
   getParentRoute: () => SuperRoute,
 } as any)
+const SuperVendorsRoute = SuperVendorsRouteImport.update({
+  id: '/vendors',
+  path: '/vendors',
+  getParentRoute: () => SuperRoute,
+} as any)
 const SuperViewAsRoute = SuperViewAsRouteImport.update({
   id: '/view-as',
   path: '/view-as',
@@ -293,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/student-os/opportunities': typeof StudentOsOpportunitiesRoute
   '/student-os/resources': typeof StudentOsResourcesRoute
   '/super/staff': typeof SuperStaffRoute
+  '/super/vendors': typeof SuperVendorsRoute
   '/super/view-as': typeof SuperViewAsRoute
   '/buyer/': typeof BuyerIndexRoute
   '/student-os/': typeof StudentOsIndexRoute
@@ -333,6 +340,7 @@ export interface FileRoutesByTo {
   '/student-os/opportunities': typeof StudentOsOpportunitiesRoute
   '/student-os/resources': typeof StudentOsResourcesRoute
   '/super/staff': typeof SuperStaffRoute
+  '/super/vendors': typeof SuperVendorsRoute
   '/super/view-as': typeof SuperViewAsRoute
   '/buyer': typeof BuyerIndexRoute
   '/student-os': typeof StudentOsIndexRoute
@@ -377,6 +385,7 @@ export interface FileRoutesById {
   '/student-os/opportunities': typeof StudentOsOpportunitiesRoute
   '/student-os/resources': typeof StudentOsResourcesRoute
   '/super/staff': typeof SuperStaffRoute
+  '/super/vendors': typeof SuperVendorsRoute
   '/super/view-as': typeof SuperViewAsRoute
   '/buyer/': typeof BuyerIndexRoute
   '/student-os/': typeof StudentOsIndexRoute
@@ -422,6 +431,7 @@ export interface FileRouteTypes {
     | '/student-os/opportunities'
     | '/student-os/resources'
     | '/super/staff'
+    | '/super/vendors'
     | '/super/view-as'
     | '/buyer/'
     | '/student-os/'
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
     | '/student-os/opportunities'
     | '/student-os/resources'
     | '/super/staff'
+    | '/super/vendors'
     | '/super/view-as'
     | '/buyer'
     | '/student-os'
@@ -505,6 +516,7 @@ export interface FileRouteTypes {
     | '/student-os/opportunities'
     | '/student-os/resources'
     | '/super/staff'
+    | '/super/vendors'
     | '/super/view-as'
     | '/buyer/'
     | '/student-os/'
@@ -797,6 +809,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperStaffRouteImport
       parentRoute: typeof SuperRoute
     }
+    '/super/vendors': {
+      id: '/super/vendors'
+      path: '/vendors'
+      fullPath: '/super/vendors'
+      preLoaderRoute: typeof SuperVendorsRouteImport
+      parentRoute: typeof SuperRoute
+    }
     '/super/view-as': {
       id: '/super/view-as'
       path: '/view-as'
@@ -920,12 +939,14 @@ const StudentOsRouteWithChildren = StudentOsRoute._addFileChildren(
 
 interface SuperRouteChildren {
   SuperStaffRoute: typeof SuperStaffRoute
+  SuperVendorsRoute: typeof SuperVendorsRoute
   SuperViewAsRoute: typeof SuperViewAsRoute
   SuperIndexRoute: typeof SuperIndexRoute
 }
 
 const SuperRouteChildren: SuperRouteChildren = {
   SuperStaffRoute: SuperStaffRoute,
+  SuperVendorsRoute: SuperVendorsRoute,
   SuperViewAsRoute: SuperViewAsRoute,
   SuperIndexRoute: SuperIndexRoute,
 }

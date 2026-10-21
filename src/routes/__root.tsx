@@ -13,8 +13,10 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/lib/supabase";
-import { LIVE_MISCONFIGURED } from "@/lib/appMode";
+import { IS_LIVE, LIVE_MISCONFIGURED } from "@/lib/appMode";
 import { useNaflis } from "@/lib/naflis/store";
+import { syncCampusContent } from "@/services/campusContent";
+import { syncStudentListings } from "@/services/studentListings";
 import { ImpersonationBanner } from "@/components/naflis/ImpersonationBanner";
 
 function NotFoundComponent() {
@@ -173,6 +175,14 @@ function RootComponent() {
       };
     }
   }, [syncUser]);
+
+  // Live mode: notices, events, resources and student listings come from Supabase
+  // (the store starts empty). Demo mode keeps its seeded content.
+  useEffect(() => {
+    if (!IS_LIVE || LIVE_MISCONFIGURED) return;
+    syncCampusContent().catch((err) => console.warn("Couldn't load campus notices, events and resources:", err));
+    syncStudentListings().catch((err) => console.warn("Couldn't load student listings:", err));
+  }, []);
 
   if (LIVE_MISCONFIGURED) return <NotConfigured />;
 

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
+import { IS_LIVE } from "@/lib/appMode";
 import { uid } from "@/lib/naflis/format";
 import { GHS } from "@/lib/naflis/format";
 import { useNaflis, type TicketTier } from "@/lib/naflis/store";
@@ -27,7 +28,8 @@ export function SrcEventsTickets({ campus }: { campus: string }) {
   const [venue, setVenue] = useState("");
   const [description, setDescription] = useState("");
   const [organizer, setOrganizer] = useState("SRC Entertainment Committee");
-  const [ticketed, setTicketed] = useState(true);
+  // Live: ticket sales wait for payments to be verified, so events publish without tiers.
+  const [ticketed, setTicketed] = useState(!IS_LIVE);
   const [salesEnd, setSalesEnd] = useState("");
   const [tiers, setTiers] = useState<Omit<TicketTier, "sold">[]>([{ id: "t1", name: "Regular", price: 30, capacity: 500 }]);
   const [busy, setBusy] = useState(false);
@@ -102,10 +104,12 @@ export function SrcEventsTickets({ campus }: { campus: string }) {
             </div>
             <Input value={organizer} onChange={(e) => setOrganizer(e.target.value)} placeholder="Organiser" />
             <Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What's happening" />
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" className="accent-primary" checked={ticketed} disabled={!canSell} onChange={(e) => setTicketed(e.target.checked)} />
-              Sell tickets {!canSell && <span className="text-xs text-muted-foreground">(not in your permissions)</span>}
-            </label>
+            {!IS_LIVE && (
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" className="accent-primary" checked={ticketed} disabled={!canSell} onChange={(e) => setTicketed(e.target.checked)} />
+                Sell tickets {!canSell && <span className="text-xs text-muted-foreground">(not in your permissions)</span>}
+              </label>
+            )}
             {ticketed && canSell && (
               <div className="space-y-2 rounded-lg border p-3">
                 {tiers.map((t, i) => (
@@ -138,7 +142,7 @@ export function SrcEventsTickets({ campus }: { campus: string }) {
                   <p className="font-semibold">{e.title}</p>
                   <p className="text-xs text-muted-foreground">{new Date(e.eventDate).toLocaleString("en-GH")} · {e.venue}</p>
                 </div>
-                {e.ticketing ? <Badge><TicketIcon className="mr-1 h-3 w-3" /> Ticketed</Badge> : <Badge variant="outline">Free entry</Badge>}
+                {e.ticketing ? <Badge><TicketIcon className="mr-1 h-3 w-3" /> Ticketed</Badge> : !IS_LIVE && <Badge variant="outline">Free entry</Badge>}
               </div>
               {e.ticketing && (
                 <div className="mt-3 space-y-1.5 text-xs">

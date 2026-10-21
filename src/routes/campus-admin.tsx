@@ -29,7 +29,8 @@ import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { ContextSwitcher } from "@/components/naflis/ContextSwitcher";
 import { SrcEventsTickets, TicketCheckIn } from "@/components/naflis/SrcConsole";
-import { publishCampusEvent, publishCampusResource, removeCampusEvent, removeCampusResource, togglePinCampusEvent } from "@/services/campusContent";
+import { mapDbEvent, mapDbResource, publishCampusEvent, publishCampusResource, removeCampusEvent, removeCampusResource, togglePinCampusEvent } from "@/services/campusContent";
+import { IS_LIVE } from "@/lib/appMode";
 import { scopedCampuses } from "@/lib/naflis/permissions";
 import { resolveRoles } from "@/lib/naflis/roles";
 import { useShallow } from "zustand/react/shallow";
@@ -133,20 +134,10 @@ export function CampusAdminPortal() {
           .order("pinned", { ascending: false })
           .order("created_at", { ascending: false });
 
-        if (dbEvents && dbEvents.length > 0) {
-          const mapped: CampusEvent[] = dbEvents.map((e) => ({
-            id: e.id,
-            title: e.title,
-            description: e.description || "",
-            eventDate: e.event_date || new Date().toISOString(),
-            venue: e.venue || "Campus Main Grounds",
-            bannerUrl: e.banner_url || "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&q=80",
-            campus: e.campus || "UG - Legon",
-            pinned: Boolean(e.pinned),
-            organizer: e.organizer || "Official SRC",
-            createdBy: e.created_by,
-            createdAt: new Date(e.created_at).getTime(),
-          }));
+        // Live shows exactly what the database holds, empty included.
+        if (dbEvents && (IS_LIVE || dbEvents.length > 0)) {
+          // Shared mapper keeps `kind`, so notices stay off the Events page.
+          const mapped: CampusEvent[] = dbEvents.map(mapDbEvent);
           setEvents(mapped);
           useNaflis.setState({ campusEvents: mapped });
         }
@@ -157,22 +148,8 @@ export function CampusAdminPortal() {
           .select("*")
           .order("downloads", { ascending: false });
 
-        if (dbRes && dbRes.length > 0) {
-          const mappedRes: CampusResource[] = dbRes.map((r) => ({
-            id: r.id,
-            title: r.title,
-            description: r.description || "",
-            resourceType: r.resource_type || "Lecture Slides",
-            courseCode: r.course_code || "",
-            department: r.department || "",
-            campus: r.campus || "UG - Legon",
-            fileUrl: r.file_url,
-            fileName: r.file_name || `${r.course_code}_document.pdf`,
-            fileSize: r.file_size || "2.5 MB",
-            downloads: r.downloads || 0,
-            createdBy: r.created_by,
-            createdAt: new Date(r.created_at).getTime(),
-          }));
+        if (dbRes && (IS_LIVE || dbRes.length > 0)) {
+          const mappedRes: CampusResource[] = dbRes.map(mapDbResource);
           setResources(mappedRes);
           useNaflis.setState({ campusResources: mappedRes });
         }
@@ -260,6 +237,8 @@ export function CampusAdminPortal() {
 
       return publicUrl;
     } catch (err: any) {
+      // Live: never store a data URL in the database; the publish fails with this message.
+      if (IS_LIVE) throw new Error(`Couldn't upload ${file.name}: ${err?.message ?? "storage error"}`);
       console.warn("Storage bucket upload fallback to local preview:", err);
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -283,9 +262,10 @@ export function CampusAdminPortal() {
 
     setIsSubmittingEvent(true);
     try {
-      let bannerUrl =
-        eventBannerPreview ||
-        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&q=80";
+      // Live: no stock photo or made-up venue; a notice shows only what was entered.
+      let bannerUrl: string | undefined = IS_LIVE
+        ? undefined
+        : eventBannerPreview || "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&q=80";
 
       if (eventBannerFile) {
         bannerUrl = await uploadToCampusDocs(eventBannerFile);
@@ -297,7 +277,7 @@ export function CampusAdminPortal() {
         title: eventTitle.trim(),
         description: eventDescription.trim() || "Official notice published for campus students.",
         eventDate: eventDate ? new Date(eventDate).toISOString() : new Date().toISOString(),
-        venue: eventVenue.trim() || "Main Campus Auditorium",
+        venue: eventVenue.trim() || (IS_LIVE ? "" : "Main Campus Auditorium"),
         bannerUrl,
         campus: eventCampus,
         pinned: eventPinned,
@@ -335,6 +315,12 @@ export function CampusAdminPortal() {
     }
     if (!hasPermission("student.resources.manage", resCampus)) {
       toast.error(`You can't upload resources for ${resCampus}.`);
+      return;
+    }
+
+    // Live: a resource must carry its real file (no sample PDF, size or name).
+    if (IS_LIVE && !resFile) {
+      toast.error("Attach the document students will download.");
       return;
     }
 

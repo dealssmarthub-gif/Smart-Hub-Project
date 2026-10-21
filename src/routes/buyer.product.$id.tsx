@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { fetchSellerProduct } from "@/services/sellerApi";
 import { PurchaseOptions } from "@/components/naflis/PurchaseOptions";
 import type { Product, Store } from "@/lib/naflis/store";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/buyer/product/$id")({
   component: ProductDetail,
@@ -152,18 +153,20 @@ function ProductDetail() {
           <div className="rounded-xl bg-muted p-4">
             <div className="flex items-baseline gap-3">
               <span className="text-3xl font-extrabold">{GHS(product.price)}</span>
-              <span className="text-sm text-muted-foreground line-through">{GHS(product.originalPrice)}</span>
+              {off > 0 && <span className="text-sm text-muted-foreground line-through">{GHS(product.originalPrice)}</span>}
               {off > 0 && <Badge className="bg-error text-error-foreground">-{pct(off)}</Badge>}
             </div>
-            <p className="mt-1 text-sm text-success">You save {GHS(product.originalPrice - product.price)}</p>
+            {off > 0 && <p className="mt-1 text-sm text-success">You save {GHS(product.originalPrice - product.price)}</p>}
           </div>
 
-          {/* Live signals */}
+          {/* Live signals (demo only: viewers, waiting and demand aren't tracked yet) */}
+          {!IS_LIVE && (
           <div className="grid grid-cols-3 gap-2 text-xs">
             <SignalCard icon={<Eye className="h-4 w-4" />} label="Viewing now" value={product.viewersNow} />
             <SignalCard icon={<Users className="h-4 w-4" />} label="Waiting for lower price" value={product.waitingForDrop} />
             <SignalCard icon={<TrendingUp className="h-4 w-4" />} label="Demand" value={`${product.demand}/100`} />
           </div>
+          )}
 
           {product.stock < 15 && (
             <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">

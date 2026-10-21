@@ -253,7 +253,7 @@ function LoginPage() {
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="+233 24 000 0000"
+                      placeholder="e.g. 024 123 4567"
                       className="pl-9"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}

@@ -23,7 +23,8 @@ export function mapDbProduct(row: any, overrides: Partial<Product> = {}): Produc
     image: row.images?.[0] || FALLBACK_IMAGE,
     images: row.images ?? [],
     price,
-    originalPrice: Math.round(price * 1.2),
+    // No price history is stored yet, so no "was" price, discount or demand is shown.
+    originalPrice: price,
     stock: Number(row.stock) || 0,
     location: "Accra",
     rating: 0,
@@ -33,11 +34,8 @@ export function mapDbProduct(row: any, overrides: Partial<Product> = {}): Produc
     paymentOptions,
     deliveryDays: 3,
     freeDelivery: false,
-    priceHistory: [0.15, 0.1, 0.05, 0].map((f, i) => ({
-      date: new Date(createdAt + i * 4 * 86_400_000).toISOString().slice(0, 10),
-      price: Math.round(price * (1 + f)),
-    })),
-    demand: 75,
+    priceHistory: [{ date: new Date(createdAt).toISOString().slice(0, 10), price }],
+    demand: 0,
     viewersNow: 0,
     waitingForDrop: 0,
     tags: [],

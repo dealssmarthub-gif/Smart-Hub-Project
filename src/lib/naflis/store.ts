@@ -1315,7 +1315,7 @@ interface State {
   addCampusEvent: (event: Omit<CampusEvent, "id" | "createdAt"> & { id?: string }) => CampusEvent | null;
   togglePinEvent: (id: string) => boolean;
   deleteCampusEvent: (id: string) => boolean;
-  addCampusResource: (res: Omit<CampusResource, "id" | "createdAt" | "downloads">) => CampusResource | null;
+  addCampusResource: (res: Omit<CampusResource, "id" | "createdAt" | "downloads"> & { id?: string }) => CampusResource | null;
   deleteCampusResource: (id: string) => boolean;
 
   // Institutional staff & permissions
@@ -2642,7 +2642,7 @@ export const useNaflis = create<State>()(
       },
       addCampusResource: (res) => {
         if (!get().hasPermission("student.resources.manage", res.campus)) return null;
-        const id = "cr_" + uid();
+        const id = res.id ?? "cr_" + uid();
         const newRes: CampusResource = {
           ...res,
           id,

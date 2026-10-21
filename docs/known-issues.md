@@ -44,7 +44,7 @@ The redesign changes presentation and navigation only. Behaviour and data issues
 | 8 | Landing metrics, "Student savings" | e.g. GH₵453,750 | Computed as `(originalPrice − price) × 15` for every product — the ×15 is invented. |
 | 9 | Landing metrics, "Protected in escrow" | GH₵0 in a fresh browser | Sums orders in this browser's local demo store, not real held funds. |
 | 10 | Landing metrics, "Active shoppers", "Verified sellers", "Requested items" | 7, 2, 7.2K | Counted from local seed data, not the backend. |
-| 11 | Landing products when loaded from Supabase | old price, "High Campus Demand", flash sale | `originalPrice = price × 1.25`, `demand: 85` and an 8-hour flash sale are set in code for every product (`src/routes/index.tsx`, `fetchApprovedProducts`). |
+| 11 | ✅ Fixed (live-mode Phase 3). Landing products when loaded from Supabase | old price, "High Campus Demand", flash sale | `originalPrice = price × 1.25`, `demand: 85` and an 8-hour flash sale are set in code for every product (`src/routes/index.tsx`, `fetchApprovedProducts`). |
 | 12 | Group-buy "spots left" | e.g. "1 spot left" | Seed listings have fixed joined/target counts; nothing closes or fills over time. |
 
 > **Prices must come from real data.** Rows 8 and 11 are invented pricing/savings logic. They are left exactly as they are during the redesign; the agreed follow-up is to show **real original prices only** (no computed "old price", no multiplied savings) — to be fixed in a later, separate change.
@@ -64,7 +64,8 @@ The redesign changes presentation and navigation only. Behaviour and data issues
 
 ## Found in Phase 3 (Shop)
 
-### 17. Contact falls back to a placeholder phone number
+### 17. ✅ Fixed (live-mode Phase 3) — Contact falls back to a placeholder phone number
+- **Fix:** the fallback number is gone. **Contact seller** shows only when the listing has a phone (in live mode, the vendor's `contact_phone`); WhatsApp links turn local numbers (024…) into 233…. The original report follows.
 - **Where:** marketplace **Contact** dialog (`/student-os/marketplace`).
 - **What happens:** when a listing has no `sellerPhone`, the WhatsApp link goes to `233240000000` and the call button to `+233 24 000 0000`, numbers that belong to nobody in the app.
 - **Reproduce:** Demo Student → **Sell an item** without a phone number → marketplace → **Contact** on that listing → the dialog offers "Call +233 24 000 0000".
@@ -84,15 +85,18 @@ The redesign changes presentation and navigation only. Behaviour and data issues
 ## Found in Phase 4 (Campus)
 
 ### 21. "Download PDF" on the Resource Hub doesn't download a file
+- **Live mode (Phase 3):** fixed. The Resource Hub lists published `campus_resources` and **Download** opens the uploaded file and counts it (`naflis_count_download`). Demo mode is unchanged.
 - **Where:** `/student-os/resources` → **Download PDF** and, in **Preview**, **Download Full Document**.
 - **What happens:** the download count goes up and a toast says "File saved to your downloads", but no file is downloaded; resources have no file attached.
 - **Reproduce:** Demo Student → Resources → **Download PDF** → the count increases, the browser downloads nothing.
 
 ### 22. "Upload Material" takes no file
+- **Live mode (Phase 3):** the button is hidden; resources are published from the SRC portal with their file (required in live mode). Demo mode is unchanged.
 - **Where:** `/student-os/resources` → **Upload Material**.
 - **What happens:** the form has title, type, course code, campus and description but no file field. Publishing creates a resource with a stock photo, seller "Campus Contributor" and a fixed seller id (`u_student`) regardless of who is signed in.
 
 ### 23. Every resource claims to be verified
+- **Live mode (Phase 3):** no verification claims are shown. Demo mode is unchanged.
 - **Where:** resource rows ("Verified Exam Pack") and Preview ("✓ Full questions & marking scheme verified by peer study group", "✓ Step-by-step calculation breakdowns included").
 - **What happens:** the same claims are shown for every resource, including ones just uploaded through the form above.
 
@@ -171,7 +175,7 @@ The redesign changes presentation and navigation only. Behaviour and data issues
 - **What happens:** the insert sends no `vendor_id`, but `products.vendor_id` is NOT NULL and the INSERT policy requires the caller to own that vendor. The insert always fails. The code doesn't check the returned `{ error }` (the `try/catch` only catches thrown errors), so the failure is silent: the listing appears in the local store only and is gone on another device.
 - **Also:** a student usually has no `vendors` row, so a fix needs to decide which vendor a student listing belongs to (create one on first listing, or a separate table).
 - **Reproduce:** with Supabase configured, sign in as a real (non-demo) user → **Sell an item** → submit → the toast says posted, `select count(*) from products` is unchanged, and the network tab shows the insert returning an error.
-- **Status:** logged only; to be fixed separately from the security migrations.
+- **Status:** ✅ fixed in live-mode Phase 3 (migration `20261021120000_student_listings_and_vendor_admin`, `src/services/studentListings.ts`). A listing is a `products` row with `listing_type = 'student'`; the seller's first listing creates their vendor (pending), and the listing is public once an admin approves the vendor (Super Admin → Vendors). Insert errors are now shown to the user. Checks: `supabase/tests/student_listings.test.sql`.
 
 ## Code health (pre-existing)
 

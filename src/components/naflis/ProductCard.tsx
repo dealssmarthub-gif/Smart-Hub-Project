@@ -65,9 +65,9 @@ export function ProductCard({ product, compact = false }: { product: Product; co
         <div className="mt-auto">
           <div className="flex items-baseline gap-2">
             <span className="text-lg font-bold">{GHS(product.price)}</span>
-            <span className="text-xs text-muted-foreground line-through">{GHS(product.originalPrice)}</span>
+            {off > 0 && <span className="text-xs text-muted-foreground line-through">{GHS(product.originalPrice)}</span>}
           </div>
-          <p className="text-[11px] text-success">Save {GHS(product.originalPrice - product.price)}</p>
+          {off > 0 && <p className="text-[11px] text-success">Save {GHS(product.originalPrice - product.price)}</p>}
         </div>
         {!compact && (
           <div className="flex gap-2">

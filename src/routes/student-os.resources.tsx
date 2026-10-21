@@ -29,6 +29,8 @@ import {
   type StudentListing,
 } from "@/lib/naflis/store";
 import { toast } from "sonner";
+import { IS_LIVE } from "@/lib/appMode";
+import { countResourceDownload } from "@/services/campusContent";
 
 export const Route = createFileRoute("/student-os/resources")({
   component: StudentResources,
@@ -56,21 +58,34 @@ const OTHER_TONE = { bg: "bg-tile-rose", ink: "text-[#9d1d4b] dark:text-[#ff9fbd
 
 const AROUND: { tone: TileTone; icon: typeof CalendarDays; title: string; hint: string; to: string }[] = [
   { tone: "lavender", icon: CalendarDays, title: "Calendar", hint: "Lectures, labs, exams and SRC events.", to: "/student-os/calendar" },
-  { tone: "peach", icon: Ticket, title: "Events & tickets", hint: "Campus events with QR tickets.", to: "/student-os/events" },
+  { tone: "peach", icon: Ticket, title: "Events & tickets", hint: IS_LIVE ? "Campus events published by the SRC." : "Campus events with QR tickets.", to: "/student-os/events" },
   { tone: "mint", icon: Briefcase, title: "Opportunities", hint: "Jobs, internships and scholarships.", to: "/student-os/opportunities" },
   { tone: "rose", icon: SearchCheck, title: "Lost & found", hint: "Report or claim lost items.", to: "/student-os/lost-found" },
 ];
+
+/** One row on this page: a published campus resource (live) or a demo study listing. */
+interface ResourceRow {
+  id: string;
+  title: string;
+  description: string;
+  resourceType: string;
+  courseCode?: string;
+  campus: string;
+  downloads: number;
+  fileUrl?: string;
+}
 
 function StudentResources() {
   const selectedCampus = useNaflis((s) => s.selectedCampus);
   const requestCampusSwitch = useNaflis((s) => s.requestCampusSwitch);
   const studentListings = useNaflis((s) => s.studentListings);
+  const campusResources = useNaflis((s) => s.campusResources);
   const incrementResourceDownload = useNaflis((s) => s.incrementResourceDownload);
   const campusEvents = useNaflis((s) => s.campusEvents);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("All Types");
-  const [previewResource, setPreviewResource] = useState<StudentListing | null>(null);
+  const [previewResource, setPreviewResource] = useState<ResourceRow | null>(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const previewFocus = useReturnFocus(!!previewResource);
   const uploadFocus = useReturnFocus(uploadModalOpen);
@@ -87,9 +102,33 @@ function StudentResources() {
 
   const addStudentListing = useNaflis((s) => s.addStudentListing);
 
+  // Live: what SRC / department publishers uploaded (campus_resources). Demo: seeded study listings.
+  const allRows = useMemo<ResourceRow[]>(
+    () =>
+      IS_LIVE
+        ? campusResources.map((r) => ({ ...r, courseCode: r.courseCode || undefined }))
+        : studentListings
+            .filter((item) => !!item.resourceType)
+            .map((item) => ({
+              id: item.id,
+              title: item.title,
+              description: item.description,
+              resourceType: item.resourceType!,
+              courseCode: item.courseCode,
+              campus: item.campus,
+              downloads: item.downloads || 0,
+              fileUrl: item.fileUrl,
+            })),
+    [campusResources, studentListings]
+  );
+  // Live: only types that have resources; demo: the fixed list.
+  const typeChips = useMemo<string[]>(
+    () => (IS_LIVE ? ["All Types", ...new Set(allRows.map((r) => r.resourceType))] : [...RESOURCE_TYPES]),
+    [allRows]
+  );
+
   const resourceItems = useMemo(() => {
-    return studentListings
-      .filter((item) => !!item.resourceType)
+    return allRows
       .filter((item) => {
         const matchCampus =
           selectedCampus === "All Campuses" ||
@@ -109,7 +148,7 @@ function StudentResources() {
         return matchCampus && matchType && matchSearch;
       })
       .sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
-  }, [studentListings, selectedCampus, selectedType, searchQuery]);
+  }, [allRows, selectedCampus, selectedType, searchQuery]);
 
   // Pinned SRC notices for the active campus (the same notices the landing page ticker shows).
   const notices = useMemo(
@@ -120,7 +159,14 @@ function StudentResources() {
     [campusEvents, selectedCampus]
   );
 
-  const handleDownload = (item: StudentListing) => {
+  const handleDownload = (item: ResourceRow) => {
+    if (IS_LIVE) {
+      // Opens the uploaded file (public campus-docs bucket) and counts it server-side.
+      if (!item.fileUrl) return;
+      window.open(item.fileUrl, "_blank", "noopener");
+      void countResourceDownload(item.id);
+      return;
+    }
     incrementResourceDownload(item.id);
     toast.success(`Download started: ${item.title}. File saved to your downloads.`);
   };
@@ -163,11 +209,18 @@ function StudentResources() {
       <CampusHeader
         icon={BookOpen}
         title="Study Toolkits & Resource Hub"
-        subtitle="Free access to verified lecture notes, solved past exam questions, formula sheets, and campus survival guides."
+        subtitle={
+          IS_LIVE
+            ? "Lecture notes, past questions and guides published by your SRC and departments."
+            : "Free access to verified lecture notes, solved past exam questions, formula sheets, and campus survival guides."
+        }
         actions={
-          <button type="button" onClick={() => setUploadModalOpen(true)} className={campusPrimaryBtn}>
-            <UploadCloud className="h-4 w-4" strokeWidth={1.8} /> Upload Material
-          </button>
+          // Demo only: student uploads aren't saved anywhere yet (known issue #22).
+          IS_LIVE ? undefined : (
+            <button type="button" onClick={() => setUploadModalOpen(true)} className={campusPrimaryBtn}>
+              <UploadCloud className="h-4 w-4" strokeWidth={1.8} /> Upload Material
+            </button>
+          )
         }
       />
 
@@ -200,7 +253,7 @@ function StudentResources() {
 
       {/* Resource Type Pills */}
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 md:mx-0 md:px-0" role="group" aria-label="Resource type">
-        {RESOURCE_TYPES.map((type) => (
+        {typeChips.map((type) => (
           <button
             key={type}
             type="button"
@@ -223,10 +276,20 @@ function StudentResources() {
         <div className={`${campusCard} space-y-3 border-dashed p-10 text-center`}>
           <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" strokeWidth={1.8} />
           <h2 className="text-base font-bold text-foreground">No resources found</h2>
-          <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-            No study guides or past questions match this search for {selectedCampus}. Share yours with classmates!
-          </p>
-          <button type="button" onClick={() => setUploadModalOpen(true)} className={campusPrimaryBtn}>Upload Material</button>
+          {IS_LIVE ? (
+            <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+              {allRows.length === 0
+                ? "No study materials have been published yet. Notes and past questions from your SRC and departments appear here."
+                : `Nothing matches this search for ${selectedCampus}.`}
+            </p>
+          ) : (
+            <>
+              <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+                No study guides or past questions match this search for {selectedCampus}. Share yours with classmates!
+              </p>
+              <button type="button" onClick={() => setUploadModalOpen(true)} className={campusPrimaryBtn}>Upload Material</button>
+            </>
+          )}
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -254,9 +317,14 @@ function StudentResources() {
                 </div>
                 <p className="text-xs leading-relaxed text-subtle-foreground">{item.description}</p>
                 <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-verified">
-                    <CheckCircle2 className="h-4 w-4" strokeWidth={1.8} /> Verified Exam Pack
-                  </span>
+                  {/* Demo only: nothing verifies resources yet (known issue #23). */}
+                  {IS_LIVE ? (
+                    <span />
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-verified">
+                      <CheckCircle2 className="h-4 w-4" strokeWidth={1.8} /> Verified Exam Pack
+                    </span>
+                  )}
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -265,8 +333,13 @@ function StudentResources() {
                     >
                       <Eye className="h-4 w-4" strokeWidth={1.8} /> Preview
                     </button>
-                    <button type="button" onClick={() => handleDownload(item)} className={`${campusPrimaryBtn} px-3 text-xs`}>
-                      <Download className="h-4 w-4" strokeWidth={1.8} /> Download PDF
+                    <button
+                      type="button"
+                      onClick={() => handleDownload(item)}
+                      disabled={IS_LIVE && !item.fileUrl}
+                      className={`${campusPrimaryBtn} px-3 text-xs disabled:opacity-50`}
+                    >
+                      <Download className="h-4 w-4" strokeWidth={1.8} /> {IS_LIVE ? (item.fileUrl ? "Download" : "No file attached") : "Download PDF"}
                     </button>
                   </div>
                 </div>
@@ -309,12 +382,18 @@ function StudentResources() {
                   {previewResource.campus} · Course: {previewResource.courseCode || "General"}
                 </DialogDescription>
               </DialogHeader>
-              <div className="max-h-48 overflow-y-auto rounded-2xl bg-muted p-4 font-mono text-xs leading-relaxed text-foreground/90">
-                <p className="mb-2 font-bold">--- PREVIEW DOCUMENT SUMMARY ---</p>
-                <p>{previewResource.description}</p>
-                <p className="mt-3 text-subtle-foreground">✓ Full questions & marking scheme verified by peer study group.</p>
-                <p className="text-subtle-foreground">✓ Step-by-step calculation breakdowns included.</p>
-              </div>
+              {IS_LIVE ? (
+                <p className="max-h-48 overflow-y-auto rounded-2xl bg-muted p-4 text-sm leading-relaxed text-foreground/90">
+                  {previewResource.description || "No description was added."}
+                </p>
+              ) : (
+                <div className="max-h-48 overflow-y-auto rounded-2xl bg-muted p-4 font-mono text-xs leading-relaxed text-foreground/90">
+                  <p className="mb-2 font-bold">--- PREVIEW DOCUMENT SUMMARY ---</p>
+                  <p>{previewResource.description}</p>
+                  <p className="mt-3 text-subtle-foreground">✓ Full questions & marking scheme verified by peer study group.</p>
+                  <p className="text-subtle-foreground">✓ Step-by-step calculation breakdowns included.</p>
+                </div>
+              )}
               <div className="flex flex-wrap justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setPreviewResource(null)} className={campusSecondaryBtn}>Close</button>
                 <button
@@ -323,9 +402,10 @@ function StudentResources() {
                     handleDownload(previewResource);
                     setPreviewResource(null);
                   }}
-                  className={campusPrimaryBtn}
+                  disabled={IS_LIVE && !previewResource.fileUrl}
+                  className={`${campusPrimaryBtn} disabled:opacity-50`}
                 >
-                  <Download className="h-4 w-4" strokeWidth={1.8} /> Download Full Document
+                  <Download className="h-4 w-4" strokeWidth={1.8} /> {IS_LIVE ? "Download" : "Download Full Document"}
                 </button>
               </div>
             </>

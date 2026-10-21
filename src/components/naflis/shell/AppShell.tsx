@@ -141,7 +141,7 @@ export function SiteFooter() {
       <div
         className={`${PAGE_WIDTH} flex flex-col gap-2 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between`}
       >
-        <p>© {year} NAFLIS Mall · Verified student commerce</p>
+        <p>© {year} NAFLIS Mall · Campus marketplace &amp; student hub</p>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5">
           {!IS_LIVE && (
             <>

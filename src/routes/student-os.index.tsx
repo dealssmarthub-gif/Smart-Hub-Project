@@ -27,6 +27,7 @@ import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
 import { IS_LIVE } from "@/lib/appMode";
+import { countResourceDownload } from "@/services/campusContent";
 
 export const Route = createFileRoute("/student-os/")({
   component: StudentOSDashboard,
@@ -87,9 +88,14 @@ function StudentOSDashboard() {
     [studentListings]
   );
 
+  // Live: published campus resources (real files); demo: seeded study listings.
+  const campusResources = useNaflis((s) => s.campusResources);
   const studyResources = useMemo(
-    () => studentListings.filter((l) => l.resourceType).slice(0, 4),
-    [studentListings]
+    () =>
+      IS_LIVE
+        ? campusResources.slice(0, 4).map((r) => ({ id: r.id, title: r.title, description: r.description, resourceType: r.resourceType, campus: r.campus, fileUrl: r.fileUrl }))
+        : studentListings.filter((l) => l.resourceType).slice(0, 4),
+    [studentListings, campusResources]
   );
 
   // Pinned SRC notice for the active campus (or any campus when browsing all).
@@ -126,8 +132,9 @@ function StudentOSDashboard() {
           <p className="text-base font-semibold text-white/90 md:text-lg">What do you need today?</p>
           <p className="max-w-2xl pt-1 text-sm leading-relaxed text-white/80">
             <span className="font-bold text-white">Open Student OS &amp; Campus Marketplace.</span>{" "}
-            Trade peer-to-peer with classmates, unlock verified student discounts, access past exam
-            solutions{IS_LIVE ? "." : ", and protect every campus deal with smart escrow."}
+            {IS_LIVE
+              ? "Trade peer-to-peer with classmates, find lecture notes and past questions, and keep up with SRC notices and events."
+              : "Trade peer-to-peer with classmates, unlock verified student discounts, access past exam solutions, and protect every campus deal with smart escrow."}
           </p>
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-bold">
@@ -224,7 +231,8 @@ function StudentOSDashboard() {
       />
       )}
 
-      {/* Group buys, fewest spots left first */}
+      {/* Group buys, fewest spots left first (only when there are some) */}
+      {groupDeals.length > 0 && (
       <section>
         <SectionHeader
           title="Almost full"
@@ -254,6 +262,7 @@ function StudentOSDashboard() {
           ))}
         </div>
       </section>
+      )}
 
       {notice && <SrcNoticeRow title={notice.title} campus={notice.campus} onOpen={() => setOpenNotice(notice)} />}
       <NoticeDialog notice={openNotice} onClose={() => setOpenNotice(null)} />
@@ -302,9 +311,11 @@ function StudentOSDashboard() {
               >
                 <div className="relative aspect-square w-full overflow-hidden bg-muted">
                   <ListingImage src={item.image} alt={item.title} className="transition duration-300 group-hover:scale-105" />
-                  <span className="absolute left-2 top-2 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-foreground">
-                    {item.condition}
-                  </span>
+                  {item.condition && (
+                    <span className="absolute left-2 top-2 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-foreground">
+                      {item.condition}
+                    </span>
+                  )}
                   {item.isVerifiedStudent && (
                     <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-tile-mint px-2 py-0.5 text-[10px] font-bold text-verified">
                       <CheckCircle2 className="h-3 w-3" strokeWidth={1.8} /> <span className="hidden sm:inline">Student </span>Verified
@@ -352,12 +363,13 @@ function StudentOSDashboard() {
         )}
       </section>
 
-      {/* Study Materials & Toolkits Preview */}
+      {/* Study Materials & Toolkits Preview (only when there are some) */}
+      {studyResources.length > 0 && (
       <section className="rounded-[28px] border border-border-soft bg-card p-5 shadow-soft sm:p-6">
         <SectionHeader
           title="Top Study Materials & Past Exams"
           icon={FileText}
-          hint="Verified lecture summaries, formulas, and examination archives"
+          hint={IS_LIVE ? "Notes and past questions published by your SRC and departments" : "Verified lecture summaries, formulas, and examination archives"}
           action={<SectionLink to="/student-os/resources">Open Resource Hub</SectionLink>}
         />
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -374,19 +386,34 @@ function StudentOSDashboard() {
                 <h4 className="mt-1 line-clamp-1 text-xs font-bold text-foreground">{res.title}</h4>
                 <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{res.description}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  toast.success(`Downloaded: ${res.title}`);
-                }}
-                className="inline-flex min-h-11 shrink-0 items-center rounded-xl px-3 text-xs font-bold text-link hover:bg-accent"
-              >
-                Download
-              </button>
+              {IS_LIVE ? (
+                res.fileUrl && (
+                  <a
+                    href={res.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => void countResourceDownload(res.id)}
+                    className="inline-flex min-h-11 shrink-0 items-center rounded-xl px-3 text-xs font-bold text-link hover:bg-accent"
+                  >
+                    Download
+                  </a>
+                )
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.success(`Downloaded: ${res.title}`);
+                  }}
+                  className="inline-flex min-h-11 shrink-0 items-center rounded-xl px-3 text-xs font-bold text-link hover:bg-accent"
+                >
+                  Download
+                </button>
+              )}
             </div>
           ))}
         </div>
       </section>
+      )}
     </div>
   );
 }

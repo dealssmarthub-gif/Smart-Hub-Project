@@ -57,7 +57,9 @@ export async function fetchSellerProducts(): Promise<Product[] | null> {
   const { data, error } = await supabase
     .from("products")
     .select("*, vendors!inner(status, store_name, logo_url, description)")
-    .eq("vendors.status", "approved");
+    .eq("vendors.status", "approved")
+    // Student listings have their own marketplace (services/studentListings.ts).
+    .eq("listing_type", "mall");
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => mapDbProduct(row));
 }

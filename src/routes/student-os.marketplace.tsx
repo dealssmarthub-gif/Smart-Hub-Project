@@ -22,7 +22,7 @@ import {
   type StudentListing,
 } from "@/lib/naflis/store";
 import { useCategories } from "@/services/categories";
-import { GHS } from "@/lib/naflis/format";
+import { GHS, telHref, whatsappNumber } from "@/lib/naflis/format";
 import { toast } from "sonner";
 import { IS_LIVE } from "@/lib/appMode";
 
@@ -218,9 +218,11 @@ function StudentMarketplace() {
             >
               <div className="relative aspect-square w-full overflow-hidden bg-muted">
                 <ListingImage src={item.image} alt={item.title} className="transition duration-300 group-hover:scale-105" />
-                <span className="absolute left-2 top-2 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-foreground">
-                  {item.condition}
-                </span>
+                {item.condition && (
+                  <span className="absolute left-2 top-2 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-foreground">
+                    {item.condition}
+                  </span>
+                )}
                 {item.isVerifiedStudent && (
                   <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-tile-mint px-2 py-0.5 text-[10px] font-bold text-verified">
                     <CheckCircle2 className="h-3 w-3" strokeWidth={1.8} /> Verified
@@ -253,10 +255,13 @@ function StudentMarketplace() {
                     )}
                   </div>
 
-                  <div className={`grid grid-cols-1 gap-2 ${IS_LIVE ? "" : "sm:grid-cols-2"}`}>
-                    <button type="button" onClick={() => setContactModalItem(item)} className={secondaryBtn}>
-                      <MessageCircle className="h-4 w-4 text-link" strokeWidth={1.8} /> Contact
-                    </button>
+                  <div className={`grid grid-cols-1 gap-2 ${!IS_LIVE && telHref(item.sellerPhone) ? "sm:grid-cols-2" : ""}`}>
+                    {/* Only when the seller gave a phone number; there is no fallback. */}
+                    {telHref(item.sellerPhone) && (
+                      <button type="button" onClick={() => setContactModalItem(item)} className={secondaryBtn}>
+                        <MessageCircle className="h-4 w-4 text-link" strokeWidth={1.8} /> Contact seller
+                      </button>
+                    )}
                     {/* Demo only: escrow isn't wired to payments yet. */}
                     {!IS_LIVE && (
                       <button
@@ -315,23 +320,29 @@ function StudentMarketplace() {
               <div className="space-y-1 border-b border-border-soft pb-3 text-sm">
                 <p className="font-semibold text-foreground">{contactModalItem.title}</p>
                 <p className="text-subtle-foreground">Seller: {contactModalItem.sellerName} · {contactModalItem.campus}</p>
-                <p className="text-subtle-foreground">Location: {contactModalItem.hostelLocation}</p>
+                {contactModalItem.hostelLocation && (
+                  <p className="text-subtle-foreground">Location: {contactModalItem.hostelLocation}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <a
-                  href={`https://wa.me/${contactModalItem.sellerPhone?.replace(/[^0-9]/g, "") || "233240000000"}?text=Hi%20${encodeURIComponent(contactModalItem.sellerName)}%2C%20I%20saw%20your%20listing%20on%20Smart%20Hub%20Student%20OS%3A%20${encodeURIComponent(contactModalItem.title)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-tile-mint-icon text-sm font-bold text-white transition hover:opacity-90"
-                >
-                  <MessageCircle className="h-4 w-4" strokeWidth={1.8} /> WhatsApp Seller
-                </a>
-                <a
-                  href={`tel:${contactModalItem.sellerPhone || "+233240000000"}`}
-                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-bold text-foreground transition hover:bg-accent"
-                >
-                  <Phone className="h-4 w-4 text-link" strokeWidth={1.8} /> Call {contactModalItem.sellerPhone || "+233 24 000 0000"}
-                </a>
+                {whatsappNumber(contactModalItem.sellerPhone) && (
+                  <a
+                    href={`https://wa.me/${whatsappNumber(contactModalItem.sellerPhone)}?text=Hi%20${encodeURIComponent(contactModalItem.sellerName)}%2C%20I%20saw%20your%20listing%20on%20Smart%20Hub%20Student%20OS%3A%20${encodeURIComponent(contactModalItem.title)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-tile-mint-icon text-sm font-bold text-white transition hover:opacity-90"
+                  >
+                    <MessageCircle className="h-4 w-4" strokeWidth={1.8} /> WhatsApp Seller
+                  </a>
+                )}
+                {telHref(contactModalItem.sellerPhone) && (
+                  <a
+                    href={telHref(contactModalItem.sellerPhone)!}
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-bold text-foreground transition hover:bg-accent"
+                  >
+                    <Phone className="h-4 w-4 text-link" strokeWidth={1.8} /> Call {contactModalItem.sellerPhone}
+                  </a>
+                )}
               </div>
               <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />

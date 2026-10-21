@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Crown, Eye, Flag, Globe, Shield, UserPlus } from "lucide-react";
+import { Crown, Eye, Flag, Globe, Shield, Store, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -43,6 +43,7 @@ function SuperDashboard() {
       <div className="mb-4 flex flex-wrap gap-2">
         <Button asChild variant="outline" size="sm"><Link to="/super/staff"><UserPlus className="mr-1 h-4 w-4" /> Staff & permissions</Link></Button>
         <Button asChild variant="outline" size="sm"><Link to="/super/view-as"><Eye className="mr-1 h-4 w-4" /> View as user</Link></Button>
+        <Button asChild variant="outline" size="sm"><Link to="/super/vendors"><Store className="mr-1 h-4 w-4" /> Vendors</Link></Button>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

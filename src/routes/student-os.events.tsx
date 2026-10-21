@@ -12,6 +12,7 @@ import { TicketQR } from "@/components/naflis/TicketQR";
 import { CampusHeader } from "@/components/naflis/campus/CampusBlocks";
 import { ListingImage } from "@/components/naflis/home/HomeBlocks";
 import { buyTicket, describePaymentError, newIdempotencyKey, ticketQrPayload, type PaymentMethod } from "@/services/walletService";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/student-os/events")({
   component: CampusEventsTickets,
@@ -34,15 +35,20 @@ function CampusEventsTickets() {
       <CampusHeader
         icon={TicketIcon}
         title="Campus Events"
-        subtitle={<>Events at {activeCampus}. Tickets carry a unique QR code checked once at the gate.</>}
+        subtitle={IS_LIVE ? <>Events at {activeCampus}, published by the SRC.</> : <>Events at {activeCampus}. Tickets carry a unique QR code checked once at the gate.</>}
       />
       <Tabs defaultValue="events">
         <TabsList className="h-auto rounded-full bg-card p-1 shadow-soft">
           <TabsTrigger value="events" className="min-h-10 rounded-full px-4 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Upcoming ({events.length})</TabsTrigger>
-          <TabsTrigger value="mine" className="min-h-10 rounded-full px-4 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">My tickets ({myTickets.length})</TabsTrigger>
+          {/* Demo only: ticket sales wait for payments to be verified. */}
+          {!IS_LIVE && <TabsTrigger value="mine" className="min-h-10 rounded-full px-4 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">My tickets ({myTickets.length})</TabsTrigger>}
         </TabsList>
         <TabsContent value="events" className="mt-4 grid gap-4 md:grid-cols-2">
-          {events.length === 0 && <p className="rounded-3xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground md:col-span-2">No upcoming events here.</p>}
+          {events.length === 0 && (
+            <p className="rounded-3xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground md:col-span-2">
+              No upcoming events {activeCampus === "All Campuses" ? "yet" : `at ${activeCampus} yet`}. Events the SRC publishes appear here.
+            </p>
+          )}
           {events.map((e) => <EventCard key={e.id} event={e} />)}
         </TabsContent>
         <TabsContent value="mine" className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -106,9 +112,9 @@ function EventCard({ event }: { event: CampusEvent }) {
         <p className="text-[11px] font-bold uppercase tracking-wide text-link">{event.organizer}</p>
         <h2 className="text-base font-bold leading-snug">{event.title}</h2>
         <p className="flex items-center gap-1 text-xs text-subtle-foreground"><CalendarDays className="h-3.5 w-3.5 text-link" strokeWidth={1.8} /> {new Date(event.eventDate).toLocaleString("en-GH", { weekday: "long", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
-        <p className="flex items-center gap-1 text-xs text-subtle-foreground"><MapPin className="h-3.5 w-3.5 text-link" strokeWidth={1.8} /> {event.venue}</p>
+        {event.venue && <p className="flex items-center gap-1 text-xs text-subtle-foreground"><MapPin className="h-3.5 w-3.5 text-link" strokeWidth={1.8} /> {event.venue}</p>}
         <p className="line-clamp-2 text-sm">{event.description}</p>
-        {event.ticketing ? (
+        {IS_LIVE ? null : event.ticketing ? (
           <div className="flex flex-wrap items-center gap-2 border-t border-border-soft pt-3">
             <select aria-label="Ticket type" className="h-11 rounded-xl border border-border bg-background px-3 text-xs font-semibold" value={tierId} onChange={(e) => setTierId(e.target.value)}>
               {event.ticketing.tiers.map((t) => (
