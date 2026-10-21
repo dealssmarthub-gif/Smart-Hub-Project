@@ -35,7 +35,8 @@ export function ListStudentItemModal() {
   const [condition, setCondition] = useState<StudentItemCondition>("Like New");
   const [hostelLocation, setHostelLocation] = useState("");
   const [description, setDescription] = useState("");
-  const [phone, setPhone] = useState(user?.phone || "");
+  // Starts empty: the account phone is private, and this one is shown to buyers.
+  const [phone, setPhone] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -372,7 +373,8 @@ export function ListStudentItemModal() {
                 aria-describedby="item-phone-hint"
               />
               <p id="item-phone-hint" className="text-[11px] text-muted-foreground">
-                Shown to buyers on your listings. Leave empty and buyers won't see a contact button.
+                <strong className="font-semibold text-foreground">Visible to buyers:</strong> anyone who views your listings
+                can see this number and your name. Leave it empty and buyers won't see a contact button.
               </p>
             </div>
           </div>

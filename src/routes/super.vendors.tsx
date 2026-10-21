@@ -234,7 +234,8 @@ function CreateVendorForm() {
           aria-describedby="v-phone-hint"
         />
         <p id="v-phone-hint" className="text-[11px] text-muted-foreground">
-          Shown to buyers on this vendor's listings.
+          Visible to anyone viewing this vendor's listings once it's approved. Add it only with the
+          owner's agreement.
         </p>
       </div>
       <Button type="submit" className="w-full" disabled={create.isPending}>
