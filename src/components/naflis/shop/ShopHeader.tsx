@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, PlusCircle, ShoppingBag } from "lucide-react";
 import type { ReactNode } from "react";
 import { useNaflis } from "@/lib/naflis/store";
+import { IS_LIVE } from "@/lib/appMode";
 
 export type ShopTab = "marketplace" | "group" | "vouchers" | "all";
 
@@ -52,6 +53,8 @@ export function ShopHeader({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        {/* Live: Group buys and Discounts aren't connected yet, so only the Mall link stays. */}
+        {!IS_LIVE && (
         <nav
           aria-label="Shop"
           className="flex w-full rounded-full border border-border-soft bg-card p-1 shadow-soft sm:w-auto"
@@ -80,6 +83,7 @@ export function ShopHeader({
             Discounts
           </Link>
         </nav>
+        )}
         <Link
           to="/buyer"
           className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-card px-4 text-xs font-bold text-subtle-foreground transition hover:border-primary/40 hover:text-foreground sm:text-sm"

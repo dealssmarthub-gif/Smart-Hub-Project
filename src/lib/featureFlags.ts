@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { supabase } from "@/lib/supabase";
-import { IS_LIVE } from "@/lib/appMode";
+import { IS_LIVE, LIVE_FORCED_OFF_FLAGS } from "@/lib/appMode";
 import { useNaflis } from "@/lib/naflis/store";
 
 // ============================================================================
@@ -110,6 +110,8 @@ export function refreshFeatureFlags(force = false): Promise<void> {
 
 function evaluate(flag: FeatureFlag | undefined, role?: string, institutionId?: string): boolean {
   if (!flag || !flag.enabled) return false;
+  // Live: Reserve & Pay and Pay Later stay off until their payments are wired.
+  if (IS_LIVE && LIVE_FORCED_OFF_FLAGS.includes(flag.key)) return false;
   if (flag.roles?.length && !(role && flag.roles.includes(role))) return false;
   if (flag.institutionIds?.length && !(institutionId && flag.institutionIds.includes(institutionId))) return false;
   return true;

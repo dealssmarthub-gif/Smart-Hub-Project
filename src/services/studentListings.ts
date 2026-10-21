@@ -94,7 +94,7 @@ export interface NewStudentListing {
   condition: StudentItemCondition;
   meetupLocation?: string;
   images: string[];
-  /** Shown to buyers on every listing of this seller. Empty keeps the vendor's current phone. */
+  /** Shown to buyers on every listing of this seller. Empty removes it (the form starts with the current number). */
   contactPhone?: string;
   /** Shop name used if this is the seller's first listing. */
   sellerName: string;
@@ -139,7 +139,7 @@ export async function createStudentListing(
       storeName: data.store_name,
       contactPhone: data.contact_phone,
     };
-  } else if (phone && phone !== vendor.contactPhone) {
+  } else if (phone !== vendor.contactPhone) {
     const { error } = await supabase
       .from("vendors")
       .update({ contact_phone: phone })
@@ -179,4 +179,23 @@ export async function createStudentListing(
     useNaflis.setState((s) => ({ studentListings: [listing, ...s.studentListings] }));
   }
   return { listing, vendor };
+}
+
+/** Removes the signed-in seller's contact phone from all their listings. */
+export async function clearOwnContactPhone(): Promise<void> {
+  if (!supabase) throw new Error("Not connected to the database.");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Sign in first.");
+  const { data, error } = await supabase
+    .from("vendors")
+    .update({ contact_phone: null })
+    .eq("user_id", user.id)
+    .select("id");
+  if (error) throw new Error(`Couldn't remove your number: ${error.message}`);
+  if (!data?.length) throw new Error("You don't have a seller account yet.");
+  useNaflis.setState((st) => ({
+    studentListings: st.studentListings.map((l) => (l.sellerId === user.id ? { ...l, sellerPhone: undefined } : l)),
+  }));
 }

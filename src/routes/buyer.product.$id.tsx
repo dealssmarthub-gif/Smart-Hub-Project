@@ -22,6 +22,7 @@ import { fetchSellerProduct } from "@/services/sellerApi";
 import { PurchaseOptions } from "@/components/naflis/PurchaseOptions";
 import type { Product, Store } from "@/lib/naflis/store";
 import { IS_LIVE } from "@/lib/appMode";
+import { ListingImage } from "@/components/naflis/home/HomeBlocks";
 
 export const Route = createFileRoute("/buyer/product/$id")({
   component: ProductDetail,
@@ -112,12 +113,15 @@ function ProductDetail() {
   const off = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
   const inWishlist = wishlist.includes(product.id);
   const chart = product.priceHistory.map((h: any) => ({ ...h, date: h.date.slice(5) }));
+  const hasSpecs = Object.keys(product.specs ?? {}).length > 0;
+  // One data point isn't a history.
+  const hasHistory = product.priceHistory.length > 1;
 
   return (
     <div className="space-y-6">
       <div className="grid gap-6 md:grid-cols-[1.1fr_1fr]">
         <div className="overflow-hidden rounded-3xl border border-border-soft bg-card shadow-soft">
-          <img src={product.image} alt={product.name} className="aspect-[4/3] w-full object-cover" />
+          <div className="aspect-[4/3] w-full"><ListingImage src={product.image} alt={product.name} /></div>
         </div>
 
         <div className="min-w-0 space-y-4">
@@ -137,17 +141,22 @@ function ProductDetail() {
           <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl">{product.name}</h1>
 
           <div className="flex flex-wrap items-center gap-3 text-sm">
-            <span className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-gold text-gold" />
-              {product.rating.toFixed(1)} · {product.reviews} reviews
-            </span>
+            {product.reviews > 0 && (
+              <span className="flex items-center gap-1">
+                <Star className="h-4 w-4 fill-gold text-gold" />
+                {product.rating.toFixed(1)} · {product.reviews} reviews
+              </span>
+            )}
             {store && (
               <span className="flex items-center gap-1">
                 <ShieldCheck className="h-4 w-4 text-link" />
                 {store.name} {store.verified && <span className="text-xs text-link">(verified)</span>}
               </span>
             )}
-            <span className="flex items-center gap-1"><Truck className="h-4 w-4" /> Delivery in {product.deliveryDays} days</span>
+            {/* Only when the product has a delivery time (database products don't yet). */}
+            {product.deliveryDays > 0 && (
+              <span className="flex items-center gap-1"><Truck className="h-4 w-4" /> Delivery in {product.deliveryDays} days</span>
+            )}
           </div>
 
           <div className="rounded-xl bg-muted p-4">
@@ -230,10 +239,13 @@ function ProductDetail() {
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="h-3.5 w-3.5 text-success" />
-            Escrow-protected · Funds only released once you confirm delivery
-          </div>
+          {/* Demo only: escrow isn't live yet. */}
+          {!IS_LIVE && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 text-success" />
+              Escrow-protected · Funds only released once you confirm delivery
+            </div>
+          )}
         </div>
       </div>
 
@@ -241,13 +253,16 @@ function ProductDetail() {
       <Tabs defaultValue="details">
         <TabsList>
           <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="specs">Specifications</TabsTrigger>
-          <TabsTrigger value="price">Price history</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          {hasSpecs && <TabsTrigger value="specs">Specifications</TabsTrigger>}
+          {hasHistory && <TabsTrigger value="price">Price history</TabsTrigger>}
+          {product.reviews > 0 && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
         </TabsList>
         <TabsContent value="details" className="rounded-2xl border border-border-soft bg-card p-5 text-sm leading-relaxed">
           <p>{product.description}</p>
-          <p className="mt-3 text-xs text-muted-foreground">Return policy: 7-day return if the item differs from description. Warranty: {product.specs.Warranty}.</p>
+          {/* Demo only: no return policy or warranty is stored for real products. */}
+          {!IS_LIVE && (
+            <p className="mt-3 text-xs text-muted-foreground">Return policy: 7-day return if the item differs from description.{product.specs.Warranty ? ` Warranty: ${product.specs.Warranty}.` : ""}</p>
+          )}
         </TabsContent>
         <TabsContent value="specs">
           <div className="grid gap-2 rounded-2xl border border-border-soft bg-card p-5 text-sm sm:grid-cols-2">

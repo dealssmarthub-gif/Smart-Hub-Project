@@ -23,6 +23,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { hiddenInLive } from "@/lib/appMode";
 
 // ============================================================================
 // THE FOUR PLACES — Home, Shop, Campus, Me.
@@ -52,7 +53,7 @@ export interface Place {
   destinations: Destination[];
 }
 
-export const PLACES: Place[] = [
+const ALL_PLACES: Place[] = [
   {
     id: "home",
     label: "Home",
@@ -150,6 +151,12 @@ export const PLACES: Place[] = [
     ],
   },
 ];
+
+/** Live mode drops destinations that aren't connected yet (appMode LIVE_HIDDEN_PATHS). */
+export const PLACES: Place[] = ALL_PLACES.map((p) => ({
+  ...p,
+  destinations: p.destinations.filter((d) => !hiddenInLive(d.to)),
+}));
 
 const ME_BUYER = [
   "/buyer/wallet",

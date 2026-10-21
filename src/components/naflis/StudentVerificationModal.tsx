@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNaflis, CAMPUSES } from "@/lib/naflis/store";
 import { GraduationCap, CheckCircle2, ShieldCheck, Sparkles, Building2, BookOpen } from "lucide-react";
 import { toast } from "sonner";
+import { IS_LIVE } from "@/lib/appMode";
 
 export function StudentVerificationModal() {
   const open = useNaflis((s) => s.verifyModalOpen);
@@ -65,7 +66,9 @@ export function StudentVerificationModal() {
                 )}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Get verified to unlock exclusive student prices, group buys, and campus escrow privileges.
+                {IS_LIVE
+                  ? "Add your student details to show your campus and student status."
+                  : "Get verified to unlock exclusive student prices, group buys, and campus escrow privileges."}
               </DialogDescription>
             </div>
           </div>

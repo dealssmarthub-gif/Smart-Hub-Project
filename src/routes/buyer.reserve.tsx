@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { IS_LIVE } from "@/lib/appMode";
 import { Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,10 @@ import { fromMinor, getPurchaseConfig, quoteReservation, toMinor } from "@/lib/n
 import { MyReservations } from "@/components/naflis/PaymentPlans";
 
 export const Route = createFileRoute("/buyer/reserve")({
+  // Live: not connected to the backend yet (appMode LIVE_HIDDEN_PATHS).
+  beforeLoad: () => {
+    if (IS_LIVE) throw redirect({ to: "/buyer" });
+  },
   component: ReservePage,
 });
 

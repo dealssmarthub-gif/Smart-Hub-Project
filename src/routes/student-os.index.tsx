@@ -10,6 +10,7 @@ import {
   FileText,
   MapPin,
   Store,
+  CalendarDays,
   Users,
   Ticket,
   Flame,
@@ -84,7 +85,8 @@ function StudentOSDashboard() {
 
   // Same three group deals as before, now shown fewest spots left first.
   const groupDeals = useMemo(
-    () => almostFull(studentListings.filter((l) => l.isGroupDeal).slice(0, 3)),
+    // Demo only: group buys aren't connected yet.
+    () => (IS_LIVE ? [] : almostFull(studentListings.filter((l) => l.isGroupDeal).slice(0, 3))),
     [studentListings]
   );
 
@@ -147,10 +149,10 @@ function StudentOSDashboard() {
               <PlusCircle className="h-4 w-4" strokeWidth={1.8} /> Post a Campus Listing
             </button>
             <Link
-              to="/student-os/deals"
+              to={IS_LIVE ? "/student-os/marketplace" : "/student-os/deals"}
               className="inline-flex min-h-11 items-center rounded-xl border border-white/40 px-4 text-sm font-bold text-white transition hover:bg-white/10"
             >
-              Browse Student Deals
+              {IS_LIVE ? "Browse the marketplace" : "Browse Student Deals"}
             </Link>
           </div>
         </div>
@@ -182,9 +184,13 @@ function StudentOSDashboard() {
         <SectionHeader title="Quick access" />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           <Tile tone="lavender" icon={Store} title="Marketplace" hint="Find roommate / hostel items: dorm appliances, room items & sublets." to="/student-os/marketplace" />
-          <Tile tone="peach" icon={Users} title="Group buys" hint="Student flash deals: join group buys & unlock verified discounts." to="/student-os/deals" />
+          {IS_LIVE ? (
+            <Tile tone="peach" icon={CalendarDays} title="Calendar" hint="Lectures, exams and SRC events." to="/student-os/calendar" />
+          ) : (
+            <Tile tone="peach" icon={Users} title="Group buys" hint="Student flash deals: join group buys & unlock verified discounts." to="/student-os/deals" />
+          )}
           <Tile tone="mint" icon={BookOpen} title="Past questions" hint="Browse course notes: solved past questions & exam cheatsheets." to="/student-os/resources" />
-          <Tile tone="sky" icon={Ticket} title="Events" hint="Campus events & tickets." to="/student-os/events" />
+          <Tile tone="sky" icon={Ticket} title="Events" hint={IS_LIVE ? "Campus events published by the SRC." : "Campus events & tickets."} to="/student-os/events" />
         </div>
         <button
           type="button"

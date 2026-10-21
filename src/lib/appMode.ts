@@ -17,3 +17,17 @@ export const LIVE_MISCONFIGURED = IS_LIVE && !supabase;
 export function seeded<T>(value: T, empty: T): T {
   return IS_LIVE ? empty : value;
 }
+
+/**
+ * Pages that aren't connected to the backend yet. In live mode every link to
+ * them is hidden and a direct visit redirects (see each route's beforeLoad).
+ */
+export const LIVE_HIDDEN_PATHS = ["/buyer/reserve", "/buyer/installments", "/buyer/deals", "/student-os/deals"];
+
+/** True in live mode when `to` is one of LIVE_HIDDEN_PATHS (or below it). */
+export function hiddenInLive(to: string): boolean {
+  return IS_LIVE && LIVE_HIDDEN_PATHS.some((p) => to === p || to.startsWith(`${p}/`));
+}
+
+/** Feature flags that stay off in live mode whatever Supabase says, until their payments are wired. */
+export const LIVE_FORCED_OFF_FLAGS = ["reserve_and_pay", "take_now_pay_later"];

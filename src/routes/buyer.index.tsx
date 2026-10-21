@@ -168,8 +168,13 @@ function BuyerHome() {
 
       {/* CTA row */}
       <section className="grid gap-4 md:grid-cols-3">
-        <PromoCard icon={<Clock className="h-5 w-5" />} title="Reserve & Pay" body="Lock in the discount today, pay gradually, receive when done." to="/buyer/reserve" />
-        <PromoCard icon={<TrendingUp className="h-5 w-5" />} title="Take Now, Pay Later" body="Receive the product now and pay over time." to="/buyer/installments" />
+        {/* Demo only: Reserve & Pay and Pay Later aren't connected to payments yet. */}
+        {!IS_LIVE && (
+          <>
+            <PromoCard icon={<Clock className="h-5 w-5" />} title="Reserve & Pay" body="Lock in the discount today, pay gradually, receive when done." to="/buyer/reserve" />
+            <PromoCard icon={<TrendingUp className="h-5 w-5" />} title="Take Now, Pay Later" body="Receive the product now and pay over time." to="/buyer/installments" />
+          </>
+        )}
         <PromoCard icon={<Bell className="h-5 w-5" />} title="Product not available?" body="Tell us what you want — we'll match sellers to your budget." to="/buyer/search" />
       </section>
     </div>

@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNaflis } from "@/lib/naflis/store";
 import { setFeatureFlag, useFeatureFlags } from "@/lib/featureFlags";
+import { IS_LIVE, LIVE_FORCED_OFF_FLAGS } from "@/lib/appMode";
 
 export const Route = createFileRoute("/super/")({
   component: SuperDashboard,
@@ -71,11 +72,17 @@ function SuperDashboard() {
                   <Badge variant={f.enabled ? "default" : "outline"}>{f.enabled ? "ON" : "OFF"}</Badge>
                   {f.roles?.length ? <Badge variant="secondary">{f.roles.join(", ")}</Badge> : null}
                   {f.institutionIds?.length ? <Badge variant="secondary">{f.institutionIds.join(", ")}</Badge> : null}
+                  {IS_LIVE && LIVE_FORCED_OFF_FLAGS.includes(f.key) && <Badge variant="outline">Off in live mode</Badge>}
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{f.description}</p>
+                {IS_LIVE && LIVE_FORCED_OFF_FLAGS.includes(f.key) && (
+                  <p className="mt-1 text-xs text-muted-foreground">Stays off on the live site until its payments are connected, whatever this switch says.</p>
+                )}
                 <p className="mt-1 font-mono text-[10px] text-muted-foreground">{f.key}</p>
               </div>
               <Switch
+                aria-label={f.label}
+                disabled={IS_LIVE && LIVE_FORCED_OFF_FLAGS.includes(f.key)}
                 checked={f.enabled}
                 onCheckedChange={async (v) => {
                   audit(v ? "flag.enable" : "flag.disable", f.key);

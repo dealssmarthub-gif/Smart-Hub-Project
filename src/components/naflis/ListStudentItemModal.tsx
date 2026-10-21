@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import {
 import { useCategories } from "@/services/categories";
 import { supabase } from "@/lib/supabase";
 import { IS_LIVE } from "@/lib/appMode";
-import { createStudentListing, PHONE_PATTERN } from "@/services/studentListings";
+import { clearOwnContactPhone, createStudentListing, fetchOwnVendor, PHONE_PATTERN } from "@/services/studentListings";
 import { Upload, X, Camera, Plus, Sparkles, MapPin, Tag } from "lucide-react";
 import { toast } from "sonner";
 
@@ -35,8 +35,40 @@ export function ListStudentItemModal() {
   const [condition, setCondition] = useState<StudentItemCondition>("Like New");
   const [hostelLocation, setHostelLocation] = useState("");
   const [description, setDescription] = useState("");
-  // Starts empty: the account phone is private, and this one is shown to buyers.
+  // Never the private account phone. With a seller account, starts with the number
+  // buyers already see, so clearing the field removes it from every listing.
   const [phone, setPhone] = useState("");
+  const [publicPhone, setPublicPhone] = useState<string | null>(null);
+  const [removingPhone, setRemovingPhone] = useState(false);
+
+  useEffect(() => {
+    if (!open || !supabase) return;
+    let cancelled = false;
+    supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
+      if (!authUser) return;
+      const vendor = await fetchOwnVendor(authUser.id).catch(() => null);
+      if (cancelled || !vendor) return;
+      setPublicPhone(vendor.contactPhone);
+      setPhone(vendor.contactPhone ?? "");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  const removePhone = async () => {
+    setRemovingPhone(true);
+    try {
+      await clearOwnContactPhone();
+      setPublicPhone(null);
+      setPhone("");
+      toast.success("Your number is no longer shown on your listings.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't remove your number.");
+    } finally {
+      setRemovingPhone(false);
+    }
+  };
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -374,8 +406,19 @@ export function ListStudentItemModal() {
               />
               <p id="item-phone-hint" className="text-[11px] text-muted-foreground">
                 <strong className="font-semibold text-foreground">Visible to buyers:</strong> anyone who views your listings
-                can see this number and your name. Leave it empty and buyers won't see a contact button.
+                can see this number and your name. It applies to all your listings; leave it empty and buyers won't see a
+                contact button.
               </p>
+              {publicPhone && (
+                <button
+                  type="button"
+                  onClick={removePhone}
+                  disabled={removingPhone}
+                  className="inline-flex min-h-11 items-center text-xs font-bold text-link underline underline-offset-2 disabled:opacity-50"
+                >
+                  {removingPhone ? "Removing…" : `Remove ${publicPhone} from my listings now`}
+                </button>
+              )}
             </div>
           </div>
 

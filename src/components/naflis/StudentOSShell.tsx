@@ -19,6 +19,7 @@ import { ListStudentItemModal } from "@/components/naflis/ListStudentItemModal";
 import { StudentVerificationModal } from "@/components/naflis/StudentVerificationModal";
 import { CampusSwitchPrompt, useSuggestRegisteredCampus } from "@/components/naflis/CampusContext";
 import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
+import { hiddenInLive } from "@/lib/appMode";
 
 const TABS = [
   { to: "/student-os", label: "Hub Overview", icon: GraduationCap, exact: true },
@@ -61,7 +62,7 @@ export function StudentOSShell() {
     }`;
 
   return (
-    <AppShell mobileHeader={!isHome}>
+    <AppShell mobileHeader={!isHome} fab={isShop}>
       {/* Student OS section bar: every Student OS page, plus verification and selling. */}
       <div
         className={`border-b border-border-soft bg-background ${isHome || isShop || isCampus ? "hidden md:block" : ""}`}
@@ -107,7 +108,7 @@ export function StudentOSShell() {
           aria-label="Student OS"
           className={`${PAGE_WIDTH} no-scrollbar flex gap-2 overflow-x-auto py-3`}
         >
-          {TABS.map((t) => {
+          {TABS.filter((t) => !hiddenInLive(t.to)).map((t) => {
             const Icon = t.icon;
             const active = t.exact ? pathname === t.to : pathname.startsWith(t.to);
             return (

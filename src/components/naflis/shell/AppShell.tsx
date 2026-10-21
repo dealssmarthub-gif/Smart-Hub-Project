@@ -178,6 +178,7 @@ export function AppShell({
   showCampus,
   footer = true,
   mobileHeader = true,
+  fab = false,
 }: {
   children: ReactNode;
   onEscrowClick?: () => void;
@@ -185,13 +186,17 @@ export function AppShell({
   footer?: boolean;
   /** False when the page draws its own phone header (the student Home). */
   mobileHeader?: boolean;
+  /** The page shows the floating Sell button above the tab bar: reserve room for both on phones. */
+  fab?: boolean;
 }) {
+  // Tab bar alone needs 112px; with the Sell button (it reaches 136px up) 160px.
+  const phonePad = fab ? "pb-40 md:pb-0" : "pb-28 md:pb-0";
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <TopNav onEscrowClick={onEscrowClick} showCampus={showCampus} mobile={mobileHeader} />
-      <div className={`flex-1 ${footer ? "" : "pb-28 md:pb-0"}`}>{children}</div>
+      <div className={`flex-1 ${footer ? "" : phonePad}`}>{children}</div>
       {footer && (
-        <div className="pb-28 md:pb-0">
+        <div className={phonePad}>
           <SiteFooter />
         </div>
       )}

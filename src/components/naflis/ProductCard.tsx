@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { Product } from "@/lib/naflis/store";
 import { useNaflis } from "@/lib/naflis/store";
 import { GHS, pct } from "@/lib/naflis/format";
+import { ListingImage } from "@/components/naflis/home/HomeBlocks";
 
 export function ProductCard({ product, compact = false }: { product: Product; compact?: boolean }) {
   const wishlist = useNaflis((s) => s.wishlist);
@@ -17,12 +18,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-border-soft bg-card transition hover:shadow-soft">
       <Link to="/buyer/product/$id" params={{ id: product.id }} className="relative block aspect-square overflow-hidden bg-muted">
-        <img
-          src={product.image}
-          alt={product.name}
-          loading="lazy"
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-        />
+        <ListingImage src={product.image} alt={product.name} className="transition duration-500 group-hover:scale-105" />
         <div className="absolute left-2 top-2 flex flex-col gap-1">
           {off > 0 && (
             <Badge className="bg-error text-error-foreground">-{pct(off)}</Badge>

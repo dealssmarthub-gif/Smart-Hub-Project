@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
 import { useNaflis } from "@/lib/naflis/store";
 import { useFeatureFlag } from "@/lib/featureFlags";
+import { hiddenInLive } from "@/lib/appMode";
 import { useEffect, useState } from "react";
 
 const NAV = [
@@ -39,7 +40,7 @@ export function BuyerShell() {
     reserve_and_pay: useFeatureFlag("reserve_and_pay"),
     take_now_pay_later: useFeatureFlag("take_now_pay_later"),
   };
-  const nav = NAV.filter((n) => !n.flag || flags[n.flag]);
+  const nav = NAV.filter((n) => (!n.flag || flags[n.flag]) && !hiddenInLive(n.to));
   const runSchedulers = useNaflis((s) => s.runSchedulers);
 
   // Demo-mode housekeeping: expire lapsed reservations and flag late installments.

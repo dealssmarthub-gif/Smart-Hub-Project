@@ -216,7 +216,8 @@ function Landing() {
   );
 
   const currentPinnedEvent = pinnedEvents[activeTickerIndex] || pinnedEvents[0];
-  const groupBuys = almostFull(studentListings).slice(0, 3);
+  // Demo only: group buys aren't connected yet.
+  const groupBuys = IS_LIVE ? [] : almostFull(studentListings).slice(0, 3);
   const heroListing = flash[0] ?? trending[0];
   const heroGroupBuy = groupBuys[0];
 
@@ -370,9 +371,15 @@ function Landing() {
 
             {/* Calls to action */}
             <div className="flex flex-wrap gap-2 pt-1">
-              <Link to="/student-os/deals" className={primaryBtn}>
-                <BadgePercent className="h-4 w-4" strokeWidth={1.8} /> Browse Student Deals
-              </Link>
+              {IS_LIVE ? (
+                <Link to="/student-os/marketplace" className={primaryBtn}>
+                  <Store className="h-4 w-4" strokeWidth={1.8} /> Browse the marketplace
+                </Link>
+              ) : (
+                <Link to="/student-os/deals" className={primaryBtn}>
+                  <BadgePercent className="h-4 w-4" strokeWidth={1.8} /> Browse Student Deals
+                </Link>
+              )}
               {!IS_LIVE && (
                 <button type="button" onClick={() => setEscrowModalOpen(true)} className={secondaryBtn}>
                   <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> Safe Escrow
@@ -470,7 +477,7 @@ function Landing() {
           />
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-5">
             <Tile tone="lavender" icon={Store} title="Student Marketplace" hint="Campus peer-to-peer thrift, textbooks, laptops, fridges & dorm furniture." to="/student-os/marketplace" cta="Open Market" />
-            <Tile tone="peach" icon={BadgePercent} title="Student Deals & Group Buys" hint="Verified discounts, split group orders & volume bulk price drops." to="/student-os/deals" cta="Join Group Buys" />
+            {!IS_LIVE && <Tile tone="peach" icon={BadgePercent} title="Student Deals & Group Buys" hint="Verified discounts, split group orders & volume bulk price drops." to="/student-os/deals" cta="Join Group Buys" />}
             <Tile tone="rose" icon={Building2} title="Official SRC Notices" hint="Direct administrative bulletins, townhall assemblies & campus welfare updates." to="/campus-admin" cta="View SRC Notices" />
             <Tile tone="mint" icon={BookOpen} title="Lecture Notes & Slides" hint="Solved past examination booklets, formulas, summaries & faculty slides." to="/student-os/resources" cta="Study Resources" />
             {!IS_LIVE && <Tile tone="sky" icon={ShieldCheck} title="Escrow Protection Hub" hint="Zero-fraud escrow. Funds held safe until meetup inspection & 6-digit PIN release." onClick={() => setEscrowModalOpen(true)} cta="Escrow Security" />}
@@ -637,7 +644,7 @@ function Landing() {
             <FooterColumn title="Campus Portals">
               <FooterLink to="/student-os">Student OS Hub</FooterLink>
               <FooterLink to="/student-os/marketplace">Campus Marketplace</FooterLink>
-              <FooterLink to="/student-os/deals">Student Deals</FooterLink>
+              {!IS_LIVE && <FooterLink to="/student-os/deals">Student Deals</FooterLink>}
               <FooterLink to="/student-os/resources">Lecture Notes &amp; Slides</FooterLink>
             </FooterColumn>
             <FooterColumn title="Leadership">
