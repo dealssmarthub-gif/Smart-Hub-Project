@@ -7,6 +7,7 @@ import type { Product } from "@/lib/naflis/store";
 import { useNaflis } from "@/lib/naflis/store";
 import { GHS, pct } from "@/lib/naflis/format";
 import { ListingImage } from "@/components/naflis/home/HomeBlocks";
+import { IS_LIVE } from "@/lib/appMode";
 
 export function ProductCard({ product, compact = false }: { product: Product; compact?: boolean }) {
   const wishlist = useNaflis((s) => s.wishlist);
@@ -67,6 +68,8 @@ export function ProductCard({ product, compact = false }: { product: Product; co
         </div>
         {!compact && (
           <div className="flex gap-2">
+            {/* Demo only: the cart isn't live yet. */}
+            {!IS_LIVE && (
             <Button
               size="sm"
               variant="secondary"
@@ -78,7 +81,8 @@ export function ProductCard({ product, compact = false }: { product: Product; co
             >
               Add to cart
             </Button>
-            <Button size="sm" asChild>
+            )}
+            <Button size="sm" asChild className={IS_LIVE ? "flex-1" : undefined}>
               <Link to="/buyer/product/$id" params={{ id: product.id }}>View</Link>
             </Button>
           </div>

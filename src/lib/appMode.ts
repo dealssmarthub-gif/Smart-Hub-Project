@@ -22,7 +22,25 @@ export function seeded<T>(value: T, empty: T): T {
  * Pages that aren't connected to the backend yet. In live mode every link to
  * them is hidden and a direct visit redirects (see each route's beforeLoad).
  */
-export const LIVE_HIDDEN_PATHS = ["/buyer/reserve", "/buyer/installments", "/buyer/deals", "/student-os/deals"];
+export const LIVE_HIDDEN_PATHS = [
+  // Phase 4: payment plans and deals
+  "/buyer/reserve",
+  "/buyer/installments",
+  "/buyer/deals",
+  "/student-os/deals",
+  // Phase 5: buying, wallet, orders, messages, alerts (in-browser only until payments are verified)
+  "/buyer/checkout",
+  "/buyer/cart",
+  "/buyer/wallet",
+  "/buyer/orders",
+  "/buyer/messages",
+  "/buyer/notifications",
+  // Lost & Found and the finance / dispute / delivery consoles run on in-browser data only
+  "/student-os/lost-found",
+  "/finance",
+  "/dispute",
+  "/delivery",
+];
 
 /** True in live mode when `to` is one of LIVE_HIDDEN_PATHS (or below it). */
 export function hiddenInLive(to: string): boolean {
@@ -31,3 +49,10 @@ export function hiddenInLive(to: string): boolean {
 
 /** Feature flags that stay off in live mode whatever Supabase says, until their payments are wired. */
 export const LIVE_FORCED_OFF_FLAGS = ["reserve_and_pay", "take_now_pay_later"];
+
+/** Where a live-mode visit to a hidden page lands instead. */
+export function liveFallback(path: string): "/buyer" | "/student-os" | "/" {
+  if (path.startsWith("/buyer")) return "/buyer";
+  if (path.startsWith("/student-os")) return "/student-os";
+  return "/";
+}

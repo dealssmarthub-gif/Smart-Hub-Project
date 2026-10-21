@@ -59,6 +59,8 @@ export interface Store {
   location: string;
   categories: string[];
   subscription: "starter" | "growth" | "professional" | "enterprise";
+  /** Public phone for buyers (vendors.contact_phone); absent when the seller gave none. */
+  contactPhone?: string;
 }
 
 export interface Product {

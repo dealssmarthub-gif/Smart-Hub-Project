@@ -275,7 +275,7 @@ export function CampusAdminPortal() {
       const newEvent = await publishCampusEvent({
         kind: "announcement",
         title: eventTitle.trim(),
-        description: eventDescription.trim() || "Official notice published for campus students.",
+        description: eventDescription.trim() || (IS_LIVE ? "" : "Official notice published for campus students."),
         eventDate: eventDate ? new Date(eventDate).toISOString() : new Date().toISOString(),
         venue: eventVenue.trim() || (IS_LIVE ? "" : "Main Campus Auditorium"),
         bannerUrl,
@@ -340,7 +340,7 @@ export function CampusAdminPortal() {
         title: resTitle.trim(),
         description:
           resDescription.trim() ||
-          `Official ${resType} for ${resCourse.trim().toUpperCase()} uploaded by Department Head.`,
+          (IS_LIVE ? "" : `Official ${resType} for ${resCourse.trim().toUpperCase()} uploaded by Department Head.`),
         resourceType: resType,
         courseCode: resCourse.trim().toUpperCase(),
         department: resDept.trim() || "General Academics",
@@ -472,8 +472,9 @@ export function CampusAdminPortal() {
                 SRC & Institutional Leadership Console
               </h1>
               <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
-                Publish verified student notices, pin priority campus assembly dates, dispatch lecture
-                slide archives, and monitor student academic tool requests in real time.
+                {IS_LIVE
+                  ? "Publish notices and events for your campus, pin important dates, and share lecture slides and past questions."
+                  : "Publish verified student notices, pin priority campus assembly dates, dispatch lecture slide archives, and monitor student academic tool requests in real time."}
               </p>
             </div>
 
@@ -497,7 +498,7 @@ export function CampusAdminPortal() {
         </div>
 
         {/* Executive Metrics Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className={`grid grid-cols-2 gap-3 sm:gap-4 ${IS_LIVE ? "md:grid-cols-3" : "md:grid-cols-4"}`}>
           <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4 sm:p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider">Campus Notices</span>
@@ -519,7 +520,7 @@ export function CampusAdminPortal() {
             <p className="text-2xl sm:text-3xl font-extrabold text-foreground">
               {filteredResources.length}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-1">Verified slide decks & solutions</p>
+            <p className="text-[11px] text-muted-foreground mt-1">{IS_LIVE ? "Published to students" : "Verified slide decks & solutions"}</p>
           </div>
 
           <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4 sm:p-5">
@@ -535,6 +536,8 @@ export function CampusAdminPortal() {
             <p className="text-[11px] text-muted-foreground mt-1">Student study package retrievals</p>
           </div>
 
+          {/* Demo only: demand figures come from this browser's searches, weighted by a made-up formula. */}
+          {!IS_LIVE && (
           <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4 sm:p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider">Campus Demand</span>
@@ -547,6 +550,7 @@ export function CampusAdminPortal() {
               Top weekly student search item
             </p>
           </div>
+          )}
         </div>
 
         {/* Console Tabs */}
@@ -562,16 +566,21 @@ export function CampusAdminPortal() {
             </TabsTrigger>
             <TabsTrigger value="tickets" className="text-xs font-semibold gap-1.5">
               <Tag className="h-3.5 w-3.5 text-link" />
-              <span>Events & Tickets</span>
+              <span>{IS_LIVE ? "Events" : "Events & Tickets"}</span>
             </TabsTrigger>
-            <TabsTrigger value="checkin" className="text-xs font-semibold gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-link" />
-              <span>Ticket Check-in</span>
-            </TabsTrigger>
-            <TabsTrigger value="intelligence" className="text-xs font-semibold gap-1.5">
-              <BarChart3 className="h-3.5 w-3.5 text-link" />
-              <span>Demand Intelligence Logs</span>
-            </TabsTrigger>
+            {/* Demo only: no tickets are sold in live mode yet, and demand logs are in-browser only. */}
+            {!IS_LIVE && (
+              <>
+                <TabsTrigger value="checkin" className="text-xs font-semibold gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 text-link" />
+                  <span>Ticket Check-in</span>
+                </TabsTrigger>
+                <TabsTrigger value="intelligence" className="text-xs font-semibold gap-1.5">
+                  <BarChart3 className="h-3.5 w-3.5 text-link" />
+                  <span>Demand Intelligence Logs</span>
+                </TabsTrigger>
+              </>
+            )}
           </TabsList>
 
           {/* TAB 1: Announcements */}

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { ListingImage } from "@/components/naflis/home/HomeBlocks";
 import type { CampusEvent } from "@/lib/naflis/store";
+import { hiddenInLive } from "@/lib/appMode";
 
 const CAMPUS_PAGES: { to: string; label: string; icon: LucideIcon }[] = [
   { to: "/student-os/resources", label: "Resources", icon: BookOpen },
@@ -37,7 +38,7 @@ export function CampusNav() {
       aria-label="Campus"
       className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 md:mx-0 md:px-0"
     >
-      {CAMPUS_PAGES.map((p) => {
+      {CAMPUS_PAGES.filter((p) => !hiddenInLive(p.to)).map((p) => {
         const Icon = p.icon;
         const on = pathname.startsWith(p.to);
         return (

@@ -68,3 +68,40 @@ describe("database products", () => {
     expect(p.image).toBe("");
   });
 });
+
+describe("Phase 5: buying, wallet, orders, messages, alerts, Lost & Found and store-only consoles", () => {
+  it("are hidden in live mode, including order detail pages", async () => {
+    const { appMode } = await liveModules();
+    for (const p of [
+      "/buyer/checkout",
+      "/buyer/cart",
+      "/buyer/wallet",
+      "/buyer/orders",
+      "/buyer/orders/abc123",
+      "/buyer/messages",
+      "/buyer/notifications",
+      "/student-os/lost-found",
+      "/finance",
+      "/dispute",
+      "/delivery",
+    ]) {
+      expect(appMode.hiddenInLive(p)).toBe(true);
+    }
+    for (const p of [
+      "/buyer/product/x",
+      "/buyer/wishlist",
+      "/buyer/categories",
+      "/me",
+      "/super/vendors",
+    ]) {
+      expect(appMode.hiddenInLive(p)).toBe(false);
+    }
+  });
+
+  it("redirect to the nearest page that still works", async () => {
+    const { appMode } = await liveModules();
+    expect(appMode.liveFallback("/buyer/orders/abc123")).toBe("/buyer");
+    expect(appMode.liveFallback("/student-os/lost-found")).toBe("/student-os");
+    expect(appMode.liveFallback("/finance")).toBe("/");
+  });
+});

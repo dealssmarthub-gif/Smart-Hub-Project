@@ -23,7 +23,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { hiddenInLive } from "@/lib/appMode";
+import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
 
 // ============================================================================
 // THE FOUR PLACES — Home, Shop, Campus, Me.
@@ -115,7 +115,7 @@ const ALL_PLACES: Place[] = [
         flag: "student_os",
       },
       { to: "/student-os/calendar", label: "Calendar", icon: CalendarDays, flag: "student_os" },
-      { to: "/student-os/events", label: "Events & tickets", icon: Ticket, flag: "student_os" },
+      { to: "/student-os/events", label: IS_LIVE ? "Events" : "Events & tickets", icon: Ticket, flag: "student_os" },
       {
         to: "/student-os/opportunities",
         label: "Opportunities",

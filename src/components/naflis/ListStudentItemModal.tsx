@@ -242,7 +242,7 @@ export function ListStudentItemModal() {
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold flex items-center justify-between">
               <span>Item Photos</span>
-              <span className="text-[10px] text-muted-foreground">Direct Supabase storage upload</span>
+              <span className="text-[10px] text-muted-foreground">Photos up to 5 MB each</span>
             </Label>
             <div className="flex flex-wrap gap-2">
               {images.map((img, idx) => (

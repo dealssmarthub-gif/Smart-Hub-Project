@@ -37,7 +37,7 @@ function SuperDashboard() {
   return (
     <RoleShell
       title="Super Administrator"
-      subtitle="Global oversight, feature flags, regional rollout, and platform policy."
+      subtitle={IS_LIVE ? "Feature flags, staff, vendors and view-as." : "Global oversight, feature flags, regional rollout, and platform policy."}
       icon={Crown}
       badge="Root access"
     >
@@ -47,19 +47,24 @@ function SuperDashboard() {
         <Button asChild variant="outline" size="sm"><Link to="/super/vendors"><Store className="mr-1 h-4 w-4" /> Vendors</Link></Button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard label="Regions live" value={String(regionState.filter((r) => r.live).length)} hint={`of ${regionState.length}`} />
-        <MetricCard label="Admin operators" value={String(admins.length)} />
-        <MetricCard label="Feature flags on" value={String(flags.filter((f) => f.enabled).length)} hint={`of ${flags.length}`} />
-        <MetricCard label="Policy version" value="v2026.7" hint="Effective July 15, 2026" />
+      {/* Live: regions, operators and policy are made-up or in-browser figures, so only the flag count shows. */}
+      <div className={`grid gap-3 sm:grid-cols-2 ${IS_LIVE ? "" : "lg:grid-cols-4"}`}>
+        {!IS_LIVE && <MetricCard label="Regions live" value={String(regionState.filter((r) => r.live).length)} hint={`of ${regionState.length}`} />}
+        {!IS_LIVE && <MetricCard label="Admin operators" value={String(admins.length)} />}
+        <MetricCard label="Feature flags on" value={String(flags.filter((f) => f.enabled && !(IS_LIVE && LIVE_FORCED_OFF_FLAGS.includes(f.key))).length)} hint={`of ${flags.length}`} />
+        {!IS_LIVE && <MetricCard label="Policy version" value="v2026.7" hint="Effective July 15, 2026" />}
       </div>
 
       <Tabs defaultValue="flags" className="mt-6">
         <TabsList>
           <TabsTrigger value="flags">Feature flags</TabsTrigger>
-          <TabsTrigger value="regions">Regions</TabsTrigger>
-          <TabsTrigger value="admins">Operators</TabsTrigger>
-          <TabsTrigger value="policy">Policy</TabsTrigger>
+          {!IS_LIVE && (
+            <>
+              <TabsTrigger value="regions">Regions</TabsTrigger>
+              <TabsTrigger value="admins">Operators</TabsTrigger>
+              <TabsTrigger value="policy">Policy</TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <TabsContent value="flags" className="mt-4 space-y-2">

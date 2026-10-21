@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useFeatureFlag } from "@/lib/featureFlags";
+import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
 import { ROLE_META, roleHome, type Role } from "@/lib/naflis/roles";
 import { useNaflis, useUserRoles } from "@/lib/naflis/store";
 
@@ -38,13 +39,16 @@ export function useWorkspaces() {
   const studentOs = useFeatureFlag("student_os");
   const srcPortal = useFeatureFlag("src_portal");
 
-  const roles = held.filter((r) => (r !== "student" || studentOs) && ((r !== "src_head" && r !== "dean") || srcPortal));
+  const roles = held.filter(
+    (r) => (r !== "student" || studentOs) && ((r !== "src_head" && r !== "dean") || srcPortal) && !hiddenInLive(roleHome(r)),
+  );
 
   return {
     active,
     signedIn,
     roles,
-    canJoinStudentOs: signedIn && studentOs && !held.includes("student"),
+    // Live: joining goes through student verification, which isn't saved server-side yet.
+    canJoinStudentOs: !IS_LIVE && signedIn && studentOs && !held.includes("student"),
     switchTo: (r: Role) => {
       if (!switchRole(r)) return;
       if (r !== active) toast.success(`Switched to ${ROLE_META[r].label} workspace`);

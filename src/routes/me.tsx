@@ -25,7 +25,8 @@ import { STAFF_ROLES, useSignOut } from "@/components/naflis/shell/UserMenu";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { GHS } from "@/lib/naflis/format";
 import { orderStateLabel } from "@/lib/naflis/orderMachine";
-import { ROLE_META } from "@/lib/naflis/roles";
+import { ROLE_META, roleHome } from "@/lib/naflis/roles";
+import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
 import { useNaflis, useUserRoles, useWallet } from "@/lib/naflis/store";
 import { runOrderTransition } from "@/services/orderService";
 
@@ -273,7 +274,8 @@ function MePage() {
   const visible = (d: Destination) => (!d.flag || flags[d.flag]) && (!d.signedIn || signedIn);
   const place = (id: "me" | "shop" | "campus" | "home") =>
     PLACES.find((p) => p.id === id)!.destinations.filter(visible);
-  const staff = held.filter((r) => STAFF_ROLES.includes(r));
+  // Live: no dashboards that run on in-browser data only (appMode LIVE_HIDDEN_PATHS).
+  const staff = held.filter((r) => STAFF_ROLES.includes(r) && !hiddenInLive(roleHome(r)));
 
   return (
     <AppShell showCampus={false}>
@@ -297,7 +299,8 @@ function MePage() {
                         <Building2 className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} /> {campus}
                       </p>
                     )}
-                    {verified ? (
+                    {/* Live: verification isn't saved server-side yet, so no badge and no Verify button. */}
+                    {IS_LIVE ? null : verified ? (
                       <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-tile-mint px-2.5 py-1 text-xs font-bold text-verified">
                         <BadgeCheck className="h-3.5 w-3.5" strokeWidth={1.8} /> Verified student
                       </span>
@@ -319,7 +322,7 @@ function MePage() {
                 <div>
                   <p className="text-lg font-extrabold">You're not signed in</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Sign in to see your wallet, orders and listings.
+                    {IS_LIVE ? "Sign in to post listings and manage your account." : "Sign in to see your wallet, orders and listings."}
                   </p>
                   <Link
                     to="/login"
@@ -330,10 +333,11 @@ function MePage() {
                 </div>
               )}
             </section>
-            {signedIn && <WalletCard />}
+            {/* Demo only: wallet and orders run on in-browser data. */}
+            {signedIn && !IS_LIVE && <WalletCard />}
           </div>
           <div className="space-y-4">
-            {signedIn && <ActiveOrderCard />}
+            {signedIn && !IS_LIVE && <ActiveOrderCard />}
             {place("me").length > 0 && (
               <Group title="My account">
                 {place("me").map((d) => (

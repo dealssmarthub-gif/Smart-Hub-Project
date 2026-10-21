@@ -347,13 +347,13 @@ function Landing() {
                 )}
               </label>
               <button type="submit" className={`${primaryBtn} h-12 shrink-0 px-6`}>
-                <Search className="h-4 w-4" strokeWidth={1.8} /> Search Deals
+                <Search className="h-4 w-4" strokeWidth={1.8} /> {IS_LIVE ? "Search" : "Search Deals"}
               </button>
             </form>
 
             {/* Popular campuses */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-xs font-semibold text-muted-foreground">Popular Campuses:</span>
+              <span className="mr-1 text-xs font-semibold text-muted-foreground">{IS_LIVE ? "Campuses:" : "Popular Campuses:"}</span>
               {CAMPUSES.slice(0, 7).map((campus) => (
                 <button
                   key={campus}
@@ -473,12 +473,13 @@ function Landing() {
         <section className={`${PAGE_WIDTH} py-10`}>
           <SectionHeader
             title="What do you need today?"
-            hint="Campus Toolkits & Modules — engineered specifically for university life, academic success, and trusted student trade. 5 integrated pillars."
+            hint={IS_LIVE ? "Trade with students on your campus, keep up with SRC notices and find study materials." : "Campus Toolkits & Modules — engineered specifically for university life, academic success, and trusted student trade. 5 integrated pillars."}
           />
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-5">
+          <div className={`grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 ${IS_LIVE ? "" : "lg:grid-cols-5"}`}>
             <Tile tone="lavender" icon={Store} title="Student Marketplace" hint="Campus peer-to-peer thrift, textbooks, laptops, fridges & dorm furniture." to="/student-os/marketplace" cta="Open Market" />
             {!IS_LIVE && <Tile tone="peach" icon={BadgePercent} title="Student Deals & Group Buys" hint="Verified discounts, split group orders & volume bulk price drops." to="/student-os/deals" cta="Join Group Buys" />}
-            <Tile tone="rose" icon={Building2} title="Official SRC Notices" hint="Direct administrative bulletins, townhall assemblies & campus welfare updates." to="/campus-admin" cta="View SRC Notices" />
+            {/* Students read notices in the Calendar (live); /campus-admin is the publishers' portal. */}
+            <Tile tone="rose" icon={Building2} title="Official SRC Notices" hint="Direct administrative bulletins, townhall assemblies & campus welfare updates." to={IS_LIVE ? "/student-os/calendar" : "/campus-admin"} cta={IS_LIVE ? "See notices & events" : "View SRC Notices"} />
             <Tile tone="mint" icon={BookOpen} title="Lecture Notes & Slides" hint="Solved past examination booklets, formulas, summaries & faculty slides." to="/student-os/resources" cta="Study Resources" />
             {!IS_LIVE && <Tile tone="sky" icon={ShieldCheck} title="Escrow Protection Hub" hint="Zero-fraud escrow. Funds held safe until meetup inspection & 6-digit PIN release." onClick={() => setEscrowModalOpen(true)} cta="Escrow Security" />}
           </div>
@@ -620,8 +621,8 @@ function Landing() {
               <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">Student leader or faculty head?</h2>
               <p className="text-sm font-bold text-foreground">Institutional &amp; SRC Governance Portal</p>
               <p className="text-sm leading-relaxed text-subtle-foreground">
-                Publish official student welfare announcements, upload department lecture slides &amp; solved past questions, and
-                review campus-wide student demand intelligence.
+                Publish official student welfare announcements and upload department lecture slides &amp; solved past questions
+                {IS_LIVE ? "." : ", and review campus-wide student demand intelligence."}
               </p>
             </div>
             <Link to="/campus-admin" className={`${primaryBtn} shrink-0`}>

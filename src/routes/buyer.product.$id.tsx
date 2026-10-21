@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import {
   Heart, Share2, Bell, MessageSquare, ShieldCheck, Truck, Clock, TrendingUp,
-  Zap, AlertTriangle, Eye, Users, Star, Loader2,
+  Zap, AlertTriangle, Eye, Users, Star, Loader2, Phone,
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useNaflis } from "@/lib/naflis/store";
-import { GHS, pct } from "@/lib/naflis/format";
+import { GHS, pct, telHref, whatsappNumber } from "@/lib/naflis/format";
 import { ProductCard } from "@/components/naflis/ProductCard";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -150,7 +150,7 @@ function ProductDetail() {
             {store && (
               <span className="flex items-center gap-1">
                 <ShieldCheck className="h-4 w-4 text-link" />
-                {store.name} {store.verified && <span className="text-xs text-link">(verified)</span>}
+                {store.name} {store.verified && <span className="text-xs text-link">{IS_LIVE ? "(approved seller)" : "(verified)"}</span>}
               </span>
             )}
             {/* Only when the product has a delivery time (database products don't yet). */}
@@ -192,8 +192,34 @@ function ProductDetail() {
             }}
           />
 
+          {/* Live: buying on the site isn't connected yet, so buyers contact the seller directly when they published a phone. */}
+          {IS_LIVE && telHref(store?.contactPhone) && (
+            <div className="space-y-2 rounded-xl border border-border-soft bg-card p-4">
+              <p className="text-sm font-semibold">Contact {store?.name || "the seller"} to buy</p>
+              <div className="grid grid-cols-2 gap-2">
+                {whatsappNumber(store?.contactPhone) && (
+                  <Button asChild size="lg">
+                    <a
+                      href={`https://wa.me/${whatsappNumber(store?.contactPhone)}?text=${encodeURIComponent(`Hi, I saw ${product.name} on NAFLIS Mall.`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <MessageSquare className="mr-1 h-4 w-4" /> WhatsApp
+                    </a>
+                  </Button>
+                )}
+                <Button asChild size="lg" variant="secondary">
+                  <a href={telHref(store?.contactPhone)!}>
+                    <Phone className="mr-1 h-4 w-4" /> Call {store?.contactPhone}
+                  </a>
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {!IS_LIVE && (<>
             <Button
               size="lg"
               className="col-span-2 gradient-hero text-white hover:opacity-95"
@@ -215,9 +241,12 @@ function ProductDetail() {
             >
               Add to cart
             </Button>
+            </>)}
             <Button variant="ghost" onClick={() => { toggleWishlist(product.id); toast.success(inWishlist ? "Removed" : "Wishlisted"); }}>
               <Heart className={`mr-1 h-4 w-4 ${inWishlist ? "fill-error text-error" : ""}`} /> Wishlist
             </Button>
+            {/* Demo only: price alerts and seller messages aren't delivered anywhere yet. */}
+            {!IS_LIVE && (<>
             <PriceAlertButton
               current={product.price}
               onSet={(target) => {
@@ -234,7 +263,18 @@ function ProductDetail() {
               msg={msg}
               setMsg={setMsg}
             />
-            <Button variant="ghost" onClick={() => { navigator.clipboard?.writeText(window.location.href); toast.success("Link copied"); }}>
+            </>)}
+            <Button
+              variant="ghost"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(window.location.href);
+                  toast.success("Link copied");
+                } catch {
+                  toast.error("Couldn't copy the link. Copy it from the address bar instead.");
+                }
+              }}
+            >
               <Share2 className="mr-1 h-4 w-4" /> Share
             </Button>
           </div>

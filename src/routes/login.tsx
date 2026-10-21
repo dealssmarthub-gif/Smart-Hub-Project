@@ -363,7 +363,7 @@ function LoginPage() {
       {/* Footer */}
       <footer className="border-t border-border-soft">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row">
-          <p>© {new Date().getFullYear()} NAFLIS Discount Mall. Real Authentication.</p>
+          <p>© {new Date().getFullYear()} NAFLIS Mall</p>
         </div>
       </footer>
     </div>

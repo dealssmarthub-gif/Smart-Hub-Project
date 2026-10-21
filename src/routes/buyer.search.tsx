@@ -14,6 +14,7 @@ import { useNaflis } from "@/lib/naflis/store";
 import { categoryFamily, useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
+import { IS_LIVE } from "@/lib/appMode";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogDescription,
 } from "@/components/ui/dialog";
@@ -103,7 +104,7 @@ function SearchPage() {
             <SelectItem value="relevance">Relevance</SelectItem>
             <SelectItem value="price-asc">Price: low → high</SelectItem>
             <SelectItem value="price-desc">Price: high → low</SelectItem>
-            <SelectItem value="discount">Biggest discount</SelectItem>
+            {!IS_LIVE && <SelectItem value="discount">Biggest discount</SelectItem>}
           </SelectContent>
         </Select>
       </div>
@@ -135,6 +136,8 @@ function SearchPage() {
             />
             <p className="mt-1 text-xs text-muted-foreground">{GHS(priceRange[0])} — {GHS(priceRange[1])}</p>
           </div>
+          {/* Demo only: products have no discount, delivery or payment-plan data yet. */}
+          {!IS_LIVE && (<>
           <div>
             <Label className="text-xs uppercase tracking-wider">Minimum discount</Label>
             <Slider
@@ -149,6 +152,7 @@ function SearchPage() {
             <Toggle checked={reserveOnly} onChange={setReserveOnly} label="Reserve & Pay eligible" />
             <Toggle checked={installmentOnly} onChange={setInstallmentOnly} label="Take Now Pay Later" />
           </div>
+          </>)}
         </aside>
 
         {/* Results */}
@@ -158,6 +162,8 @@ function SearchPage() {
               {filtered.length} {filtered.length === 1 ? "product" : "products"}
               {q && <> for "<span className="font-medium text-foreground">{q}</span>"</>}
             </p>
+            {/* Demo only: "notify me" and product requests are stored in this browser only. */}
+            {!IS_LIVE && (
             <div className="flex gap-2">
               {q && filtered.length === 0 && (
                 <PriceFeedback query={q} onNotify={() => {
@@ -176,6 +182,7 @@ function SearchPage() {
                 }}
               />
             </div>
+            )}
           </div>
 
           {filtered.length === 0 ? (
@@ -183,7 +190,9 @@ function SearchPage() {
               <Package className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
               <h3 className="text-lg font-semibold">No matches yet</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Sellers are preparing offers for this product. Tell us the price you'd pay, or notify us when it's available.
+                {IS_LIVE
+                  ? "Nothing matches yet. Try another word or category."
+                  : "Sellers are preparing offers for this product. Tell us the price you'd pay, or notify us when it's available."}
               </p>
             </div>
           ) : (

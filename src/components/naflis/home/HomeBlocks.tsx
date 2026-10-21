@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { GHS } from "@/lib/naflis/format";
 import { useNaflis, type StudentListing } from "@/lib/naflis/store";
+import { hiddenInLive } from "@/lib/appMode";
 
 /**
  * A listing photo. The real image is always used; the neutral placeholder only
@@ -291,7 +292,12 @@ export function SrcNoticeRow({
 }
 
 /** Notifications bell with unread count (signed-in only). */
-export function NotificationBell({ tone = "default" }: { tone?: "default" | "onPrimary" }) {
+export function NotificationBell(props: { tone?: "default" | "onPrimary" }) {
+  // Live: alerts run on in-browser data only (appMode LIVE_HIDDEN_PATHS).
+  return hiddenInLive("/buyer/notifications") ? null : <AlertsBell {...props} />;
+}
+
+function AlertsBell({ tone = "default" }: { tone?: "default" | "onPrimary" }) {
   const signedIn = useNaflis((s) => Boolean(s.currentUserId));
   const unread = useNaflis(
     (s) => s.notifications.filter((n) => n.userId === s.currentUserId && !n.read).length,

@@ -7,13 +7,14 @@ import {
   HeadContent,
   Scripts,
   type ErrorComponentProps,
+  redirect,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/lib/supabase";
-import { IS_LIVE, LIVE_MISCONFIGURED } from "@/lib/appMode";
+import { IS_LIVE, LIVE_MISCONFIGURED, hiddenInLive, liveFallback } from "@/lib/appMode";
 import { useNaflis } from "@/lib/naflis/store";
 import { syncCampusContent } from "@/services/campusContent";
 import { syncStudentListings } from "@/services/studentListings";
@@ -77,6 +78,10 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  // Live: pages not connected yet redirect from one place (appMode LIVE_HIDDEN_PATHS).
+  beforeLoad: ({ location }) => {
+    if (hiddenInLive(location.pathname)) throw redirect({ to: liveFallback(location.pathname) });
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },

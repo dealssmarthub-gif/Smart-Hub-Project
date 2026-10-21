@@ -29,7 +29,7 @@ import {
   type StudentListing,
 } from "@/lib/naflis/store";
 import { toast } from "sonner";
-import { IS_LIVE } from "@/lib/appMode";
+import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
 import { countResourceDownload } from "@/services/campusContent";
 
 export const Route = createFileRoute("/student-os/resources")({
@@ -58,7 +58,7 @@ const OTHER_TONE = { bg: "bg-tile-rose", ink: "text-[#9d1d4b] dark:text-[#ff9fbd
 
 const AROUND: { tone: TileTone; icon: typeof CalendarDays; title: string; hint: string; to: string }[] = [
   { tone: "lavender", icon: CalendarDays, title: "Calendar", hint: "Lectures, labs, exams and SRC events.", to: "/student-os/calendar" },
-  { tone: "peach", icon: Ticket, title: "Events & tickets", hint: IS_LIVE ? "Campus events published by the SRC." : "Campus events with QR tickets.", to: "/student-os/events" },
+  { tone: "peach", icon: Ticket, title: IS_LIVE ? "Events" : "Events & tickets", hint: IS_LIVE ? "Campus events published by the SRC." : "Campus events with QR tickets.", to: "/student-os/events" },
   { tone: "mint", icon: Briefcase, title: "Opportunities", hint: "Jobs, internships and scholarships.", to: "/student-os/opportunities" },
   { tone: "rose", icon: SearchCheck, title: "Lost & found", hint: "Report or claim lost items.", to: "/student-os/lost-found" },
 ];
@@ -352,8 +352,8 @@ function StudentResources() {
       {/* Around campus */}
       <section>
         <SectionHeader title="Around campus" />
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          {AROUND.map((t) => <Tile key={t.to} {...t} />)}
+        <div className={`grid grid-cols-2 gap-3 md:gap-4 ${IS_LIVE ? "md:grid-cols-3" : "md:grid-cols-4"}`}>
+          {AROUND.filter((t) => !hiddenInLive(t.to)).map((t) => <Tile key={t.to} {...t} />)}
         </div>
       </section>
 
