@@ -71,6 +71,22 @@ describe("institutional portal links", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("no file, the portal's own page included, has a link or access label for the portal", () => {
+    // The portal's heading ("Institutional / SRC Portal") is fine; links to it are not.
+    const LINK = /<Link[^>]*to=["{]["`]?\/campus-admin/;
+    const LABEL =
+      /SRC access|SRC & institution access|Institutional \/ SRC Access|Open SRC Portal|Executive Sign In/i;
+    const src = path.resolve(__dirname, "../src");
+    const offenders = sourceFiles(src)
+      .filter((f) => !f.endsWith("routeTree.gen.ts"))
+      .filter((f) => {
+        const text = readFileSync(f, "utf8");
+        return LINK.test(text) || LABEL.test(text);
+      })
+      .map((f) => path.relative(src, f).replace(/\\/g, "/"));
+    expect(offenders).toEqual([]);
+  });
+
   it("SRC and dean workspaces are institutional; others are not", () => {
     expect(isInstitutionalRole("src_head")).toBe(true);
     expect(isInstitutionalRole("dean")).toBe(true);

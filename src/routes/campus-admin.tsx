@@ -1223,10 +1223,6 @@ export function CampusAdminPortal() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 text-xs text-muted-foreground sm:flex-row">
           <Logo />
           <div className="flex items-center gap-4">
-            <Link to="/campus-admin" className="font-semibold text-link hover:underline">
-              Institutional / SRC Access
-            </Link>
-            <span>•</span>
             <Link to="/student-os" className="hover:text-foreground">
               Student OS
             </Link>
