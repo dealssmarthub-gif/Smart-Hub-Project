@@ -155,4 +155,12 @@ describe("direct visits to staff routes wait for the session", () => {
     expect(CampusAdminRoute.options.ssr).toBe(false);
     expect(SuperRoute.options.ssr).toBe(false);
   });
+
+  it("demo: loading a real account's grants keeps the seeded personas' grants", async () => {
+    const seeded = useNaflis.getState().staffGrants.map((g) => g.id);
+    expect(seeded.length).toBeGreaterThan(0);
+    auth.account = SRC; // the stub returns no staff_grants rows
+    await directVisit("/campus-admin");
+    expect(useNaflis.getState().staffGrants.map((g) => g.id)).toEqual(seeded);
+  });
 });
