@@ -31,6 +31,7 @@ import {
 } from "@/components/naflis/home/HomeBlocks";
 import { NoticeDialog } from "@/components/naflis/campus/CampusBlocks";
 import { fetchSellerProducts } from "@/services/sellerApi";
+import { mapDbEvent } from "@/services/campusContent";
 import { ESCROW_HELD_STATES } from "@/lib/naflis/orderMachine";
 import {
   useNaflis,
@@ -48,6 +49,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -112,16 +114,10 @@ function Landing() {
       try {
         const data = await fetchSellerProducts();
 
+        // Real products only carry what the database holds: no invented old price, demand or flash sale.
         if (data && data.length > 0) {
-          const mapped = data.map((p) => ({
-            ...p,
-            originalPrice: Math.round(p.price * 1.25),
-            demand: 85,
-            flashSale: { endsAt: Date.now() + 8 * 3_600_000 },
-            location: "Greater Accra",
-          }));
-          setProducts(mapped);
-          useNaflis.setState({ products: mapped });
+          setProducts(data);
+          useNaflis.setState({ products: data });
         }
       } catch (err) {
         console.warn("Notice: Loaded local product catalog:", err);
@@ -138,19 +134,7 @@ function Landing() {
           .order("created_at", { ascending: false });
 
         if (data && data.length > 0) {
-          const mapped: CampusEvent[] = data.map((e: any) => ({
-            id: e.id,
-            title: e.title,
-            description: e.description || "",
-            eventDate: e.event_date || new Date().toISOString(),
-            venue: e.venue || "Campus Main Hall",
-            bannerUrl: e.banner_url || "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&q=80",
-            campus: e.campus || "UG - Legon",
-            pinned: true,
-            organizer: e.organizer || "Official SRC",
-            createdAt: new Date(e.created_at).getTime(),
-          }));
-          setPinnedEvents(mapped);
+          setPinnedEvents(data.map(mapDbEvent));
         }
       } catch (err) {
         console.warn("Notice: Loaded local pinned events:", err);
@@ -213,7 +197,10 @@ function Landing() {
   }, [products, activeSearchTerm]);
 
   const flash = displayProducts.filter((p) => p.flashSale).slice(0, 4);
-  const trending = [...displayProducts].sort((a, b) => (b.demand || 0) - (a.demand || 0)).slice(0, 8);
+  // Live has no demand data, so "trending" becomes newest first.
+  const trending = [...displayProducts]
+    .sort((a, b) => (IS_LIVE ? (b.createdAt || 0) - (a.createdAt || 0) : (b.demand || 0) - (a.demand || 0)))
+    .slice(0, 8);
 
   const totalSaved = products.reduce((a, p) => a + (p.originalPrice - p.price) * 15, 0);
   const activeShoppersCount = users.filter((u) => u.role === "buyer").length;
@@ -229,7 +216,8 @@ function Landing() {
   );
 
   const currentPinnedEvent = pinnedEvents[activeTickerIndex] || pinnedEvents[0];
-  const groupBuys = almostFull(studentListings).slice(0, 3);
+  // Demo only: group buys aren't connected yet.
+  const groupBuys = IS_LIVE ? [] : almostFull(studentListings).slice(0, 3);
   const heroListing = flash[0] ?? trending[0];
   const heroGroupBuy = groupBuys[0];
 
@@ -286,7 +274,7 @@ function Landing() {
         </aside>
       )}
 
-      <TopNav onEscrowClick={() => setEscrowModalOpen(true)} />
+      <TopNav onEscrowClick={IS_LIVE ? undefined : () => setEscrowModalOpen(true)} />
 
       <main className="flex-1 pb-28 md:pb-0">
         {/* Hero */}
@@ -294,18 +282,25 @@ function Landing() {
           <div className="space-y-5">
             <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3.5 py-1.5 text-xs font-bold text-accent-foreground">
               <GraduationCap className="h-4 w-4" strokeWidth={1.8} />
-              Verified student commerce
+              Campus marketplace &amp; student hub
             </span>
             <h1 className="text-[40px] font-extrabold leading-[1.05] tracking-tight text-foreground md:text-[56px]">
               Buy smarter.
               <br />
               <span className="text-link">Study smarter.</span>
             </h1>
-            <p className="max-w-xl text-base leading-relaxed text-subtle-foreground">
-              <span className="font-bold text-foreground">Smart Campus Commerce &amp; Student Hub</span>, the verified campus &amp;
-              student commerce operating system. Trade peer-to-peer thrift, join bulk student group buys, download verified
-              lecture notes, and lock in zero-risk escrow transactions across Ghanaian universities.
-            </p>
+            {IS_LIVE ? (
+              <p className="max-w-xl text-base leading-relaxed text-subtle-foreground">
+                <span className="font-bold text-foreground">Smart Campus Commerce &amp; Student Hub</span>. Buy and sell with
+                students on your campus, find lecture notes and past questions, and keep up with SRC notices and campus events.
+              </p>
+            ) : (
+              <p className="max-w-xl text-base leading-relaxed text-subtle-foreground">
+                <span className="font-bold text-foreground">Smart Campus Commerce &amp; Student Hub</span>, the verified campus &amp;
+                student commerce operating system. Trade peer-to-peer thrift, join bulk student group buys, download verified
+                lecture notes, and lock in zero-risk escrow transactions across Ghanaian universities.
+              </p>
+            )}
 
             {/* Search: campus + query + button */}
             <form
@@ -352,13 +347,13 @@ function Landing() {
                 )}
               </label>
               <button type="submit" className={`${primaryBtn} h-12 shrink-0 px-6`}>
-                <Search className="h-4 w-4" strokeWidth={1.8} /> Search Deals
+                <Search className="h-4 w-4" strokeWidth={1.8} /> {IS_LIVE ? "Search" : "Search Deals"}
               </button>
             </form>
 
             {/* Popular campuses */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-xs font-semibold text-muted-foreground">Popular Campuses:</span>
+              <span className="mr-1 text-xs font-semibold text-muted-foreground">{IS_LIVE ? "Campuses:" : "Popular Campuses:"}</span>
               {CAMPUSES.slice(0, 7).map((campus) => (
                 <button
                   key={campus}
@@ -376,12 +371,20 @@ function Landing() {
 
             {/* Calls to action */}
             <div className="flex flex-wrap gap-2 pt-1">
-              <Link to="/student-os/deals" className={primaryBtn}>
-                <BadgePercent className="h-4 w-4" strokeWidth={1.8} /> Browse Student Deals
-              </Link>
-              <button type="button" onClick={() => setEscrowModalOpen(true)} className={secondaryBtn}>
-                <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> Safe Escrow
-              </button>
+              {IS_LIVE ? (
+                <Link to="/student-os/marketplace" className={primaryBtn}>
+                  <Store className="h-4 w-4" strokeWidth={1.8} /> Browse the marketplace
+                </Link>
+              ) : (
+                <Link to="/student-os/deals" className={primaryBtn}>
+                  <BadgePercent className="h-4 w-4" strokeWidth={1.8} /> Browse Student Deals
+                </Link>
+              )}
+              {!IS_LIVE && (
+                <button type="button" onClick={() => setEscrowModalOpen(true)} className={secondaryBtn}>
+                  <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> Safe Escrow
+                </button>
+              )}
               <Link to="/student-os" className={secondaryBtn}>
                 <GraduationCap className="h-4 w-4 text-link" strokeWidth={1.8} /> Student OS
               </Link>
@@ -420,14 +423,18 @@ function Landing() {
                 </p>
               </div>
             )}
-            <div className="absolute bottom-2 left-10 flex items-center gap-3 rounded-2xl bg-escrow px-4 py-3 text-escrow-foreground shadow-soft">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15"><Lock className="h-4 w-4" strokeWidth={1.8} /></span>
-              <span className="text-sm font-bold">Funds held in escrow</span>
-            </div>
+            {!IS_LIVE && (
+              <div className="absolute bottom-2 left-10 flex items-center gap-3 rounded-2xl bg-escrow px-4 py-3 text-escrow-foreground shadow-soft">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15"><Lock className="h-4 w-4" strokeWidth={1.8} /></span>
+                <span className="text-sm font-bold">Funds held in escrow</span>
+              </div>
+            )}
           </div>
         </section>
 
         {/* Quick metrics (values as computed before this redesign) */}
+        {/* Demo only: these figures are computed from the in-browser store. */}
+        {!IS_LIVE && (
         <section className={`${PAGE_WIDTH} pb-4`}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <Metric icon={Users} label="Active shoppers" value={compact(activeShoppersCount)} />
@@ -438,6 +445,7 @@ function Landing() {
             <Metric icon={Lock} label="Protected in escrow" value={GHS(inEscrowAmount)} />
           </div>
         </section>
+        )}
 
         {/* Active Search Results Indicator */}
         {activeSearchTerm && (
@@ -465,14 +473,15 @@ function Landing() {
         <section className={`${PAGE_WIDTH} py-10`}>
           <SectionHeader
             title="What do you need today?"
-            hint="Campus Toolkits & Modules — engineered specifically for university life, academic success, and trusted student trade. 5 integrated pillars."
+            hint={IS_LIVE ? "Trade with students on your campus, keep up with SRC notices and find study materials." : "Campus Toolkits & Modules — engineered specifically for university life, academic success, and trusted student trade. 5 integrated pillars."}
           />
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-5">
+          <div className={`grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 ${IS_LIVE ? "" : "lg:grid-cols-5"}`}>
             <Tile tone="lavender" icon={Store} title="Student Marketplace" hint="Campus peer-to-peer thrift, textbooks, laptops, fridges & dorm furniture." to="/student-os/marketplace" cta="Open Market" />
-            <Tile tone="peach" icon={BadgePercent} title="Student Deals & Group Buys" hint="Verified discounts, split group orders & volume bulk price drops." to="/student-os/deals" cta="Join Group Buys" />
-            <Tile tone="rose" icon={Building2} title="Official SRC Notices" hint="Direct administrative bulletins, townhall assemblies & campus welfare updates." to="/campus-admin" cta="View SRC Notices" />
+            {!IS_LIVE && <Tile tone="peach" icon={BadgePercent} title="Student Deals & Group Buys" hint="Verified discounts, split group orders & volume bulk price drops." to="/student-os/deals" cta="Join Group Buys" />}
+            {/* Students read notices in the Calendar (live); /campus-admin is the publishers' portal. */}
+            <Tile tone="rose" icon={Building2} title="Official SRC Notices" hint="Direct administrative bulletins, townhall assemblies & campus welfare updates." to={IS_LIVE ? "/student-os/calendar" : "/campus-admin"} cta={IS_LIVE ? "See notices & events" : "View SRC Notices"} />
             <Tile tone="mint" icon={BookOpen} title="Lecture Notes & Slides" hint="Solved past examination booklets, formulas, summaries & faculty slides." to="/student-os/resources" cta="Study Resources" />
-            <Tile tone="sky" icon={ShieldCheck} title="Escrow Protection Hub" hint="Zero-fraud escrow. Funds held safe until meetup inspection & 6-digit PIN release." onClick={() => setEscrowModalOpen(true)} cta="Escrow Security" />
+            {!IS_LIVE && <Tile tone="sky" icon={ShieldCheck} title="Escrow Protection Hub" hint="Zero-fraud escrow. Funds held safe until meetup inspection & 6-digit PIN release." onClick={() => setEscrowModalOpen(true)} cta="Escrow Security" />}
           </div>
         </section>
 
@@ -498,7 +507,8 @@ function Landing() {
           </section>
         )}
 
-        {/* 3. Flash Deals & Verified Campus Discounts */}
+        {/* 3. Flash Deals & Verified Campus Discounts (only when there are some) */}
+        {flash.length > 0 && (
         <section id="deals" className={`${PAGE_WIDTH} scroll-mt-24 py-8`}>
           <SectionHeader
             title="Flash Deals — Verified Campus Pricing"
@@ -522,9 +532,11 @@ function Landing() {
                   </>
                 }
                 meta={
-                  <span className="inline-flex items-center gap-1 font-bold text-verified">
-                    <ShieldCheck className="h-3 w-3" strokeWidth={1.8} /> Escrow Backed
-                  </span>
+                  IS_LIVE ? null : (
+                    <span className="inline-flex items-center gap-1 font-bold text-verified">
+                      <ShieldCheck className="h-3 w-3" strokeWidth={1.8} /> Escrow Backed
+                    </span>
+                  )
                 }
                 onBuy={() => {
                   addToCart(p.id, 1);
@@ -534,13 +546,15 @@ function Landing() {
             ))}
           </div>
         </section>
+        )}
 
-        {/* 4. Trending Campus Products */}
+        {/* 4. Trending Campus Products (live: newest from approved sellers; hidden when there are none) */}
+        {trending.length > 0 && (
         <section className={`${PAGE_WIDTH} py-8`}>
           <SectionHeader
-            title={`Trending on ${selectedCampus}`}
-            icon={TrendingUp}
-            hint="Most requested items, electronics, and study gear among students this semester."
+            title={IS_LIVE ? "New in the mall" : `Trending on ${selectedCampus}`}
+            icon={IS_LIVE ? Store : TrendingUp}
+            hint={IS_LIVE ? "The latest products from approved sellers." : "Most requested items, electronics, and study gear among students this semester."}
             action={<SectionLink to="/buyer">Browse full mall</SectionLink>}
           />
           <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
@@ -549,11 +563,13 @@ function Landing() {
                 key={p.id}
                 p={p}
                 badges={
-                  <span className="inline-flex items-center gap-1 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-peach-ink">
-                    <Flame className="h-3 w-3" strokeWidth={1.8} /> High Campus Demand
-                  </span>
+                  IS_LIVE ? null : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-card/95 px-2 py-0.5 text-[10px] font-bold text-peach-ink">
+                      <Flame className="h-3 w-3" strokeWidth={1.8} /> High Campus Demand
+                    </span>
+                  )
                 }
-                meta={<span className="rounded-full border border-border px-2 py-0.5 font-bold text-link">SRC Trusted</span>}
+                meta={IS_LIVE ? null : <span className="rounded-full border border-border px-2 py-0.5 font-bold text-link">SRC Trusted</span>}
                 onBuy={() => {
                   addToCart(p.id, 1);
                   toast.success(`Added ${p.name} to protected Escrow order.`);
@@ -562,8 +578,10 @@ function Landing() {
             ))}
           </div>
         </section>
+        )}
 
-        {/* 5. Safe Escrow Explainer Section */}
+        {/* 5. Safe Escrow Explainer Section (demo only: escrow isn't live yet) */}
+        {!IS_LIVE && (
         <section id="escrow" className={`${PAGE_WIDTH} scroll-mt-24 py-10`}>
           <div className="rounded-[32px] bg-escrow p-6 text-escrow-foreground sm:p-10">
             <div className="max-w-2xl space-y-2">
@@ -591,6 +609,7 @@ function Landing() {
             </button>
           </div>
         </section>
+        )}
 
         {/* 6. Institutional / SRC Access Callout */}
         <section className={`${PAGE_WIDTH} pb-12`}>
@@ -602,8 +621,8 @@ function Landing() {
               <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">Student leader or faculty head?</h2>
               <p className="text-sm font-bold text-foreground">Institutional &amp; SRC Governance Portal</p>
               <p className="text-sm leading-relaxed text-subtle-foreground">
-                Publish official student welfare announcements, upload department lecture slides &amp; solved past questions, and
-                review campus-wide student demand intelligence.
+                Publish official student welfare announcements and upload department lecture slides &amp; solved past questions
+                {IS_LIVE ? "." : ", and review campus-wide student demand intelligence."}
               </p>
             </div>
             <Link to="/campus-admin" className={`${primaryBtn} shrink-0`}>
@@ -620,19 +639,20 @@ function Landing() {
             <div className="col-span-2 space-y-2 md:col-span-1">
               <Logo />
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Smart Deal Hub · Powered by NAFLIS SmartMall reference architecture and campus escrow.
+                Smart Deal Hub · Powered by NAFLIS SmartMall{IS_LIVE ? "." : " reference architecture and campus escrow."}
               </p>
             </div>
             <FooterColumn title="Campus Portals">
               <FooterLink to="/student-os">Student OS Hub</FooterLink>
               <FooterLink to="/student-os/marketplace">Campus Marketplace</FooterLink>
-              <FooterLink to="/student-os/deals">Student Deals</FooterLink>
+              {!IS_LIVE && <FooterLink to="/student-os/deals">Student Deals</FooterLink>}
               <FooterLink to="/student-os/resources">Lecture Notes &amp; Slides</FooterLink>
             </FooterColumn>
             <FooterColumn title="Leadership">
               <FooterLink to="/campus-admin">Institutional / SRC Access</FooterLink>
               <FooterLink to="/login">Executive Sign In</FooterLink>
             </FooterColumn>
+            {!IS_LIVE && (
             <FooterColumn title="Safety & Escrow">
               <li>
                 <button type="button" onClick={() => setEscrowModalOpen(true)} className="inline-flex min-h-11 items-center hover:text-foreground">
@@ -644,14 +664,19 @@ function Landing() {
                 <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.8} /> 100% Protected Handover
               </li>
             </FooterColumn>
+            )}
           </div>
           <div className="flex flex-col items-start justify-between gap-2 border-t border-border-soft pt-4 text-xs text-muted-foreground sm:flex-row sm:items-center">
             <p>© {new Date().getFullYear()} NAFLIS SmartMall Platform. All rights reserved.</p>
             <div className="flex flex-wrap items-center gap-x-4">
-              <button type="button" onClick={() => setEscrowModalOpen(true)} className="inline-flex min-h-11 items-center hover:text-foreground">
-                Escrow Terms
-              </button>
-              <Link to="/buyer/wallet" className="inline-flex min-h-11 items-center hover:text-foreground">Student Wallet</Link>
+              {!IS_LIVE && (
+                <>
+                  <button type="button" onClick={() => setEscrowModalOpen(true)} className="inline-flex min-h-11 items-center hover:text-foreground">
+                    Escrow Terms
+                  </button>
+                  <Link to="/buyer/wallet" className="inline-flex min-h-11 items-center hover:text-foreground">Student Wallet</Link>
+                </>
+              )}
               <Link to="/campus-admin" className="inline-flex min-h-11 items-center font-bold text-link hover:underline">
                 Institutional / SRC Access
               </Link>
@@ -731,13 +756,20 @@ function ProductTile({ p, badges, meta, onBuy }: { p: Product; badges: React.Rea
         <div className="mt-auto space-y-2 pt-1">
           <p>
             <span className="text-base font-extrabold text-foreground">{GHS(p.price)}</span>
-            {p.originalPrice && (
+            {p.originalPrice > p.price && (
               <span className="ml-1.5 text-xs text-muted-foreground line-through">{GHS(p.originalPrice)}</span>
             )}
           </p>
-          <button type="button" onClick={onBuy} className={`${primaryBtn} w-full text-xs`}>
-            <Lock className="h-3.5 w-3.5" strokeWidth={1.8} /> Buy with Escrow
-          </button>
+          {IS_LIVE ? (
+            // Live: no escrow checkout yet, so the tile only opens the product page.
+            <Link to="/buyer/product/$id" params={{ id: p.id }} className={`${primaryBtn} w-full text-xs`}>
+              View item
+            </Link>
+          ) : (
+            <button type="button" onClick={onBuy} className={`${primaryBtn} w-full text-xs`}>
+              <Lock className="h-3.5 w-3.5" strokeWidth={1.8} /> Buy with Escrow
+            </button>
+          )}
         </div>
       </div>
     </article>

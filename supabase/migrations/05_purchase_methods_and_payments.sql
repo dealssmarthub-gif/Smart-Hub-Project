@@ -6,6 +6,9 @@
 -- through the `payments` Edge Function (service role) calling the
 -- SECURITY DEFINER functions below; clients only get SELECT on their own rows.
 
+-- The scheduled jobs at the end of this file (and in 07) need pg_cron.
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
 -- ============================================================================
 -- 1. Product purchase configuration & credit profile
 -- ============================================================================
@@ -50,14 +53,7 @@ CREATE TABLE IF NOT EXISTS public.promo_codes (
 );
 ALTER TABLE public.promo_codes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public promo_codes read" ON public.promo_codes FOR SELECT USING (active);
-
-INSERT INTO public.promo_codes (code, type, value, min_spend, max_discount, description) VALUES
-    ('NAFLIS10',    'percent',       10,  200, 500,  '10% off any order'),
-    ('FLASH20',     'percent',       20,  NULL, 800, '20% off flash-sale items'),
-    ('FREESHIP',    'free-shipping', 100, NULL, NULL, 'Free delivery on any order'),
-    ('BLACKFRIDAY', 'percent',       25,  NULL, 1500, 'Black Friday 25% off'),
-    ('FIRSTBUY',    'fixed',         50,  300, NULL, 'GHS 50 off your first order')
-ON CONFLICT (code) DO NOTHING;
+-- No seeded codes: real ones are created on purpose, per campaign.
 
 -- ============================================================================
 -- 3. Order state machine
@@ -140,12 +136,22 @@ ALTER TABLE public.order_items
 -- path let a browser record an order as "paid" on its own say-so.
 DROP POLICY IF EXISTS "Users can insert their own orders" ON public.orders;
 
-CREATE POLICY "Vendors can view orders containing their items"
-    ON public.orders FOR SELECT
-    USING (EXISTS (
+-- Is the caller a seller on this order?
+-- SECURITY DEFINER on purpose: policies call it instead of joining order_items,
+-- whose own policy joins orders. Postgres rejects that cycle ("infinite
+-- recursion detected in policy") for every signed-in read of orders.
+CREATE OR REPLACE FUNCTION public.naflis_sells_order(p_order UUID)
+RETURNS BOOLEAN AS $$
+    SELECT EXISTS (
         SELECT 1 FROM public.order_items oi JOIN public.vendors v ON v.id = oi.vendor_id
-        WHERE oi.order_id = orders.id AND v.user_id = auth.uid()
-    ));
+        WHERE oi.order_id = p_order AND v.user_id = auth.uid()
+    );
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+REVOKE ALL ON FUNCTION public.naflis_sells_order(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.naflis_sells_order(UUID) TO authenticated, service_role;
+
+CREATE POLICY "Vendors can view their orders" ON public.orders FOR SELECT
+    USING (public.naflis_sells_order(id));
 
 CREATE TABLE IF NOT EXISTS public.order_events (
     id BIGSERIAL PRIMARY KEY,
@@ -161,10 +167,7 @@ CREATE INDEX IF NOT EXISTS idx_order_events_order ON public.order_events (order_
 ALTER TABLE public.order_events ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Order parties read order_events" ON public.order_events FOR SELECT USING (
     EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_id AND o.buyer_id = auth.uid())
-    OR EXISTS (
-        SELECT 1 FROM public.order_items oi JOIN public.vendors v ON v.id = oi.vendor_id
-        WHERE oi.order_id = order_events.order_id AND v.user_id = auth.uid()
-    )
+    OR public.naflis_sells_order(order_id)
 );
 
 -- ============================================================================

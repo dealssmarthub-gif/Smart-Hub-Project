@@ -1,5 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { supabase } from "@/lib/supabase";
+import { IS_LIVE, LIVE_FORCED_OFF_FLAGS } from "@/lib/appMode";
 import { useNaflis } from "@/lib/naflis/store";
 
 // ============================================================================
@@ -38,7 +39,12 @@ const TTL_MS = 60_000;
 
 type FlagMap = Record<string, FeatureFlag>;
 
-const defaults: FlagMap = Object.fromEntries(DEFAULT_FLAGS.map((f) => [f.key, f]));
+// Live mode starts from the production seed (migration 04): only the shipped
+// surfaces on. Supabase's values replace these as soon as they load.
+const LIVE_DEFAULT_ON = new Set(["student_os", "src_portal", "role_switcher"]);
+const defaults: FlagMap = Object.fromEntries(
+  DEFAULT_FLAGS.map((f) => [f.key, IS_LIVE ? { ...f, enabled: LIVE_DEFAULT_ON.has(f.key) } : f]),
+);
 let flags: FlagMap = defaults;
 let hydrated = false;
 let lastFetch = 0;
@@ -104,6 +110,8 @@ export function refreshFeatureFlags(force = false): Promise<void> {
 
 function evaluate(flag: FeatureFlag | undefined, role?: string, institutionId?: string): boolean {
   if (!flag || !flag.enabled) return false;
+  // Live: Reserve & Pay and Pay Later stay off until their payments are wired.
+  if (IS_LIVE && LIVE_FORCED_OFF_FLAGS.includes(flag.key)) return false;
   if (flag.roles?.length && !(role && flag.roles.includes(role))) return false;
   if (flag.institutionIds?.length && !(institutionId && flag.institutionIds.includes(institutionId))) return false;
   return true;

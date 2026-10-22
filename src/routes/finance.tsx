@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNaflis } from "@/lib/naflis/store";
 import { ESCROW_HELD_STATES, orderStateLabel } from "@/lib/naflis/orderMachine";
 import { GHS, fmtDate } from "@/lib/naflis/format";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/finance")({
   beforeLoad: () => {
@@ -81,7 +82,8 @@ function FinanceDashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={approved ? "secondary" : "outline"}>{approved ? "Approved" : "Pending"}</Badge>
-                {!approved && (
+                {/* Demo only: credit decisions here only change the in-browser store. */}
+                {!approved && !IS_LIVE && (
                   <>
                     <Button size="sm" onClick={() => {
                       useNaflis.getState().approveCredit(user.id, 3000);

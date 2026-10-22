@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import {
 } from "@/lib/naflis/store";
 import { useCategories } from "@/services/categories";
 import { supabase } from "@/lib/supabase";
+import { IS_LIVE } from "@/lib/appMode";
+import { clearOwnContactPhone, createStudentListing, fetchOwnVendor, PHONE_PATTERN } from "@/services/studentListings";
 import { Upload, X, Camera, Plus, Sparkles, MapPin, Tag } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,7 +35,40 @@ export function ListStudentItemModal() {
   const [condition, setCondition] = useState<StudentItemCondition>("Like New");
   const [hostelLocation, setHostelLocation] = useState("");
   const [description, setDescription] = useState("");
-  const [phone, setPhone] = useState(user?.phone || "");
+  // Never the private account phone. With a seller account, starts with the number
+  // buyers already see, so clearing the field removes it from every listing.
+  const [phone, setPhone] = useState("");
+  const [publicPhone, setPublicPhone] = useState<string | null>(null);
+  const [removingPhone, setRemovingPhone] = useState(false);
+
+  useEffect(() => {
+    if (!open || !supabase) return;
+    let cancelled = false;
+    supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
+      if (!authUser) return;
+      const vendor = await fetchOwnVendor(authUser.id).catch(() => null);
+      if (cancelled || !vendor) return;
+      setPublicPhone(vendor.contactPhone);
+      setPhone(vendor.contactPhone ?? "");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  const removePhone = async () => {
+    setRemovingPhone(true);
+    try {
+      await clearOwnContactPhone();
+      setPublicPhone(null);
+      setPhone("");
+      toast.success("Your number is no longer shown on your listings.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't remove your number.");
+    } finally {
+      setRemovingPhone(false);
+    }
+  };
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -51,11 +86,15 @@ export function ListStudentItemModal() {
       const file = files[i];
       const fileExt = file.name.split(".").pop();
       const fileName = `student_${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-      const filePath = `student-items/${fileName}`;
-
       let uploadedUrl = "";
       if (supabase) {
         try {
+          // Storage policy: uploads go in the signed-in user's own folder.
+          const {
+            data: { user: authUser },
+          } = await supabase.auth.getUser();
+          if (!authUser) throw new Error("not signed in");
+          const filePath = `${authUser.id}/${fileName}`;
           const { error: uploadError } = await supabase.storage
             .from("product-images")
             .upload(filePath, file, { cacheControl: "3600", upsert: false });
@@ -71,7 +110,13 @@ export function ListStudentItemModal() {
         }
       }
 
-      // Fallback to data URL if offline or Supabase bucket unavailable
+      // Live: a photo that didn't upload isn't attached (a data URL would end up in the database).
+      if (!uploadedUrl && IS_LIVE) {
+        toast.error(`Couldn't upload ${file.name}. Check you're signed in and try again.`);
+        continue;
+      }
+
+      // Demo: fall back to a data URL if offline or Supabase bucket unavailable
       if (!uploadedUrl) {
         uploadedUrl = await new Promise<string>((resolve) => {
           const reader = new FileReader();
@@ -106,44 +151,66 @@ export function ListStudentItemModal() {
       return;
     }
 
+    const numOriginal = originalPrice ? parseFloat(originalPrice) : undefined;
+    const sellerPhone = phone.trim();
+    if (sellerPhone && !PHONE_PATTERN.test(sellerPhone)) {
+      toast.error("Enter the phone number with digits only, e.g. 024 123 4567 or +233 24 123 4567.");
+      return;
+    }
+
     setSubmitting(true);
 
-    const defaultCover =
-      images[0] ||
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800&q=80";
-
-    const newListing = addStudentListing({
-      title: title.trim(),
-      category,
-      price: numPrice,
-      originalPrice: originalPrice ? parseFloat(originalPrice) : Math.round(numPrice * 1.25),
-      campus,
-      condition,
-      sellerName: user?.name || "Verified Student",
-      sellerId: user?.id || "u_student",
-      sellerPhone: phone || "+233 24 000 0000",
-      sellerAvatar: user?.avatar || "https://api.dicebear.com/9.x/notionists/svg?seed=Student",
-      image: defaultCover,
-      images: images.length > 0 ? images : [defaultCover],
-      description: description.trim() || "Campus item in great condition. Pick up in hostel or campus center.",
-      hostelLocation: hostelLocation.trim() || "Campus Center / Meetup Spot",
-      isVerifiedStudent: true,
-    });
-
-    // Optional sync to Supabase products table if connected
-    if (supabase && user?.id) {
+    // A real Supabase session saves the listing to the database (known issue #41);
+    // demo personas have no session and keep the in-browser listing.
+    const hasSession = supabase ? Boolean((await supabase.auth.getSession()).data.session) : false;
+    if (hasSession) {
       try {
-        await supabase.from("products").insert({
-          title: newListing.title,
-          description: newListing.description,
-          price: newListing.price,
-          category: "student_os",
-          images: newListing.images,
-          stock: 1,
+        const { vendor } = await createStudentListing({
+          title: title.trim(),
+          description: description.trim(),
+          category,
+          price: numPrice,
+          originalPrice: numOriginal !== undefined && !isNaN(numOriginal) ? numOriginal : undefined,
+          campus,
+          condition,
+          meetupLocation: hostelLocation.trim(),
+          images,
+          contactPhone: sellerPhone,
+          sellerName: user?.name ?? "",
         });
+        toast.success(
+          vendor.status === "approved"
+            ? "Listing posted to the Campus Marketplace."
+            : "Listing saved. It will appear in the marketplace once an admin approves your seller account.",
+        );
       } catch (err) {
-        console.warn("Supabase products table optional insert skipped:", err);
+        setSubmitting(false);
+        toast.error(err instanceof Error ? err.message : "Couldn't save your listing.");
+        return;
       }
+    } else if (IS_LIVE) {
+      setSubmitting(false);
+      toast.error("Sign in to list an item.");
+      return;
+    } else {
+      addStudentListing({
+        title: title.trim(),
+        category,
+        price: numPrice,
+        originalPrice: numOriginal,
+        campus,
+        condition,
+        sellerName: user?.name || "Verified Student",
+        sellerId: user?.id || "u_student",
+        sellerPhone: sellerPhone || undefined,
+        sellerAvatar: user?.avatar || "https://api.dicebear.com/9.x/notionists/svg?seed=Student",
+        image: images[0] ?? "",
+        images,
+        description: description.trim() || "Campus item in great condition. Pick up in hostel or campus center.",
+        hostelLocation: hostelLocation.trim() || "Campus Center / Meetup Spot",
+        isVerifiedStudent: true,
+      });
+      toast.success("Listing posted successfully to Campus Marketplace!");
     }
 
     setSubmitting(false);
@@ -156,8 +223,6 @@ export function ListStudentItemModal() {
     setDescription("");
     setHostelLocation("");
     setImages([]);
-
-    toast.success("Listing posted successfully to Campus Marketplace!");
   };
 
   return (
@@ -177,7 +242,7 @@ export function ListStudentItemModal() {
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold flex items-center justify-between">
               <span>Item Photos</span>
-              <span className="text-[10px] text-muted-foreground">Direct Supabase storage upload</span>
+              <span className="text-[10px] text-muted-foreground">Photos up to 5 MB each</span>
             </Label>
             <div className="flex flex-wrap gap-2">
               {images.map((img, idx) => (
@@ -333,10 +398,27 @@ export function ListStudentItemModal() {
               </Label>
               <Input
                 id="item-phone"
+                type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+233 24 000 0000"
+                placeholder="e.g. 024 123 4567"
+                aria-describedby="item-phone-hint"
               />
+              <p id="item-phone-hint" className="text-[11px] text-muted-foreground">
+                <strong className="font-semibold text-foreground">Visible to buyers:</strong> anyone who views your listings
+                can see this number and your name. It applies to all your listings; leave it empty and buyers won't see a
+                contact button.
+              </p>
+              {publicPhone && (
+                <button
+                  type="button"
+                  onClick={removePhone}
+                  disabled={removingPhone}
+                  className="inline-flex min-h-11 items-center text-xs font-bold text-link underline underline-offset-2 disabled:opacity-50"
+                >
+                  {removingPhone ? "Removing…" : `Remove ${publicPhone} from my listings now`}
+                </button>
+              )}
             </div>
           </div>
 

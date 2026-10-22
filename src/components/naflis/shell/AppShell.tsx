@@ -9,6 +9,7 @@ import { NotificationBell } from "@/components/naflis/home/HomeBlocks";
 import { CampusPicker } from "./CampusPicker";
 import { PLACES, placeFor, type PlaceId } from "./places";
 import { UserMenu } from "./UserMenu";
+import { IS_LIVE } from "@/lib/appMode";
 
 /** Max content width of every page in the consumer shell. */
 export const PAGE_WIDTH = "mx-auto w-full max-w-[1160px] px-4 sm:px-6";
@@ -67,7 +68,7 @@ export function TopNav({
               Campus
             </Link>
           )}
-          {onEscrowClick ? (
+          {IS_LIVE ? null : onEscrowClick ? (
             <button type="button" onClick={onEscrowClick} className={escrowClass}>
               <ShieldCheck className="h-4 w-4 text-link" strokeWidth={1.8} /> How escrow works
             </button>
@@ -140,14 +141,18 @@ export function SiteFooter() {
       <div
         className={`${PAGE_WIDTH} flex flex-col gap-2 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between`}
       >
-        <p>© {year} NAFLIS Mall · Verified student commerce</p>
+        <p>© {year} NAFLIS Mall · Campus marketplace &amp; student hub</p>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5">
-          <Link to="/" hash="escrow" className={linkClass}>
-            Escrow terms
-          </Link>
-          <Link to="/buyer/wallet" className={linkClass}>
-            Student wallet
-          </Link>
+          {!IS_LIVE && (
+            <>
+              <Link to="/" hash="escrow" className={linkClass}>
+                Escrow terms
+              </Link>
+              <Link to="/buyer/wallet" className={linkClass}>
+                Student wallet
+              </Link>
+            </>
+          )}
           <Link to="/student-os" className={linkClass}>
             Student OS
           </Link>
@@ -173,6 +178,7 @@ export function AppShell({
   showCampus,
   footer = true,
   mobileHeader = true,
+  fab = false,
 }: {
   children: ReactNode;
   onEscrowClick?: () => void;
@@ -180,13 +186,17 @@ export function AppShell({
   footer?: boolean;
   /** False when the page draws its own phone header (the student Home). */
   mobileHeader?: boolean;
+  /** The page shows the floating Sell button above the tab bar: reserve room for both on phones. */
+  fab?: boolean;
 }) {
+  // Tab bar alone needs 112px; with the Sell button (it reaches 136px up) 160px.
+  const phonePad = fab ? "pb-40 md:pb-0" : "pb-28 md:pb-0";
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <TopNav onEscrowClick={onEscrowClick} showCampus={showCampus} mobile={mobileHeader} />
-      <div className={`flex-1 ${footer ? "" : "pb-28 md:pb-0"}`}>{children}</div>
+      <div className={`flex-1 ${footer ? "" : phonePad}`}>{children}</div>
       {footer && (
-        <div className="pb-28 md:pb-0">
+        <div className={phonePad}>
           <SiteFooter />
         </div>
       )}

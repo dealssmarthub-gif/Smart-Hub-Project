@@ -11,6 +11,7 @@ import { useNaflis } from "@/lib/naflis/store";
 import { orderStateLabel } from "@/lib/naflis/orderMachine";
 import { runOrderTransition } from "@/services/orderService";
 import { GHS, fmtDate } from "@/lib/naflis/format";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/delivery")({
   beforeLoad: () => {
@@ -187,7 +188,7 @@ function ActiveJob({
         {order.status === "dispatched" && (
           <div className="w-full space-y-2">
             <p className="text-xs text-muted-foreground">
-              Ask buyer for their delivery code (demo code: <span className="font-mono font-bold text-foreground">{expected}</span>)
+              Ask buyer for their delivery code{!IS_LIVE && (<> (demo code: <span className="font-mono font-bold text-foreground">{expected}</span>)</>)}
             </p>
             <div className="flex gap-2">
               <Input placeholder="Enter buyer's 6-digit code" value={entered} onChange={(e) => setEntered(e.target.value)} className="max-w-[220px]" />

@@ -7,13 +7,17 @@ import {
   HeadContent,
   Scripts,
   type ErrorComponentProps,
+  redirect,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/lib/supabase";
+import { IS_LIVE, LIVE_MISCONFIGURED, hiddenInLive, liveFallback } from "@/lib/appMode";
 import { useNaflis } from "@/lib/naflis/store";
+import { syncCampusContent } from "@/services/campusContent";
+import { syncStudentListings } from "@/services/studentListings";
 import { ImpersonationBanner } from "@/components/naflis/ImpersonationBanner";
 
 function NotFoundComponent() {
@@ -74,6 +78,10 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  // Live: pages not connected yet redirect from one place (appMode LIVE_HIDDEN_PATHS).
+  beforeLoad: ({ location }) => {
+    if (hiddenInLive(location.pathname)) throw redirect({ to: liveFallback(location.pathname) });
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -126,6 +134,20 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+/** Live mode without Supabase settings: say so instead of quietly running the demo. */
+function NotConfigured() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-2xl font-bold text-foreground">Site not configured</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          This deployment runs in live mode but has no Supabase settings (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY).
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const syncUser = useNaflis((s) => s.syncUser);
@@ -158,6 +180,16 @@ function RootComponent() {
       };
     }
   }, [syncUser]);
+
+  // Live mode: notices, events, resources and student listings come from Supabase
+  // (the store starts empty). Demo mode keeps its seeded content.
+  useEffect(() => {
+    if (!IS_LIVE || LIVE_MISCONFIGURED) return;
+    syncCampusContent().catch((err) => console.warn("Couldn't load campus notices, events and resources:", err));
+    syncStudentListings().catch((err) => console.warn("Couldn't load student listings:", err));
+  }, []);
+
+  if (LIVE_MISCONFIGURED) return <NotConfigured />;
 
   return (
     <QueryClientProvider client={queryClient}>

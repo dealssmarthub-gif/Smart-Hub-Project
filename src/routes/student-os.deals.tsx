@@ -1,4 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { IS_LIVE } from "@/lib/appMode";
 import { useMemo } from "react";
 import { z } from "zod";
 import {
@@ -21,6 +22,10 @@ type DealsView = "all" | "group" | "vouchers";
 
 // `view` selects the existing tab: Shop's "Group buys" → group, "Discounts" → vouchers.
 export const Route = createFileRoute("/student-os/deals")({
+  // Live: not connected to the backend yet (appMode LIVE_HIDDEN_PATHS).
+  beforeLoad: () => {
+    if (IS_LIVE) throw redirect({ to: "/student-os/marketplace" });
+  },
   validateSearch: z.object({ view: z.enum(["all", "group", "vouchers"]).optional() }).parse,
   component: StudentDeals,
 });

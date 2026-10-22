@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Crown, Eye, Flag, Globe, Shield, UserPlus } from "lucide-react";
+import { Crown, Eye, Flag, Globe, Shield, Store, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNaflis } from "@/lib/naflis/store";
 import { setFeatureFlag, useFeatureFlags } from "@/lib/featureFlags";
+import { IS_LIVE, LIVE_FORCED_OFF_FLAGS } from "@/lib/appMode";
 
 export const Route = createFileRoute("/super/")({
   component: SuperDashboard,
@@ -36,28 +37,34 @@ function SuperDashboard() {
   return (
     <RoleShell
       title="Super Administrator"
-      subtitle="Global oversight, feature flags, regional rollout, and platform policy."
+      subtitle={IS_LIVE ? "Feature flags, staff, vendors and view-as." : "Global oversight, feature flags, regional rollout, and platform policy."}
       icon={Crown}
       badge="Root access"
     >
       <div className="mb-4 flex flex-wrap gap-2">
         <Button asChild variant="outline" size="sm"><Link to="/super/staff"><UserPlus className="mr-1 h-4 w-4" /> Staff & permissions</Link></Button>
         <Button asChild variant="outline" size="sm"><Link to="/super/view-as"><Eye className="mr-1 h-4 w-4" /> View as user</Link></Button>
+        <Button asChild variant="outline" size="sm"><Link to="/super/vendors"><Store className="mr-1 h-4 w-4" /> Vendors</Link></Button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard label="Regions live" value={String(regionState.filter((r) => r.live).length)} hint={`of ${regionState.length}`} />
-        <MetricCard label="Admin operators" value={String(admins.length)} />
-        <MetricCard label="Feature flags on" value={String(flags.filter((f) => f.enabled).length)} hint={`of ${flags.length}`} />
-        <MetricCard label="Policy version" value="v2026.7" hint="Effective July 15, 2026" />
+      {/* Live: regions, operators and policy are made-up or in-browser figures, so only the flag count shows. */}
+      <div className={`grid gap-3 sm:grid-cols-2 ${IS_LIVE ? "" : "lg:grid-cols-4"}`}>
+        {!IS_LIVE && <MetricCard label="Regions live" value={String(regionState.filter((r) => r.live).length)} hint={`of ${regionState.length}`} />}
+        {!IS_LIVE && <MetricCard label="Admin operators" value={String(admins.length)} />}
+        <MetricCard label="Feature flags on" value={String(flags.filter((f) => f.enabled && !(IS_LIVE && LIVE_FORCED_OFF_FLAGS.includes(f.key))).length)} hint={`of ${flags.length}`} />
+        {!IS_LIVE && <MetricCard label="Policy version" value="v2026.7" hint="Effective July 15, 2026" />}
       </div>
 
       <Tabs defaultValue="flags" className="mt-6">
         <TabsList>
           <TabsTrigger value="flags">Feature flags</TabsTrigger>
-          <TabsTrigger value="regions">Regions</TabsTrigger>
-          <TabsTrigger value="admins">Operators</TabsTrigger>
-          <TabsTrigger value="policy">Policy</TabsTrigger>
+          {!IS_LIVE && (
+            <>
+              <TabsTrigger value="regions">Regions</TabsTrigger>
+              <TabsTrigger value="admins">Operators</TabsTrigger>
+              <TabsTrigger value="policy">Policy</TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <TabsContent value="flags" className="mt-4 space-y-2">
@@ -70,11 +77,17 @@ function SuperDashboard() {
                   <Badge variant={f.enabled ? "default" : "outline"}>{f.enabled ? "ON" : "OFF"}</Badge>
                   {f.roles?.length ? <Badge variant="secondary">{f.roles.join(", ")}</Badge> : null}
                   {f.institutionIds?.length ? <Badge variant="secondary">{f.institutionIds.join(", ")}</Badge> : null}
+                  {IS_LIVE && LIVE_FORCED_OFF_FLAGS.includes(f.key) && <Badge variant="outline">Off in live mode</Badge>}
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{f.description}</p>
+                {IS_LIVE && LIVE_FORCED_OFF_FLAGS.includes(f.key) && (
+                  <p className="mt-1 text-xs text-muted-foreground">Stays off on the live site until its payments are connected, whatever this switch says.</p>
+                )}
                 <p className="mt-1 font-mono text-[10px] text-muted-foreground">{f.key}</p>
               </div>
               <Switch
+                aria-label={f.label}
+                disabled={IS_LIVE && LIVE_FORCED_OFF_FLAGS.includes(f.key)}
                 checked={f.enabled}
                 onCheckedChange={async (v) => {
                   audit(v ? "flag.enable" : "flag.disable", f.key);

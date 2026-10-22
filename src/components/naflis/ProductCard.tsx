@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import type { Product } from "@/lib/naflis/store";
 import { useNaflis } from "@/lib/naflis/store";
 import { GHS, pct } from "@/lib/naflis/format";
+import { ListingImage } from "@/components/naflis/home/HomeBlocks";
+import { IS_LIVE } from "@/lib/appMode";
 
 export function ProductCard({ product, compact = false }: { product: Product; compact?: boolean }) {
   const wishlist = useNaflis((s) => s.wishlist);
@@ -17,12 +19,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-border-soft bg-card transition hover:shadow-soft">
       <Link to="/buyer/product/$id" params={{ id: product.id }} className="relative block aspect-square overflow-hidden bg-muted">
-        <img
-          src={product.image}
-          alt={product.name}
-          loading="lazy"
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-        />
+        <ListingImage src={product.image} alt={product.name} className="transition duration-500 group-hover:scale-105" />
         <div className="absolute left-2 top-2 flex flex-col gap-1">
           {off > 0 && (
             <Badge className="bg-error text-error-foreground">-{pct(off)}</Badge>
@@ -65,12 +62,14 @@ export function ProductCard({ product, compact = false }: { product: Product; co
         <div className="mt-auto">
           <div className="flex items-baseline gap-2">
             <span className="text-lg font-bold">{GHS(product.price)}</span>
-            <span className="text-xs text-muted-foreground line-through">{GHS(product.originalPrice)}</span>
+            {off > 0 && <span className="text-xs text-muted-foreground line-through">{GHS(product.originalPrice)}</span>}
           </div>
-          <p className="text-[11px] text-success">Save {GHS(product.originalPrice - product.price)}</p>
+          {off > 0 && <p className="text-[11px] text-success">Save {GHS(product.originalPrice - product.price)}</p>}
         </div>
         {!compact && (
           <div className="flex gap-2">
+            {/* Demo only: the cart isn't live yet. */}
+            {!IS_LIVE && (
             <Button
               size="sm"
               variant="secondary"
@@ -82,7 +81,8 @@ export function ProductCard({ product, compact = false }: { product: Product; co
             >
               Add to cart
             </Button>
-            <Button size="sm" asChild>
+            )}
+            <Button size="sm" asChild className={IS_LIVE ? "flex-1" : undefined}>
               <Link to="/buyer/product/$id" params={{ id: product.id }}>View</Link>
             </Button>
           </div>

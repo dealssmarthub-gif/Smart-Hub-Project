@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { uid } from "./format";
 import { supabase } from "../supabase";
+import { IS_LIVE, seeded } from "../appMode";
 import { defaultContext, normalizeRole, resolveRoles, type Role } from "./roles";
 import { canTransition, orderStateLabel, toOrderState, type OrderActor, type OrderState } from "./orderMachine";
 import { deliveryUnlocked, type DeliveryRule, type Frequency, type PurchaseConfig, type PurchaseMethod } from "./purchase";
@@ -58,6 +59,8 @@ export interface Store {
   location: string;
   categories: string[];
   subscription: "starter" | "growth" | "professional" | "enterprise";
+  /** Public phone for buyers (vendors.contact_phone); absent when the seller gave none. */
+  contactPhone?: string;
 }
 
 export interface Product {
@@ -1314,7 +1317,7 @@ interface State {
   addCampusEvent: (event: Omit<CampusEvent, "id" | "createdAt"> & { id?: string }) => CampusEvent | null;
   togglePinEvent: (id: string) => boolean;
   deleteCampusEvent: (id: string) => boolean;
-  addCampusResource: (res: Omit<CampusResource, "id" | "createdAt" | "downloads">) => CampusResource | null;
+  addCampusResource: (res: Omit<CampusResource, "id" | "createdAt" | "downloads"> & { id?: string }) => CampusResource | null;
   deleteCampusResource: (id: string) => boolean;
 
   // Institutional staff & permissions
@@ -1356,13 +1359,13 @@ function initialState() {
   return {
     currentUserId: null as string | null,
     role: "guest" as Role,
-    users: seedUsers,
-    stores: seedStores,
-    products: seedProducts,
-    promos: seedPromos,
+    users: seeded<User[]>(seedUsers, []),
+    stores: seeded<Store[]>(seedStores, []),
+    products: seeded<Product[]>(seedProducts, []),
+    promos: seeded<PromoCode[]>(seedPromos, []),
     cart: [] as CartItem[],
     wishlist: [] as string[],
-    wallets: {
+    wallets: seeded<Record<string, Wallet>>({
       u_buyer1: seedWallet("u_buyer1", 4200, 0),
       u_buyer2: seedWallet("u_buyer2", 380, 0),
       u_buyer3: seedWallet("u_buyer3", 15600, 0),
@@ -1371,62 +1374,62 @@ function initialState() {
       u_seller2: seedWallet("u_seller2", 0, 0),
       u_seller3: seedWallet("u_seller3", 0, 0),
       u_delivery1: seedWallet("u_delivery1", 0, 0),
-    } as Record<string, Wallet>,
+    }, {}),
     orders: [] as Order[],
     reservations: [] as Reservation[],
     installments: [] as InstallmentPlan[],
     searchEvents: [] as SearchEvent[],
-    productRequests: seedProductRequests,
+    productRequests: seeded<ProductRequest[]>(seedProductRequests, []),
     priceAlerts: [] as PriceAlert[],
     disputes: [] as Dispute[],
     deliveries: [] as Delivery[],
-    notifications: [
+    notifications: seeded<Notification[]>([
       { id: uid(), userId: "u_buyer1", type: "flash-sale", title: "Flash sale started", body: "iPhone 16 Pro Max is 12% off for 8 hours.", createdAt: SEED_EPOCH - 3600_000, read: false, link: "/buyer" },
       { id: uid(), userId: "u_buyer1", type: "price-drop", title: "Price drop on wishlist", body: "Sony headphones dropped to GHS 1,980.", createdAt: SEED_EPOCH - 7200_000, read: false, link: "/buyer" },
-    ] as Notification[],
+    ], []),
     messages: [] as Message[],
     auditLog: [] as { id: string; at: number; actor: string; action: string; target?: string }[],
     escrowLedger: [] as EscrowRecord[],
     paymentIntents: {} as Record<string, LocalPaymentIntent>,
-    featureFlags: {
-      brandStudio: true,
-      priceIntelligence: true,
-      takeNowPayLater: true,
-      reservePay: true,
-      fraudHardBlock: false,
-    } as Record<string, boolean>,
+    featureFlags: seeded<Record<string, boolean>>(
+      { brandStudio: true, priceIntelligence: true, takeNowPayLater: true, reservePay: true, fraudHardBlock: false },
+      { brandStudio: false, priceIntelligence: false, takeNowPayLater: false, reservePay: false, fraudHardBlock: false },
+    ),
     demoStep: 0,
 
     // Student OS state
     selectedCampus: "All Campuses",
-    registeredInstitution: "UG - Legon" as string | null,
+    registeredInstitution: seeded<string | null>("UG - Legon", null),
     campusPrompt: null as { campus: string; reason: "manual" | "location" | "registered" } | null,
     campusPromptSnooze: {} as Record<string, number>,
-    lostFound: SEED_LOST_FOUND,
+    lostFound: seeded(SEED_LOST_FOUND, []),
     savedOpportunities: [] as string[],
-    studentProfile: {
-      isVerified: true,
-      studentId: "10984523",
-      institution: "UG - Legon",
-      course: "BSc. Computer Science",
-      level: "Level 300",
-      verifiedAt: SEED_EPOCH - 15 * 86400000,
-    },
-    studentListings: seedStudentListings,
+    studentProfile: seeded<StudentVerification>(
+      {
+        isVerified: true,
+        studentId: "10984523",
+        institution: "UG - Legon",
+        course: "BSc. Computer Science",
+        level: "Level 300",
+        verifiedAt: SEED_EPOCH - 15 * 86400000,
+      },
+      { isVerified: false },
+    ),
+    studentListings: seeded<StudentListing[]>(seedStudentListings, []),
     studentModalOpen: false,
     verifyModalOpen: false,
     resourceDownloads: {} as Record<string, number>,
 
     // Institutional / SRC & Demand Intelligence
-    campusEvents: SEED_CAMPUS_EVENTS,
-    staffGrants: SEED_STAFF_GRANTS,
+    campusEvents: seeded(SEED_CAMPUS_EVENTS, []),
+    staffGrants: seeded(SEED_STAFF_GRANTS, []),
     tickets: [] as Ticket[],
     intelligence: { dismissed: {}, applied: [], bundles: [], upgradeRequests: [] } as IntelligenceState,
     impersonation: null as ImpersonationSession | null,
     impersonationSessions: [] as ImpersonationSession[],
     adminReturn: null as { userId: string; role: Role } | null,
-    campusResources: SEED_CAMPUS_RESOURCES,
-    demandLogs: SEED_DEMAND_LOGS,
+    campusResources: seeded(SEED_CAMPUS_RESOURCES, []),
+    demandLogs: seeded(SEED_DEMAND_LOGS, []),
   };
 }
 
@@ -1571,6 +1574,7 @@ export const useNaflis = create<State>()(
       ...initialState(),
 
       setRole: (r) => {
+        if (IS_LIVE) return;
         const map: Record<Role, string | null> = {
           guest: null, buyer: "u_buyer1", student: "u_buyer1", src_head: "u_src1", dean: "u_dean1",
           delivery: "u_delivery1", finance: "u_finance1", dispute: "u_dispute1",
@@ -1658,8 +1662,9 @@ export const useNaflis = create<State>()(
 
         const id = sessionUser.id;
         const email = sessionUser.email || "";
-        const role = normalizeRole(sessionUser.user_metadata?.role);
-        const metaRoles: Role[] = Array.isArray(sessionUser.user_metadata?.roles)
+        // Live mode: user_metadata is editable by the user, so roles come only from profiles (refreshRoles).
+        const role: Role = IS_LIVE ? "buyer" : normalizeRole(sessionUser.user_metadata?.role);
+        const metaRoles: Role[] = !IS_LIVE && Array.isArray(sessionUser.user_metadata?.roles)
           ? sessionUser.user_metadata.roles.map(normalizeRole)
           : [];
         const name = sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || email.split("@")[0];
@@ -1680,20 +1685,20 @@ export const useNaflis = create<State>()(
                   name,
                   email,
                   phone,
-                  region: "Greater Accra",
+                  region: IS_LIVE ? "" : "Greater Accra",
                   role,
                   roles: Array.from(new Set([role, ...metaRoles])),
                   avatar: `https://api.dicebear.com/9.x/notionists/svg?seed=${id}`,
-                  verified: true,
-                  creditScore: 700,
-                  creditLimit: role === "buyer" ? 5000 : 0,
-                  tags: ["verified"],
+                  verified: IS_LIVE ? Boolean(sessionUser.email_confirmed_at) : true,
+                  creditScore: IS_LIVE ? 0 : 700,
+                  creditLimit: !IS_LIVE && role === "buyer" ? 5000 : 0,
+                  tags: IS_LIVE ? [] : ["verified"],
                 },
               ];
 
           // Initialize wallet for new users if they don't have one
           const wallets = { ...state.wallets };
-          if (!wallets[id]) {
+          if (!wallets[id] && !IS_LIVE) {
             wallets[id] = seedWallet(id, 1000); // Pre-fund real user with GHS 1,000 for demo shopping
           }
 
@@ -2639,7 +2644,7 @@ export const useNaflis = create<State>()(
       },
       addCampusResource: (res) => {
         if (!get().hasPermission("student.resources.manage", res.campus)) return null;
-        const id = "cr_" + uid();
+        const id = res.id ?? "cr_" + uid();
         const newRes: CampusResource = {
           ...res,
           id,
@@ -2892,13 +2897,27 @@ export const useNaflis = create<State>()(
     };
     },
     {
-      name: "naflis-store-v2",
+      // Live mode never reads the demo key, so old demo data can't load back in,
+      // and keeps only per-device conveniences; everything else comes from Supabase.
+      name: IS_LIVE ? "naflis-live-v1" : "naflis-store-v2",
       version: 4,
+      ...(IS_LIVE
+        ? {
+            partialize: (s: State) =>
+              ({
+                cart: s.cart,
+                wishlist: s.wishlist,
+                savedOpportunities: s.savedOpportunities,
+                selectedCampus: s.selectedCampus,
+                campusPromptSnooze: s.campusPromptSnooze,
+              }) as unknown as State,
+          }
+        : {}),
       // v0 -> v1: single `role` per user becomes a role set; "super" is renamed "super_admin".
       // v1 -> v2: order statuses move to the P1 state machine; ledgers get their new shapes.
       // v3 -> v4: the seller workspace moved to the external seller platform; seller accounts are buyers.
       migrate: (persisted: any, version: number) => {
-        if (!persisted || typeof persisted !== "object") return persisted;
+        if (IS_LIVE || !persisted || typeof persisted !== "object") return persisted;
         if (version < 2) {
           if (Array.isArray(persisted.orders)) {
             persisted.orders = persisted.orders.map((o: any) => ({ ...o, status: toOrderState(String(o.status)) }));

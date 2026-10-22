@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Trash2, ShoppingBag, Minus, Plus } from "lucide-react";
+import { IS_LIVE } from "@/lib/appMode";
 import { Button } from "@/components/ui/button";
 import { useNaflis } from "@/lib/naflis/store";
 import { GHS } from "@/lib/naflis/format";
@@ -97,7 +98,8 @@ function CartPage() {
         <Button className="mt-4 w-full" size="lg" onClick={() => navigate({ to: "/buyer/checkout" })}>
           Proceed to checkout
         </Button>
-        <p className="mt-2 text-center text-[11px] text-muted-foreground">Escrow-protected · NAFLIS Wallet ready</p>
+        {/* Demo only: escrow and the wallet aren't live yet. */}
+        {!IS_LIVE && <p className="mt-2 text-center text-[11px] text-muted-foreground">Escrow-protected · NAFLIS Wallet ready</p>}
       </aside>
     </div>
   );

@@ -41,7 +41,9 @@ CREATE TABLE public.products (
 -- 5. Create Orders Table
 CREATE TABLE public.orders (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    buyer_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL NOT NULL,
+    -- Nullable so a buyer can delete their account: the order stays as the
+    -- seller's sales record, with no link back to the person.
+    buyer_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     total_amount NUMERIC(10, 2) NOT NULL CHECK (total_amount >= 0),
     status public.order_status DEFAULT 'pending'::public.order_status NOT NULL,
     paystack_reference TEXT,
@@ -52,8 +54,10 @@ CREATE TABLE public.orders (
 CREATE TABLE public.order_items (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE NOT NULL,
-    product_id UUID REFERENCES public.products(id) ON DELETE SET NULL NOT NULL,
-    vendor_id UUID REFERENCES public.vendors(id) ON DELETE SET NULL NOT NULL,
+    -- An order keeps its lines: a product or shop that has ever been ordered
+    -- can't be hard-deleted.
+    product_id UUID REFERENCES public.products(id) ON DELETE RESTRICT NOT NULL,
+    vendor_id UUID REFERENCES public.vendors(id) ON DELETE RESTRICT NOT NULL,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     price NUMERIC(10, 2) NOT NULL CHECK (price >= 0)
 );

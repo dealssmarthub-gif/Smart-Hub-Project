@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ROLE_ICONS, useWorkspaces } from "@/components/naflis/ContextSwitcher";
 import { useFeatureFlag } from "@/lib/featureFlags";
+import { hiddenInLive } from "@/lib/appMode";
 import { ROLE_META } from "@/lib/naflis/roles";
 import { useNaflis } from "@/lib/naflis/store";
 
@@ -86,7 +87,13 @@ export function MobileBottomNav({
     srcPortal: useFeatureFlag("src_portal"),
   };
 
-  const more = MORE[context].filter((n) => !n.flag || flags[n.flag]);
+  // Live: a hidden tab (Deals) gives its slot to Search, so the 5-column bar stays full.
+  const tabs = TABS[context].map((n): NavItem =>
+    hiddenInLive(n.to) ? { to: "/buyer/search", label: "Search", icon: Search } : n,
+  );
+  const more = MORE[context].filter(
+    (n) => (!n.flag || flags[n.flag]) && !hiddenInLive(n.to) && !tabs.some((t) => t.to === n.to),
+  );
   const isActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
   const moreActive = more.some((n) => n.to.startsWith(context === "buyer" ? "/buyer" : "/student-os") && isActive(n));
   const moreBadge = more.reduce((a, n) => a + (badges[n.to] ?? 0), 0);
@@ -101,7 +108,7 @@ export function MobileBottomNav({
         aria-label="Primary"
         className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
       >
-        {TABS[context].map((n) => {
+        {tabs.map((n) => {
           const Icon = n.icon;
           const badge = badges[n.to];
           return (

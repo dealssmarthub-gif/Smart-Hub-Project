@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { IS_LIVE } from "@/lib/appMode";
 import { useMemo } from "react";
 import { TrendingUp, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,10 @@ import { localCreditSignals } from "@/services/walletService";
 import { MyPlans } from "@/components/naflis/PaymentPlans";
 
 export const Route = createFileRoute("/buyer/installments")({
+  // Live: not connected to the backend yet (appMode LIVE_HIDDEN_PATHS).
+  beforeLoad: () => {
+    if (IS_LIVE) throw redirect({ to: "/buyer" });
+  },
   component: InstallmentsPage,
 });
 

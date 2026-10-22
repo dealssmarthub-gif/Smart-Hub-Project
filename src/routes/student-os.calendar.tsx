@@ -24,6 +24,7 @@ import {
 import { useAcademicCalendar } from "@/services/studentOs";
 import { useNow } from "@/components/naflis/PurchaseOptions";
 import { CampusHeader } from "@/components/naflis/campus/CampusBlocks";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/student-os/calendar")({
   component: AcademicCalendar,
@@ -125,7 +126,7 @@ function AcademicCalendar() {
         subtitle={
           <>
             Lectures, labs, exams and SRC events for {activeCampus}.{" "}
-            {!live && <span className="text-xs">(Showing sample timetable — publish rows to <code>timetable_entries</code> to go live.)</span>}
+            {!live && !IS_LIVE && <span className="text-xs">(Showing sample timetable — publish rows to <code>timetable_entries</code> to go live.)</span>}
           </>
         }
         actions={

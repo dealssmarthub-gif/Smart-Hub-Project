@@ -36,14 +36,16 @@ export function mapDbVendor(row: any, category?: string): VendorProfile {
     name: row.store_name,
     ownerId: row.user_id,
     logo: row.logo_url || `https://api.dicebear.com/9.x/notionists/svg?seed=${row.store_name}`,
-    tagline: row.description || "Verified Seller",
-    rating: 5.0,
+    // Only what the vendors row holds: no invented tagline, rating or location.
+    tagline: row.description || "",
+    rating: 0,
     reviews: 0,
     verified: row.status === "approved",
     followers: 0,
-    location: "Accra",
+    location: "",
     categories: category ? [category] : [],
-    subscription: "starter",
+    subscription: row.subscription_tier ?? "starter",
+    contactPhone: row.contact_phone || undefined,
   };
 }
 
@@ -57,7 +59,9 @@ export async function fetchSellerProducts(): Promise<Product[] | null> {
   const { data, error } = await supabase
     .from("products")
     .select("*, vendors!inner(status, store_name, logo_url, description)")
-    .eq("vendors.status", "approved");
+    .eq("vendors.status", "approved")
+    // Student listings have their own marketplace (services/studentListings.ts).
+    .eq("listing_type", "mall");
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => mapDbProduct(row));
 }

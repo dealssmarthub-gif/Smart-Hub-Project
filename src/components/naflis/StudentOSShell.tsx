@@ -19,6 +19,7 @@ import { ListStudentItemModal } from "@/components/naflis/ListStudentItemModal";
 import { StudentVerificationModal } from "@/components/naflis/StudentVerificationModal";
 import { CampusSwitchPrompt, useSuggestRegisteredCampus } from "@/components/naflis/CampusContext";
 import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
+import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
 
 const TABS = [
   { to: "/student-os", label: "Hub Overview", icon: GraduationCap, exact: true },
@@ -26,7 +27,7 @@ const TABS = [
   { to: "/student-os/deals", label: "Student Deals", icon: BadgePercent },
   { to: "/student-os/resources", label: "Resource Hub & Notes", icon: BookOpen },
   { to: "/student-os/calendar", label: "Academic Calendar", icon: CalendarDays },
-  { to: "/student-os/events", label: "Events & Tickets", icon: Ticket },
+  { to: "/student-os/events", label: IS_LIVE ? "Events" : "Events & Tickets", icon: Ticket },
   { to: "/student-os/opportunities", label: "Opportunities", icon: Briefcase },
   { to: "/student-os/lost-found", label: "Lost & Found", icon: SearchCheck },
   { to: "/campus-admin", label: "Institutional / SRC Access", icon: Building2 },
@@ -61,7 +62,7 @@ export function StudentOSShell() {
     }`;
 
   return (
-    <AppShell mobileHeader={!isHome}>
+    <AppShell mobileHeader={!isHome} fab={isShop}>
       {/* Student OS section bar: every Student OS page, plus verification and selling. */}
       <div
         className={`border-b border-border-soft bg-background ${isHome || isShop || isCampus ? "hidden md:block" : ""}`}
@@ -71,6 +72,8 @@ export function StudentOSShell() {
             <GraduationCap className="h-3.5 w-3.5" strokeWidth={1.8} /> Student OS
           </span>
           <div className="flex w-full items-center justify-end gap-2 sm:ml-auto sm:w-auto">
+            {/* Demo only: student verification isn't saved server-side yet. */}
+            {!IS_LIVE && (
             <button
               type="button"
               onClick={() => setVerifyModalOpen(true)}
@@ -92,6 +95,7 @@ export function StudentOSShell() {
                 </>
               )}
             </button>
+            )}
             <button
               type="button"
               onClick={() => setStudentModalOpen(true)}
@@ -107,7 +111,7 @@ export function StudentOSShell() {
           aria-label="Student OS"
           className={`${PAGE_WIDTH} no-scrollbar flex gap-2 overflow-x-auto py-3`}
         >
-          {TABS.map((t) => {
+          {TABS.filter((t) => !hiddenInLive(t.to)).map((t) => {
             const Icon = t.icon;
             const active = t.exact ? pathname === t.to : pathname.startsWith(t.to);
             return (

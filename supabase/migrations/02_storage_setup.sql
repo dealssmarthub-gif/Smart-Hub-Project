@@ -9,8 +9,8 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Ensure Row Level Security is enabled on storage.objects
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- RLS is already on for storage.objects. The table belongs to
+-- supabase_storage_admin, so an ALTER TABLE here fails with "must be owner".
 
 -- 1. Public policy to allow anyone to view/read uploaded product images
 CREATE POLICY "Public read product images"

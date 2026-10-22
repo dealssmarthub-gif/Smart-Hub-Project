@@ -74,21 +74,27 @@ export const removeCampusEvent = (eventId: string) => mutateEvent(eventId, "dele
 
 export async function publishCampusResource(input: Omit<CampusResource, "id" | "createdAt" | "downloads">): Promise<CampusResource> {
   if (!useNaflis.getState().hasPermission("student.resources.manage", input.campus)) throw denied(input.campus);
+  let id: string | undefined;
   if (await session()) {
-    const { error } = await supabase!.from("campus_resources").insert({
-      title: input.title,
-      description: input.description,
-      resource_type: input.resourceType,
-      course_code: input.courseCode,
-      department: input.department,
-      campus: input.campus,
-      file_url: input.fileUrl,
-      file_name: input.fileName,
-      file_size: input.fileSize,
-    });
+    const { data, error } = await supabase!
+      .from("campus_resources")
+      .insert({
+        title: input.title,
+        description: input.description,
+        resource_type: input.resourceType,
+        course_code: input.courseCode,
+        department: input.department,
+        campus: input.campus,
+        file_url: input.fileUrl,
+        file_name: input.fileName,
+        file_size: input.fileSize,
+      })
+      .select("id")
+      .single();
     if (error) throw isRlsDenied(error) ? denied(input.campus) : new Error(error.message);
+    id = data.id;
   }
-  const created = useNaflis.getState().addCampusResource(input);
+  const created = useNaflis.getState().addCampusResource({ ...input, id });
   if (!created) throw denied(input.campus);
   return created;
 }
@@ -103,4 +109,74 @@ export async function removeCampusResource(resourceId: string): Promise<void> {
     if (!data?.length) throw denied(r.campus);
   }
   if (!s.deleteCampusResource(resourceId)) throw denied(r.campus);
+}
+
+// ---------------------------------------------------------------------------
+// Reading published content
+// ---------------------------------------------------------------------------
+
+/** Maps a `campus_events` row. Missing optional fields stay empty; nothing is made up. */
+export function mapDbEvent(e: any): CampusEvent {
+  return {
+    id: e.id,
+    kind: e.kind === "announcement" ? "announcement" : "event",
+    title: e.title,
+    description: e.description ?? "",
+    eventDate: e.event_date ?? e.created_at,
+    venue: e.venue ?? "",
+    bannerUrl: e.banner_url || undefined,
+    campus: e.campus,
+    pinned: Boolean(e.pinned),
+    organizer: e.organizer ?? "",
+    createdBy: e.created_by ?? undefined,
+    createdAt: new Date(e.created_at).getTime(),
+  };
+}
+
+/** Maps a `campus_resources` row. */
+export function mapDbResource(r: any): CampusResource {
+  return {
+    id: r.id,
+    title: r.title,
+    description: r.description ?? "",
+    resourceType: r.resource_type,
+    courseCode: r.course_code ?? "",
+    department: r.department ?? "",
+    campus: r.campus,
+    fileUrl: r.file_url || undefined,
+    fileName: r.file_name || undefined,
+    fileSize: r.file_size || undefined,
+    downloads: Number(r.downloads) || 0,
+    createdBy: r.created_by ?? undefined,
+    createdAt: new Date(r.created_at).getTime(),
+  };
+}
+
+/** Every published notice, event and resource (all are publicly readable). Null without Supabase. */
+export async function fetchCampusContent(): Promise<{ events: CampusEvent[]; resources: CampusResource[] } | null> {
+  if (!supabase) return null;
+  const [ev, res] = await Promise.all([
+    supabase.from("campus_events").select("*").order("pinned", { ascending: false }).order("created_at", { ascending: false }),
+    supabase.from("campus_resources").select("*").order("downloads", { ascending: false }),
+  ]);
+  if (ev.error) throw new Error(ev.error.message);
+  if (res.error) throw new Error(res.error.message);
+  return { events: (ev.data ?? []).map(mapDbEvent), resources: (res.data ?? []).map(mapDbResource) };
+}
+
+/** Replaces the store's notices, events and resources with what Supabase holds (live mode). */
+export async function syncCampusContent(): Promise<void> {
+  const content = await fetchCampusContent();
+  if (content) useNaflis.setState({ campusEvents: content.events, campusResources: content.resources });
+}
+
+/** Counts a download server-side (RPC from migration 07) and locally. */
+export async function countResourceDownload(resourceId: string): Promise<void> {
+  useNaflis.getState().incrementResourceDownload(resourceId);
+  if (!supabase || !isUuid(resourceId)) return;
+  try {
+    await supabase.rpc("naflis_count_download", { p_resource: resourceId });
+  } catch {
+    // best-effort; the download itself already started
+  }
 }

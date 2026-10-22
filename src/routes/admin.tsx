@@ -6,11 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { useNaflis } from "@/lib/naflis/store";
+import { IS_LIVE } from "@/lib/appMode";
 import { ORDER_STATES, orderStateLabel } from "@/lib/naflis/orderMachine";
 import { GHS, compact, fmtDate, fmtTime } from "@/lib/naflis/format";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: () => {
+    // Every metric here is computed from the in-browser demo store, so live mode
+    // sends admins to the Super Admin console, which reads Supabase.
+    if (IS_LIVE) throw redirect({ to: "/super" });
     if (!useNaflis.getState().enterContext(["admin", "super_admin"])) {
       throw redirect({
         to: "/login",

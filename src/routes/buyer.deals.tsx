@@ -1,10 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { IS_LIVE } from "@/lib/appMode";
 import { useMemo } from "react";
 import { BadgePercent, TrendingUp, Zap } from "lucide-react";
 import { ProductCard } from "@/components/naflis/ProductCard";
 import { useNaflis } from "@/lib/naflis/store";
 
 export const Route = createFileRoute("/buyer/deals")({
+  // Live: not connected to the backend yet (appMode LIVE_HIDDEN_PATHS).
+  beforeLoad: () => {
+    if (IS_LIVE) throw redirect({ to: "/buyer" });
+  },
   component: DealsPage,
 });
 

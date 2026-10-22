@@ -8,6 +8,7 @@ import { useNaflis } from "@/lib/naflis/store";
 import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { fetchSellerProducts } from "@/services/sellerApi";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/buyer/")({
   component: BuyerHome,
@@ -22,10 +23,10 @@ function BuyerHome() {
       try {
         const data = await fetchSellerProducts();
 
+        // Real products only carry what the database holds: no invented flash sale.
         if (data && data.length > 0) {
-          const mapped = data.map((p) => ({ ...p, flashSale: { endsAt: Date.now() + 8 * 3_600_000 } }));
-          setProducts(mapped);
-          useNaflis.setState({ products: mapped });
+          setProducts(data);
+          useNaflis.setState({ products: data });
         }
       } catch (err) {
         console.error("Error fetching buyer products:", err);
@@ -38,12 +39,22 @@ function BuyerHome() {
   const user = useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
 
   const flash = useMemo(() => products.filter((p) => p.flashSale).slice(0, 4), [products]);
-  const trending = useMemo(() => [...products].sort((a, b) => b.demand - a.demand).slice(0, 8), [products]);
-  const priceDrop = useMemo(
-    () => [...products].sort((a, b) => (b.originalPrice - b.price) / b.originalPrice - (a.originalPrice - a.price) / a.originalPrice).slice(0, 4),
+  // Live has no demand data, so "trending" becomes newest first.
+  const trending = useMemo(
+    () => [...products].sort((a, b) => (IS_LIVE ? (b.createdAt || 0) - (a.createdAt || 0) : b.demand - a.demand)).slice(0, 8),
     [products],
   );
-  const nearYou = useMemo(() => products.filter((p) => p.location === "Accra").slice(0, 4), [products]);
+  // Only genuine reductions (a stored old price above today's price).
+  const priceDrop = useMemo(
+    () =>
+      products
+        .filter((p) => p.originalPrice > p.price)
+        .sort((a, b) => (b.originalPrice - b.price) / b.originalPrice - (a.originalPrice - a.price) / a.originalPrice)
+        .slice(0, 4),
+    [products],
+  );
+  // Products don't store a location in live mode yet.
+  const nearYou = useMemo(() => (IS_LIVE ? [] : products.filter((p) => p.location === "Accra").slice(0, 4)), [products]);
 
   return (
     <div className="space-y-8">
@@ -52,15 +63,20 @@ function BuyerHome() {
         <p className="text-xs uppercase tracking-widest text-white/90">Welcome back{user ? `, ${user.name.split(" ")[0]}` : ""}</p>
         <h1 className="mt-1 text-2xl font-bold sm:text-3xl">Great deals matched to your budget</h1>
         <p className="mt-2 max-w-xl text-sm text-white/80">
-          Flash sales, verified discounts, and flexible payment options — all in one place.
+          {IS_LIVE
+            ? "Products from approved sellers, all in one place."
+            : "Flash sales, verified discounts, and flexible payment options — all in one place."}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button asChild size="sm" className="bg-white text-navy hover:bg-white/90">
-            <Link to="/buyer/search">Browse deals</Link>
+            <Link to="/buyer/search">{IS_LIVE ? "Browse products" : "Browse deals"}</Link>
           </Button>
-          <Button asChild size="sm" variant="outline" className="border-white/40 bg-white/10 text-white hover:bg-white/20">
-            <Link to="/buyer/wallet">Fund wallet</Link>
-          </Button>
+          {/* Demo only: wallet funding isn't live yet. */}
+          {!IS_LIVE && (
+            <Button asChild size="sm" variant="outline" className="border-white/40 bg-white/10 text-white hover:bg-white/20">
+              <Link to="/buyer/wallet">Fund wallet</Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -98,42 +114,67 @@ function BuyerHome() {
         </div>
       </section>
 
-      {/* Flash sales */}
-      <section>
-        <SectionHeader icon={<Zap className="h-5 w-5 text-gold" />} title="Flash sales" subtitle="Ending in hours — verified discounts" />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {flash.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
-      </section>
+      {/* No products at all yet */}
+      {products.length === 0 && (
+        <section className="rounded-3xl border border-dashed bg-card p-10 text-center">
+          <Package className="mx-auto h-10 w-10 text-muted-foreground" />
+          <h2 className="mt-3 text-base font-bold">No products yet</h2>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
+            Products appear here once sellers are approved and list them.
+          </p>
+        </section>
+      )}
 
-      {/* Trending */}
-      <section>
-        <SectionHeader icon={<Flame className="h-5 w-5 text-error" />} title="Trending now" subtitle="Popular in your region" />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {trending.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
-      </section>
+      {/* Each product row only shows when it has products. */}
+      {flash.length > 0 && (
+        <section>
+          <SectionHeader icon={<Zap className="h-5 w-5 text-gold" />} title="Flash sales" subtitle="Ending in hours — verified discounts" />
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {flash.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      )}
 
-      {/* Price drops */}
-      <section>
-        <SectionHeader icon={<TrendingUp className="h-5 w-5 text-success" />} title="Biggest price drops" subtitle="Genuine reductions from 30-day history" />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {priceDrop.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
-      </section>
+      {trending.length > 0 && (
+        <section>
+          <SectionHeader
+            icon={IS_LIVE ? <Package className="h-5 w-5 text-link" /> : <Flame className="h-5 w-5 text-error" />}
+            title={IS_LIVE ? "New in the mall" : "Trending now"}
+            subtitle={IS_LIVE ? "The latest products from approved sellers" : "Popular in your region"}
+          />
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {trending.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      )}
 
-      {/* Near you */}
-      <section>
-        <SectionHeader icon={<Package className="h-5 w-5 text-link" />} title="Popular in Accra" subtitle="Fast delivery from local sellers" />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {nearYou.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
-      </section>
+      {priceDrop.length > 0 && (
+        <section>
+          <SectionHeader icon={<TrendingUp className="h-5 w-5 text-success" />} title="Biggest price drops" subtitle="Genuine reductions from 30-day history" />
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {priceDrop.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      )}
+
+      {nearYou.length > 0 && (
+        <section>
+          <SectionHeader icon={<Package className="h-5 w-5 text-link" />} title="Popular in Accra" subtitle="Fast delivery from local sellers" />
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {nearYou.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      )}
 
       {/* CTA row */}
       <section className="grid gap-4 md:grid-cols-3">
-        <PromoCard icon={<Clock className="h-5 w-5" />} title="Reserve & Pay" body="Lock in the discount today, pay gradually, receive when done." to="/buyer/reserve" />
-        <PromoCard icon={<TrendingUp className="h-5 w-5" />} title="Take Now, Pay Later" body="Receive the product now and pay over time." to="/buyer/installments" />
+        {/* Demo only: Reserve & Pay and Pay Later aren't connected to payments yet. */}
+        {!IS_LIVE && (
+          <>
+            <PromoCard icon={<Clock className="h-5 w-5" />} title="Reserve & Pay" body="Lock in the discount today, pay gradually, receive when done." to="/buyer/reserve" />
+            <PromoCard icon={<TrendingUp className="h-5 w-5" />} title="Take Now, Pay Later" body="Receive the product now and pay over time." to="/buyer/installments" />
+          </>
+        )}
         <PromoCard icon={<Bell className="h-5 w-5" />} title="Product not available?" body="Tell us what you want — we'll match sellers to your budget." to="/buyer/search" />
       </section>
     </div>

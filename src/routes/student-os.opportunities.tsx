@@ -12,6 +12,7 @@ import { dateOnly, startOfDay } from "@/lib/naflis/timetable";
 import { useOpportunities } from "@/services/studentOs";
 import { daysLeft, filterOpportunities } from "@/lib/naflis/opportunities";
 import { CampusHeader } from "@/components/naflis/campus/CampusBlocks";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/student-os/opportunities")({
   component: OpportunitiesBoard,
@@ -76,7 +77,7 @@ function OpportunitiesBoard() {
         subtitle={
           <>
             Jobs, internships and scholarships for students. Sorted by closing date.
-            {!live && <span className="text-xs"> (Sample listings — add rows to <code>opportunities</code> to go live.)</span>}
+            {!live && !IS_LIVE && <span className="text-xs"> (Sample listings — add rows to <code>opportunities</code> to go live.)</span>}
           </>
         }
       />
@@ -167,7 +168,7 @@ function OpportunitiesBoard() {
                   {o.applyUrl && d >= 0 ? (
                     <Button asChild size="sm" className="min-h-11 rounded-xl px-4 font-bold"><a href={o.applyUrl} target="_blank" rel="noopener noreferrer">Apply</a></Button>
                   ) : (
-                    d >= 0 && <Button size="sm" variant="outline" className="min-h-11 rounded-xl px-4 font-bold" onClick={() => toast.info(`Apply through ${o.organization}'s careers page.`)}>How to apply</Button>
+                    d >= 0 && !IS_LIVE && <Button size="sm" variant="outline" className="min-h-11 rounded-xl px-4 font-bold" onClick={() => toast.info(`Apply through ${o.organization}'s careers page.`)}>How to apply</Button>
                   )}
                 </div>
               </article>

@@ -1,16 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { IS_LIVE, seeded } from "@/lib/appMode";
 import type { ExamEntry, TimetableEntry } from "@/lib/naflis/timetable";
 import { SEED_EXAMS, SEED_OPPORTUNITIES, SEED_TIMETABLE, type Opportunity } from "@/lib/naflis/studentSeed";
 
-// Reads Student OS academic data from Supabase (migration 06), falling back to
-// the seeded data offline, in demo mode, or while the tables are empty.
+// Reads Student OS academic data from Supabase (migration 06). Demo mode falls
+// back to the seeded data offline or while the tables are empty; live mode
+// shows exactly what the tables hold, empty included.
 
-async function fetchOr<T>(table: string, map: (row: any) => T, fallback: T[]): Promise<{ rows: T[]; live: boolean }> {
+async function fetchOr<T>(table: string, map: (row: any) => T, demoFallback: T[]): Promise<{ rows: T[]; live: boolean }> {
+  const fallback = seeded(demoFallback, []);
   if (!supabase) return { rows: fallback, live: false };
   try {
     const { data, error } = await supabase.from(table).select("*");
-    if (error || !data || data.length === 0) return { rows: fallback, live: false };
+    if (error || !data) return { rows: fallback, live: false };
+    if (data.length === 0) return { rows: fallback, live: IS_LIVE };
     return { rows: data.map(map), live: true };
   } catch {
     return { rows: fallback, live: false };
@@ -93,19 +97,19 @@ export const fetchOpportunities = () =>
 const STALE = 5 * 60_000;
 
 export function useAcademicCalendar() {
-  const timetable = useQuery({ queryKey: ["timetable_entries"], queryFn: fetchTimetable, staleTime: STALE, placeholderData: { rows: SEED_TIMETABLE, live: false } });
-  const exams = useQuery({ queryKey: ["exam_entries"], queryFn: fetchExams, staleTime: STALE, placeholderData: { rows: SEED_EXAMS, live: false } });
+  const timetable = useQuery({ queryKey: ["timetable_entries"], queryFn: fetchTimetable, staleTime: STALE, placeholderData: { rows: seeded(SEED_TIMETABLE, []), live: false } });
+  const exams = useQuery({ queryKey: ["exam_entries"], queryFn: fetchExams, staleTime: STALE, placeholderData: { rows: seeded(SEED_EXAMS, []), live: false } });
   return {
-    timetable: timetable.data?.rows ?? SEED_TIMETABLE,
-    exams: exams.data?.rows ?? SEED_EXAMS,
+    timetable: timetable.data?.rows ?? seeded(SEED_TIMETABLE, []),
+    exams: exams.data?.rows ?? seeded(SEED_EXAMS, []),
     live: Boolean(timetable.data?.live || exams.data?.live),
     loading: timetable.isFetching || exams.isFetching,
   };
 }
 
 export function useOpportunities() {
-  const q = useQuery({ queryKey: ["opportunities"], queryFn: fetchOpportunities, staleTime: STALE, placeholderData: { rows: SEED_OPPORTUNITIES, live: false } });
-  return { opportunities: q.data?.rows ?? SEED_OPPORTUNITIES, live: Boolean(q.data?.live) };
+  const q = useQuery({ queryKey: ["opportunities"], queryFn: fetchOpportunities, staleTime: STALE, placeholderData: { rows: seeded(SEED_OPPORTUNITIES, []), live: false } });
+  return { opportunities: q.data?.rows ?? seeded(SEED_OPPORTUNITIES, []), live: Boolean(q.data?.live) };
 }
 
 /** Persists the student's active campus (registered institution is set by verification only). */

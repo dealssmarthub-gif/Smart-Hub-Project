@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { seeded } from "@/lib/appMode";
 
 // ============================================================================
 // DYNAMIC CATEGORY ENGINE
@@ -77,9 +78,9 @@ function readCache(): Category[] | null {
   }
 }
 
-/** Last successful fetch if there is one, otherwise the built-in tree. */
+/** Last successful fetch if there is one, otherwise the built-in tree (demo) or nothing (live). */
 export function getCachedCategories(): Category[] {
-  return readCache() ?? FALLBACK_CATEGORIES;
+  return readCache() ?? seeded(FALLBACK_CATEGORIES, []);
 }
 
 /** Fetches the hierarchy from Supabase; never throws — falls back to cache/defaults. */
@@ -141,7 +142,7 @@ export function useCategories(scope: CategoryScope) {
   const { data = FALLBACK_CATEGORIES } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    placeholderData: FALLBACK_CATEGORIES,
+    placeholderData: seeded(FALLBACK_CATEGORIES, []),
     staleTime: 5 * 60_000,
   });
 

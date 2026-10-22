@@ -1,0 +1,13 @@
+# Always LF in the repo and in working copies, so Prettier/ESLint don't flag
+# every line on Windows checkouts (core.autocrlf=true). Binary files are
+# detected by text=auto and left untouched.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary

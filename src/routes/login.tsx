@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { supabase } from "@/lib/supabase";
+import { IS_LIVE } from "@/lib/appMode";
 import { useNaflis } from "@/lib/naflis/store";
 import { ROLE_META, postSignInPath, type Role } from "@/lib/naflis/roles";
 
@@ -54,6 +55,7 @@ function LoginPage() {
   };
 
   const handleDemoLogin = async (role: Extract<Role, "buyer" | "student" | "admin" | "src_head" | "super_admin">) => {
+    if (IS_LIVE) return;
     // A real Supabase session would re-sync on its next token refresh and replace the demo account.
     if (supabase) await supabase.auth.signOut().catch(() => undefined);
     useNaflis.getState().setRole(role);
@@ -122,6 +124,8 @@ function LoginPage() {
           if (error.message.toLowerCase().includes("user already registered")) {
             toast.error("An account with this email already exists. Switching to Sign In.");
             setMode("signin");
+          } else if (error.message.toLowerCase().includes("signups not allowed")) {
+            toast.error("New sign-ups are closed right now. Please check back soon.");
           } else {
             toast.error(error.message);
           }
@@ -170,7 +174,9 @@ function LoginPage() {
             </h1>
             <p className="text-sm text-muted-foreground">
               {mode === "signin"
-                ? "Access your dashboard to shop, track escrowed orders and use Student OS."
+                ? IS_LIVE
+                  ? "Access your dashboard to shop and use Student OS."
+                  : "Access your dashboard to shop, track escrowed orders and use Student OS."
                 : "Join NAFLIS Mall to buy smarter and unlock Student OS."}
             </p>
           </div>
@@ -247,7 +253,7 @@ function LoginPage() {
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="+233 24 000 0000"
+                      placeholder="e.g. 024 123 4567"
                       className="pl-9"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -318,7 +324,8 @@ function LoginPage() {
             </Button>
           </form>
 
-          {/* Quick Demo Role Navigation */}
+          {/* Quick Demo Role Navigation (demo mode only) */}
+          {!IS_LIVE && (
           <div className="rounded-3xl border border-border-soft bg-card p-4 text-center shadow-soft space-y-3">
             <p className="text-xs font-semibold text-muted-foreground">Demo accounts — click to sign in</p>
             <div className="flex flex-wrap justify-center gap-2">
@@ -349,13 +356,14 @@ function LoginPage() {
               </Button>
             </div>
           </div>
+          )}
         </div>
       </main>
 
       {/* Footer */}
       <footer className="border-t border-border-soft">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row">
-          <p>© {new Date().getFullYear()} NAFLIS Discount Mall. Real Authentication.</p>
+          <p>© {new Date().getFullYear()} NAFLIS Mall</p>
         </div>
       </footer>
     </div>

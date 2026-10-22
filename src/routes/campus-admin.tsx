@@ -29,7 +29,8 @@ import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { ContextSwitcher } from "@/components/naflis/ContextSwitcher";
 import { SrcEventsTickets, TicketCheckIn } from "@/components/naflis/SrcConsole";
-import { publishCampusEvent, publishCampusResource, removeCampusEvent, removeCampusResource, togglePinCampusEvent } from "@/services/campusContent";
+import { mapDbEvent, mapDbResource, publishCampusEvent, publishCampusResource, removeCampusEvent, removeCampusResource, togglePinCampusEvent } from "@/services/campusContent";
+import { IS_LIVE } from "@/lib/appMode";
 import { scopedCampuses } from "@/lib/naflis/permissions";
 import { resolveRoles } from "@/lib/naflis/roles";
 import { useShallow } from "zustand/react/shallow";
@@ -133,20 +134,10 @@ export function CampusAdminPortal() {
           .order("pinned", { ascending: false })
           .order("created_at", { ascending: false });
 
-        if (dbEvents && dbEvents.length > 0) {
-          const mapped: CampusEvent[] = dbEvents.map((e) => ({
-            id: e.id,
-            title: e.title,
-            description: e.description || "",
-            eventDate: e.event_date || new Date().toISOString(),
-            venue: e.venue || "Campus Main Grounds",
-            bannerUrl: e.banner_url || "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&q=80",
-            campus: e.campus || "UG - Legon",
-            pinned: Boolean(e.pinned),
-            organizer: e.organizer || "Official SRC",
-            createdBy: e.created_by,
-            createdAt: new Date(e.created_at).getTime(),
-          }));
+        // Live shows exactly what the database holds, empty included.
+        if (dbEvents && (IS_LIVE || dbEvents.length > 0)) {
+          // Shared mapper keeps `kind`, so notices stay off the Events page.
+          const mapped: CampusEvent[] = dbEvents.map(mapDbEvent);
           setEvents(mapped);
           useNaflis.setState({ campusEvents: mapped });
         }
@@ -157,22 +148,8 @@ export function CampusAdminPortal() {
           .select("*")
           .order("downloads", { ascending: false });
 
-        if (dbRes && dbRes.length > 0) {
-          const mappedRes: CampusResource[] = dbRes.map((r) => ({
-            id: r.id,
-            title: r.title,
-            description: r.description || "",
-            resourceType: r.resource_type || "Lecture Slides",
-            courseCode: r.course_code || "",
-            department: r.department || "",
-            campus: r.campus || "UG - Legon",
-            fileUrl: r.file_url,
-            fileName: r.file_name || `${r.course_code}_document.pdf`,
-            fileSize: r.file_size || "2.5 MB",
-            downloads: r.downloads || 0,
-            createdBy: r.created_by,
-            createdAt: new Date(r.created_at).getTime(),
-          }));
+        if (dbRes && (IS_LIVE || dbRes.length > 0)) {
+          const mappedRes: CampusResource[] = dbRes.map(mapDbResource);
           setResources(mappedRes);
           useNaflis.setState({ campusResources: mappedRes });
         }
@@ -260,6 +237,8 @@ export function CampusAdminPortal() {
 
       return publicUrl;
     } catch (err: any) {
+      // Live: never store a data URL in the database; the publish fails with this message.
+      if (IS_LIVE) throw new Error(`Couldn't upload ${file.name}: ${err?.message ?? "storage error"}`);
       console.warn("Storage bucket upload fallback to local preview:", err);
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -283,9 +262,10 @@ export function CampusAdminPortal() {
 
     setIsSubmittingEvent(true);
     try {
-      let bannerUrl =
-        eventBannerPreview ||
-        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&q=80";
+      // Live: no stock photo or made-up venue; a notice shows only what was entered.
+      let bannerUrl: string | undefined = IS_LIVE
+        ? undefined
+        : eventBannerPreview || "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&q=80";
 
       if (eventBannerFile) {
         bannerUrl = await uploadToCampusDocs(eventBannerFile);
@@ -295,9 +275,9 @@ export function CampusAdminPortal() {
       const newEvent = await publishCampusEvent({
         kind: "announcement",
         title: eventTitle.trim(),
-        description: eventDescription.trim() || "Official notice published for campus students.",
+        description: eventDescription.trim() || (IS_LIVE ? "" : "Official notice published for campus students."),
         eventDate: eventDate ? new Date(eventDate).toISOString() : new Date().toISOString(),
-        venue: eventVenue.trim() || "Main Campus Auditorium",
+        venue: eventVenue.trim() || (IS_LIVE ? "" : "Main Campus Auditorium"),
         bannerUrl,
         campus: eventCampus,
         pinned: eventPinned,
@@ -338,6 +318,12 @@ export function CampusAdminPortal() {
       return;
     }
 
+    // Live: a resource must carry its real file (no sample PDF, size or name).
+    if (IS_LIVE && !resFile) {
+      toast.error("Attach the document students will download.");
+      return;
+    }
+
     setIsSubmittingRes(true);
     try {
       let fileUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
@@ -354,7 +340,7 @@ export function CampusAdminPortal() {
         title: resTitle.trim(),
         description:
           resDescription.trim() ||
-          `Official ${resType} for ${resCourse.trim().toUpperCase()} uploaded by Department Head.`,
+          (IS_LIVE ? "" : `Official ${resType} for ${resCourse.trim().toUpperCase()} uploaded by Department Head.`),
         resourceType: resType,
         courseCode: resCourse.trim().toUpperCase(),
         department: resDept.trim() || "General Academics",
@@ -486,8 +472,9 @@ export function CampusAdminPortal() {
                 SRC & Institutional Leadership Console
               </h1>
               <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
-                Publish verified student notices, pin priority campus assembly dates, dispatch lecture
-                slide archives, and monitor student academic tool requests in real time.
+                {IS_LIVE
+                  ? "Publish notices and events for your campus, pin important dates, and share lecture slides and past questions."
+                  : "Publish verified student notices, pin priority campus assembly dates, dispatch lecture slide archives, and monitor student academic tool requests in real time."}
               </p>
             </div>
 
@@ -511,7 +498,7 @@ export function CampusAdminPortal() {
         </div>
 
         {/* Executive Metrics Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className={`grid grid-cols-2 gap-3 sm:gap-4 ${IS_LIVE ? "md:grid-cols-3" : "md:grid-cols-4"}`}>
           <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4 sm:p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider">Campus Notices</span>
@@ -533,7 +520,7 @@ export function CampusAdminPortal() {
             <p className="text-2xl sm:text-3xl font-extrabold text-foreground">
               {filteredResources.length}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-1">Verified slide decks & solutions</p>
+            <p className="text-[11px] text-muted-foreground mt-1">{IS_LIVE ? "Published to students" : "Verified slide decks & solutions"}</p>
           </div>
 
           <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4 sm:p-5">
@@ -549,6 +536,8 @@ export function CampusAdminPortal() {
             <p className="text-[11px] text-muted-foreground mt-1">Student study package retrievals</p>
           </div>
 
+          {/* Demo only: demand figures come from this browser's searches, weighted by a made-up formula. */}
+          {!IS_LIVE && (
           <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-4 sm:p-5">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider">Campus Demand</span>
@@ -561,6 +550,7 @@ export function CampusAdminPortal() {
               Top weekly student search item
             </p>
           </div>
+          )}
         </div>
 
         {/* Console Tabs */}
@@ -576,16 +566,21 @@ export function CampusAdminPortal() {
             </TabsTrigger>
             <TabsTrigger value="tickets" className="text-xs font-semibold gap-1.5">
               <Tag className="h-3.5 w-3.5 text-link" />
-              <span>Events & Tickets</span>
+              <span>{IS_LIVE ? "Events" : "Events & Tickets"}</span>
             </TabsTrigger>
-            <TabsTrigger value="checkin" className="text-xs font-semibold gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-link" />
-              <span>Ticket Check-in</span>
-            </TabsTrigger>
-            <TabsTrigger value="intelligence" className="text-xs font-semibold gap-1.5">
-              <BarChart3 className="h-3.5 w-3.5 text-link" />
-              <span>Demand Intelligence Logs</span>
-            </TabsTrigger>
+            {/* Demo only: no tickets are sold in live mode yet, and demand logs are in-browser only. */}
+            {!IS_LIVE && (
+              <>
+                <TabsTrigger value="checkin" className="text-xs font-semibold gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 text-link" />
+                  <span>Ticket Check-in</span>
+                </TabsTrigger>
+                <TabsTrigger value="intelligence" className="text-xs font-semibold gap-1.5">
+                  <BarChart3 className="h-3.5 w-3.5 text-link" />
+                  <span>Demand Intelligence Logs</span>
+                </TabsTrigger>
+              </>
+            )}
           </TabsList>
 
           {/* TAB 1: Announcements */}

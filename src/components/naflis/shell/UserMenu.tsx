@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ROLE_META, roleHome, type Role } from "@/lib/naflis/roles";
+import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
 import { useNaflis, useUserRoles } from "@/lib/naflis/store";
 
 /** Staff workspaces, each with its own dashboard. */
@@ -58,7 +59,8 @@ export function UserMenu() {
     );
   }
 
-  const staff = held.filter((r) => STAFF_ROLES.includes(r));
+  // Live: no dashboards that run on in-browser data only (appMode LIVE_HIDDEN_PATHS).
+  const staff = held.filter((r) => STAFF_ROLES.includes(r) && !hiddenInLive(roleHome(r)));
 
   return (
     <DropdownMenu>
@@ -82,7 +84,7 @@ export function UserMenu() {
           className="min-h-11 gap-3 rounded-xl"
           onSelect={() => navigate({ to: "/me" })}
         >
-          <User className="h-4 w-4 text-link" strokeWidth={1.8} /> Me — wallet, orders & more
+          <User className="h-4 w-4 text-link" strokeWidth={1.8} /> {IS_LIVE ? "Me — account & workspaces" : "Me — wallet, orders & more"}
         </DropdownMenuItem>
         {staff.map((r) => (
           <DropdownMenuItem

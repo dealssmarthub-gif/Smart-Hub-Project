@@ -9,6 +9,7 @@ import { PURCHASE_METHOD_LABEL } from "@/lib/naflis/purchase";
 import { runOrderTransition } from "@/services/orderService";
 import { GHS, fmtDate } from "@/lib/naflis/format";
 import { toast } from "sonner";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/buyer/orders/$orderId")({
   component: OrderDetail,
@@ -71,7 +72,7 @@ function OrderDetail() {
 
           <div className="mt-5 flex flex-wrap gap-2">
             {/* Demo-only shortcut through the fulfilment path; server-backed orders move via their real actors. */}
-            {!order.serverBacked && simulatedNext && simulatedNext !== "completed" && (
+            {!IS_LIVE && !order.serverBacked && simulatedNext && simulatedNext !== "completed" && (
               <Button
                 variant="outline" size="sm"
                 onClick={() => {

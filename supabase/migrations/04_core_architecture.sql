@@ -196,11 +196,11 @@ INSERT INTO public.feature_flags (key, label, description, enabled) VALUES
     ('student_os',            'Student OS',                 'Student workspace: campus marketplace, deals, resources and calendar.', true),
     ('src_portal',            'SRC / Institutional Portal', 'Campus notices and academic resource publishing for SRC heads.',        true),
     ('role_switcher',         'Workspace Switcher',         'Let multi-role accounts switch context from the top bar.',              true),
-    ('reserve_and_pay',       'Reserve & Pay',              'Allow buyers to pre-pay in installments before delivery.',              true),
-    ('take_now_pay_later',    'Take Now Pay Later',         'Credit-based instant purchase with repayment plan.',                    true),
-    ('auto_settlements',      'Auto Settlements',           'Automatically release seller funds 24h after delivery.',                true),
-    ('regional_flash_sales',  'Regional Flash Sales',       'Show flash sales personalised by buyer region.',                        true),
-    ('seller_ai_price_intel', 'AI Price Intelligence',      'Enable AI-driven price recommendation for sellers.',                    true),
+    ('reserve_and_pay',       'Reserve & Pay',              'Allow buyers to pre-pay in installments before delivery.',              false),
+    ('take_now_pay_later',    'Take Now Pay Later',         'Credit-based instant purchase with repayment plan.',                    false),
+    ('auto_settlements',      'Auto Settlements',           'Automatically release seller funds 24h after delivery.',                false),
+    ('regional_flash_sales',  'Regional Flash Sales',       'Show flash sales personalised by buyer region.',                        false),
+    ('seller_ai_price_intel', 'AI Price Intelligence',      'Enable AI-driven price recommendation for sellers.',                    false),
     ('brand_studio_beta',     'Brand Studio (Beta)',        'Automated store & catalog generator (beta cohort).',                    false),
     ('fraud_hard_block',      'Fraud Hard Block',           'Auto-suspend accounts with high risk score.',                           false)
 ON CONFLICT (key) DO NOTHING;

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
+import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/buyer/wallet")({
   component: WalletPage,
@@ -41,7 +42,8 @@ function WalletPage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <FundDialog onFund={(amt, src) => { fundWallet(amt, src); toast.success(`+${GHS(amt)} added from ${src}`); }} />
+        {/* Demo only: funding is a local balance change, not a payment. */}
+        {!IS_LIVE && <FundDialog onFund={(amt, src) => { fundWallet(amt, src); toast.success(`+${GHS(amt)} added from ${src}`); }} />}
         <Button variant="outline"><ArrowUpFromLine className="mr-1 h-4 w-4" /> Withdraw</Button>
         <Button variant="outline"><Send className="mr-1 h-4 w-4" /> Send</Button>
         <Button variant="outline"><Shield className="mr-1 h-4 w-4" /> Freeze wallet</Button>
