@@ -47,11 +47,15 @@ import {
   type CampusResource,
 } from "@/lib/naflis/store";
 import { supabase } from "@/lib/supabase";
+import { sessionReady } from "@/lib/sessionReady";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/campus-admin")({
   // Staff only: SRC executives, deans / institutional staff, and super admins.
-  beforeLoad: () => {
+  // Decided client-side once the stored session and its roles are loaded (see /super).
+  ssr: false,
+  beforeLoad: async () => {
+    await sessionReady();
     if (!useNaflis.getState().enterContext(["src_head", "dean", "super_admin"])) {
       throw redirect({ to: "/login", search: { redirect: "/campus-admin" } });
     }
