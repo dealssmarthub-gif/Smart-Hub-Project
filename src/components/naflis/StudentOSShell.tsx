@@ -9,7 +9,6 @@ import {
   SearchCheck,
   Ticket,
   PlusCircle,
-  Building2,
   ShieldCheck,
   CheckCircle2,
   ShoppingBag,
@@ -30,7 +29,6 @@ const TABS = [
   { to: "/student-os/events", label: IS_LIVE ? "Events" : "Events & Tickets", icon: Ticket },
   { to: "/student-os/opportunities", label: "Opportunities", icon: Briefcase },
   { to: "/student-os/lost-found", label: "Lost & Found", icon: SearchCheck },
-  { to: "/campus-admin", label: "Institutional / SRC Access", icon: Building2 },
 ];
 
 export function StudentOSShell() {

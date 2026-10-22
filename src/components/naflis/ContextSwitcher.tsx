@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
-import { ROLE_META, roleHome, type Role } from "@/lib/naflis/roles";
+import { ROLE_META, isInstitutionalRole, roleHome, type Role } from "@/lib/naflis/roles";
 import { useNaflis, useUserRoles } from "@/lib/naflis/store";
 
 export const ROLE_ICONS: Record<Role, LucideIcon> = {
@@ -37,10 +37,10 @@ export function useWorkspaces() {
   const setVerifyModalOpen = useNaflis((s) => s.setVerifyModalOpen);
   const held = useUserRoles();
   const studentOs = useFeatureFlag("student_os");
-  const srcPortal = useFeatureFlag("src_portal");
 
+  // Institutional workspaces are never offered here: their portal has its own URL.
   const roles = held.filter(
-    (r) => (r !== "student" || studentOs) && ((r !== "src_head" && r !== "dean") || srcPortal) && !hiddenInLive(roleHome(r)),
+    (r) => (r !== "student" || studentOs) && !isInstitutionalRole(r) && !hiddenInLive(roleHome(r)),
   );
 
   return {

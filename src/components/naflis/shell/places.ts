@@ -3,7 +3,6 @@ import {
   Bell,
   BookOpen,
   Briefcase,
-  Building2,
   CalendarDays,
   Clock,
   GraduationCap,
@@ -128,12 +127,6 @@ const ALL_PLACES: Place[] = [
         icon: SearchCheck,
         flag: "student_os",
       },
-      {
-        to: "/campus-admin",
-        label: "SRC & institution access",
-        icon: Building2,
-        flag: "src_portal",
-      },
     ],
   },
   {
@@ -172,7 +165,6 @@ const CAMPUS = [
   "/student-os/events",
   "/student-os/opportunities",
   "/student-os/lost-found",
-  "/campus-admin",
 ];
 
 const under = (pathname: string, base: string) =>

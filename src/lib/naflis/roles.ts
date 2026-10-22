@@ -38,6 +38,17 @@ export const ROLE_META: Record<Role, RoleMeta> = {
   super_admin: { label: "Super Admin", description: "Engine room & feature flags", home: "/super" },
 };
 
+/**
+ * Institutional publishers. Their portal (/campus-admin) is reached only by its
+ * own URL (bookmark, invite link, sign-in redirect), never from buyer or
+ * student navigation, menus or the workspace switcher.
+ */
+export const INSTITUTIONAL_ROLES: readonly Role[] = ["src_head", "dean"];
+
+export function isInstitutionalRole(role: Role): boolean {
+  return INSTITUTIONAL_ROLES.includes(role);
+}
+
 /** Display order in the context switcher. */
 const ROLE_ORDER: Role[] = [
   "buyer", "student", "src_head", "dean", "delivery", "finance", "dispute", "admin", "super_admin",

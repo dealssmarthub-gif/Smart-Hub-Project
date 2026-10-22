@@ -7,7 +7,6 @@ import {
   Zap,
   TrendingUp,
   Users,
-  ArrowRight,
   Store,
   BadgePercent,
   ChevronDown,
@@ -478,8 +477,8 @@ function Landing() {
           <div className={`grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 ${IS_LIVE ? "" : "lg:grid-cols-5"}`}>
             <Tile tone="lavender" icon={Store} title="Student Marketplace" hint="Campus peer-to-peer thrift, textbooks, laptops, fridges & dorm furniture." to="/student-os/marketplace" cta="Open Market" />
             {!IS_LIVE && <Tile tone="peach" icon={BadgePercent} title="Student Deals & Group Buys" hint="Verified discounts, split group orders & volume bulk price drops." to="/student-os/deals" cta="Join Group Buys" />}
-            {/* Students read notices in the Calendar (live); /campus-admin is the publishers' portal. */}
-            <Tile tone="rose" icon={Building2} title="Official SRC Notices" hint="Direct administrative bulletins, townhall assemblies & campus welfare updates." to={IS_LIVE ? "/student-os/calendar" : "/campus-admin"} cta={IS_LIVE ? "See notices & events" : "View SRC Notices"} />
+            {/* Students read notices in the Calendar; the publishers' portal is never linked from here. */}
+            <Tile tone="rose" icon={Building2} title="Official SRC Notices" hint="Direct administrative bulletins, townhall assemblies & campus welfare updates." to="/student-os/calendar" cta="See notices & events" />
             <Tile tone="mint" icon={BookOpen} title="Lecture Notes & Slides" hint="Solved past examination booklets, formulas, summaries & faculty slides." to="/student-os/resources" cta="Study Resources" />
             {!IS_LIVE && <Tile tone="sky" icon={ShieldCheck} title="Escrow Protection Hub" hint="Zero-fraud escrow. Funds held safe until meetup inspection & 6-digit PIN release." onClick={() => setEscrowModalOpen(true)} cta="Escrow Security" />}
           </div>
@@ -611,31 +610,12 @@ function Landing() {
         </section>
         )}
 
-        {/* 6. Institutional / SRC Access Callout */}
-        <section className={`${PAGE_WIDTH} pb-12`}>
-          <div className="flex flex-col items-start justify-between gap-5 rounded-[32px] bg-tile-lavender p-6 sm:p-10 md:flex-row md:items-center">
-            <div className="max-w-2xl space-y-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-xs font-bold text-accent-foreground">
-                <Building2 className="h-3.5 w-3.5" strokeWidth={1.8} /> For Student Leaders &amp; Faculty Heads
-              </span>
-              <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">Student leader or faculty head?</h2>
-              <p className="text-sm font-bold text-foreground">Institutional &amp; SRC Governance Portal</p>
-              <p className="text-sm leading-relaxed text-subtle-foreground">
-                Publish official student welfare announcements and upload department lecture slides &amp; solved past questions
-                {IS_LIVE ? "." : ", and review campus-wide student demand intelligence."}
-              </p>
-            </div>
-            <Link to="/campus-admin" className={`${primaryBtn} shrink-0`}>
-              Institutional / SRC Access <ArrowRight className="h-4 w-4" strokeWidth={1.8} />
-            </Link>
-          </div>
-        </section>
       </main>
 
       {/* Footer */}
       <footer className="border-t border-border-soft bg-card/60 pb-28 md:pb-0">
         <div className={`${PAGE_WIDTH} space-y-6 py-8`}>
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+          <div className={`grid grid-cols-2 gap-6 ${IS_LIVE ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
             <div className="col-span-2 space-y-2 md:col-span-1">
               <Logo />
               <p className="text-xs leading-relaxed text-muted-foreground">
@@ -647,10 +627,6 @@ function Landing() {
               <FooterLink to="/student-os/marketplace">Campus Marketplace</FooterLink>
               {!IS_LIVE && <FooterLink to="/student-os/deals">Student Deals</FooterLink>}
               <FooterLink to="/student-os/resources">Lecture Notes &amp; Slides</FooterLink>
-            </FooterColumn>
-            <FooterColumn title="Leadership">
-              <FooterLink to="/campus-admin">Institutional / SRC Access</FooterLink>
-              <FooterLink to="/login">Executive Sign In</FooterLink>
             </FooterColumn>
             {!IS_LIVE && (
             <FooterColumn title="Safety & Escrow">
@@ -677,9 +653,6 @@ function Landing() {
                   <Link to="/buyer/wallet" className="inline-flex min-h-11 items-center hover:text-foreground">Student Wallet</Link>
                 </>
               )}
-              <Link to="/campus-admin" className="inline-flex min-h-11 items-center font-bold text-link hover:underline">
-                Institutional / SRC Access
-              </Link>
             </div>
           </div>
         </div>

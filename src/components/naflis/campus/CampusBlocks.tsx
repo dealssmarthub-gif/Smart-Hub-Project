@@ -150,14 +150,9 @@ export function NoticeDialog({
             </div>
             <div className="mt-4 flex flex-wrap justify-end gap-2">
               {children ?? (
-                <>
-                  <button type="button" onClick={onClose} className={campusSecondaryBtn}>
-                    Close
-                  </button>
-                  <Link to="/campus-admin" className={campusPrimaryBtn}>
-                    Open SRC Portal
-                  </Link>
-                </>
+                <button type="button" onClick={onClose} className={campusSecondaryBtn}>
+                  Close
+                </button>
               )}
             </div>
           </>
