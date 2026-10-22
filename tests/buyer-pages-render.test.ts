@@ -26,11 +26,13 @@ afterAll(() => {
 });
 
 async function renderAt(path: string) {
+  // Client-mode router: /buyer is rendered in the browser only (ssr: false, its
+  // sign-in check needs the stored session), so that's the render to check.
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [path] }),
     context: { queryClient: new QueryClient() },
-    isServer: true,
+    isServer: false,
   });
   await router.load();
   const html = renderToString(

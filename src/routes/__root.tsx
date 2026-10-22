@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/lib/supabase";
 import { IS_LIVE, LIVE_MISCONFIGURED, hiddenInLive, liveFallback } from "@/lib/appMode";
 import { siteMeta } from "@/lib/siteMeta";
+import { sessionReady } from "@/lib/sessionReady";
 import { useNaflis } from "@/lib/naflis/store";
 import { syncCampusContent } from "@/services/campusContent";
 import { syncStudentListings } from "@/services/studentListings";
@@ -145,15 +146,9 @@ function RootComponent() {
 
   useEffect(() => {
     if (supabase) {
-      // 1. Initial check
-      supabase.auth
-        .getSession()
-        .then(({ data: { session } }) => {
-          if (session?.user) syncUser(session.user);
-        })
-        .catch(() => {
-          // offline / auth service unreachable — stay signed out locally
-        });
+      // 1. Initial check: restore the stored session with its roles and grants, and
+      // start in the right workspace (shared with the route guards, so it runs once).
+      void sessionReady();
 
       // 2. Auth state listener
       const {

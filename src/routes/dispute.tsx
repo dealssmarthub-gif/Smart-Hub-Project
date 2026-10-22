@@ -7,13 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useNaflis } from "@/lib/naflis/store";
+import { sessionReady } from "@/lib/sessionReady";
 import { DISPUTABLE_STATES } from "@/lib/naflis/orderMachine";
 import { runOrderTransition } from "@/services/orderService";
 import { GHS, fmtDate, uid } from "@/lib/naflis/format";
 import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/dispute")({
-  beforeLoad: () => {
+  // Signed-in check runs client-side once the stored session and roles are loaded (see sessionReady).
+  ssr: false,
+  beforeLoad: async () => {
+    await sessionReady();
     if (!useNaflis.getState().enterContext(["dispute"])) {
       throw redirect({
         to: "/login",

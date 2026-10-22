@@ -6,15 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { useNaflis } from "@/lib/naflis/store";
+import { sessionReady } from "@/lib/sessionReady";
 import { IS_LIVE } from "@/lib/appMode";
 import { ORDER_STATES, orderStateLabel } from "@/lib/naflis/orderMachine";
 import { GHS, compact, fmtDate, fmtTime } from "@/lib/naflis/format";
 
 export const Route = createFileRoute("/admin")({
-  beforeLoad: () => {
+  // Signed-in check runs client-side once the stored session and roles are loaded (see sessionReady).
+  ssr: false,
+  beforeLoad: async () => {
     // Every metric here is computed from the in-browser demo store, so live mode
     // sends admins to the Super Admin console, which reads Supabase.
     if (IS_LIVE) throw redirect({ to: "/super" });
+    await sessionReady();
     if (!useNaflis.getState().enterContext(["admin", "super_admin"])) {
       throw redirect({
         to: "/login",
