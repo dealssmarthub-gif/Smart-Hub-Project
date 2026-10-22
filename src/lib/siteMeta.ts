@@ -7,8 +7,11 @@ export const SITE_TITLE = "NAFLIS Mall — Campus marketplace & student hub";
 export const SITE_DESCRIPTION =
   "Buy and sell with students on your campus, and keep up with campus notices, events, lecture notes and past questions.";
 
-/** 1200×630 card in public/. Relative: crawlers that need an absolute URL get it once the production domain is set. */
-export const SOCIAL_IMAGE = "/og-image.png";
+/** Production origin. Link previews need absolute URLs; change it here if the domain changes. */
+export const SITE_URL = "https://smart-hub-project.vercel.app";
+
+/** 1200×630 card, served from public/og-image.png. */
+export const SOCIAL_IMAGE = `${SITE_URL}/og-image.png`;
 
 export function siteMeta() {
   return [
