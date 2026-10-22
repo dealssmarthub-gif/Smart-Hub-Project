@@ -74,6 +74,36 @@ export interface StaffGrant {
   revokedAt?: number;
 }
 
+const ms = (v: unknown): number | undefined => (v ? new Date(String(v)).getTime() : undefined);
+
+/**
+ * Maps a public.staff_grants row. RLS only returns the caller's own grants
+ * (all of them for a super admin). The invite token hash is left out: it
+ * only matters to the invitee, who holds the token itself.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped Supabase row, like mapDbProduct
+export function grantFromRow(row: any): StaffGrant {
+  return {
+    id: row.id,
+    userId: row.user_id ?? undefined,
+    email: row.email,
+    name: row.name ?? row.email,
+    title: row.title,
+    role: row.role,
+    institutionId: row.institution_id,
+    campusId: row.campus_id,
+    permissions: (row.permissions ?? []).filter((p: string): p is Permission =>
+      (PERMISSIONS as readonly string[]).includes(p),
+    ),
+    status: row.status,
+    expiresAt: ms(row.expires_at),
+    invitedBy: row.invited_by ?? "",
+    createdAt: ms(row.created_at) ?? 0,
+    acceptedAt: ms(row.accepted_at),
+    revokedAt: ms(row.revoked_at),
+  };
+}
+
 export interface StaffTemplate {
   id: string;
   title: string;

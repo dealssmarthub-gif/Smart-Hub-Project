@@ -156,9 +156,6 @@ export function SiteFooter() {
           <Link to="/student-os" className={linkClass}>
             Student OS
           </Link>
-          <Link to="/campus-admin" className={linkClass}>
-            SRC access
-          </Link>
           <Link to="/login" className={linkClass}>
             Sign in
           </Link>

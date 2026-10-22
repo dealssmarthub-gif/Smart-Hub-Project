@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ROLE_META, roleHome, type Role } from "@/lib/naflis/roles";
+import { ROLE_META, isInstitutionalRole, roleHome, type Role } from "@/lib/naflis/roles";
 import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
 import { useNaflis, useUserRoles } from "@/lib/naflis/store";
 
@@ -60,7 +60,10 @@ export function UserMenu() {
   }
 
   // Live: no dashboards that run on in-browser data only (appMode LIVE_HIDDEN_PATHS).
-  const staff = held.filter((r) => STAFF_ROLES.includes(r) && !hiddenInLive(roleHome(r)));
+  // Institutional portals are reached by their own URL, never from this menu.
+  const staff = held.filter(
+    (r) => STAFF_ROLES.includes(r) && !isInstitutionalRole(r) && !hiddenInLive(roleHome(r)),
+  );
 
   return (
     <DropdownMenu>

@@ -47,11 +47,15 @@ import {
   type CampusResource,
 } from "@/lib/naflis/store";
 import { supabase } from "@/lib/supabase";
+import { sessionReady } from "@/lib/sessionReady";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/campus-admin")({
   // Staff only: SRC executives, deans / institutional staff, and super admins.
-  beforeLoad: () => {
+  // Decided client-side once the stored session and its roles are loaded (see /super).
+  ssr: false,
+  beforeLoad: async () => {
+    await sessionReady();
     if (!useNaflis.getState().enterContext(["src_head", "dean", "super_admin"])) {
       throw redirect({ to: "/login", search: { redirect: "/campus-admin" } });
     }
@@ -1219,10 +1223,6 @@ export function CampusAdminPortal() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 text-xs text-muted-foreground sm:flex-row">
           <Logo />
           <div className="flex items-center gap-4">
-            <Link to="/campus-admin" className="font-semibold text-link hover:underline">
-              Institutional / SRC Access
-            </Link>
-            <span>•</span>
             <Link to="/student-os" className="hover:text-foreground">
               Student OS
             </Link>

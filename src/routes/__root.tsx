@@ -15,6 +15,8 @@ import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/lib/supabase";
 import { IS_LIVE, LIVE_MISCONFIGURED, hiddenInLive, liveFallback } from "@/lib/appMode";
+import { siteMeta } from "@/lib/siteMeta";
+import { sessionReady } from "@/lib/sessionReady";
 import { useNaflis } from "@/lib/naflis/store";
 import { syncCampusContent } from "@/services/campusContent";
 import { syncStudentListings } from "@/services/studentListings";
@@ -86,17 +88,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "NAFLIS Discount Mall — Buy Smarter. Study Smarter." },
-      { name: "description", content: "Intelligent discount marketplace with NAFLIS Wallet, escrow protection, Reserve & Pay, and Take Now Pay Later." },
-      { name: "author", content: "NAFLIS" },
-      { property: "og:title", content: "NAFLIS Discount Mall — Buy Smarter. Study Smarter." },
-      { property: "og:description", content: "Intelligent discount marketplace with NAFLIS Wallet, escrow protection, Reserve & Pay, and Take Now Pay Later." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "NAFLIS Discount Mall — Buy Smarter. Study Smarter." },
-      { name: "twitter:description", content: "Intelligent discount marketplace with NAFLIS Wallet, escrow protection, Reserve & Pay, and Take Now Pay Later." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/97eef3c1-34d4-4fa5-af36-663057559ee0/id-preview-137e6e75--cdfe2709-b99c-4be1-b7ef-9c7547e85b24.lovable.app-1784109989109.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/97eef3c1-34d4-4fa5-af36-663057559ee0/id-preview-137e6e75--cdfe2709-b99c-4be1-b7ef-9c7547e85b24.lovable.app-1784109989109.png" },
+      ...siteMeta(),
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -154,15 +146,9 @@ function RootComponent() {
 
   useEffect(() => {
     if (supabase) {
-      // 1. Initial check
-      supabase.auth
-        .getSession()
-        .then(({ data: { session } }) => {
-          if (session?.user) syncUser(session.user);
-        })
-        .catch(() => {
-          // offline / auth service unreachable — stay signed out locally
-        });
+      // 1. Initial check: restore the stored session with its roles and grants, and
+      // start in the right workspace (shared with the route guards, so it runs once).
+      void sessionReady();
 
       // 2. Auth state listener
       const {

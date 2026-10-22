@@ -25,7 +25,7 @@ import { STAFF_ROLES, useSignOut } from "@/components/naflis/shell/UserMenu";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { GHS } from "@/lib/naflis/format";
 import { orderStateLabel } from "@/lib/naflis/orderMachine";
-import { ROLE_META, roleHome } from "@/lib/naflis/roles";
+import { ROLE_META, isInstitutionalRole, roleHome } from "@/lib/naflis/roles";
 import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
 import { useNaflis, useUserRoles, useWallet } from "@/lib/naflis/store";
 import { runOrderTransition } from "@/services/orderService";
@@ -275,7 +275,10 @@ function MePage() {
   const place = (id: "me" | "shop" | "campus" | "home") =>
     PLACES.find((p) => p.id === id)!.destinations.filter(visible);
   // Live: no dashboards that run on in-browser data only (appMode LIVE_HIDDEN_PATHS).
-  const staff = held.filter((r) => STAFF_ROLES.includes(r) && !hiddenInLive(roleHome(r)));
+  // Institutional portals are reached by their own URL, never from this page.
+  const staff = held.filter(
+    (r) => STAFF_ROLES.includes(r) && !isInstitutionalRole(r) && !hiddenInLive(roleHome(r)),
+  );
 
   return (
     <AppShell showCampus={false}>

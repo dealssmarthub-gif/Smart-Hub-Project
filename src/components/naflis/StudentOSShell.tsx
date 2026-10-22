@@ -1,4 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { useEffect } from "react";
 import {
   GraduationCap,
   Store,
@@ -9,7 +10,6 @@ import {
   SearchCheck,
   Ticket,
   PlusCircle,
-  Building2,
   ShieldCheck,
   CheckCircle2,
   ShoppingBag,
@@ -20,6 +20,7 @@ import { StudentVerificationModal } from "@/components/naflis/StudentVerificatio
 import { CampusSwitchPrompt, useSuggestRegisteredCampus } from "@/components/naflis/CampusContext";
 import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
 import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
+import { sessionReady } from "@/lib/sessionReady";
 
 const TABS = [
   { to: "/student-os", label: "Hub Overview", icon: GraduationCap, exact: true },
@@ -30,7 +31,6 @@ const TABS = [
   { to: "/student-os/events", label: IS_LIVE ? "Events" : "Events & Tickets", icon: Ticket },
   { to: "/student-os/opportunities", label: "Opportunities", icon: Briefcase },
   { to: "/student-os/lost-found", label: "Lost & Found", icon: SearchCheck },
-  { to: "/campus-admin", label: "Institutional / SRC Access", icon: Building2 },
 ];
 
 export function StudentOSShell() {
@@ -40,6 +40,18 @@ export function StudentOSShell() {
   const setVerifyModalOpen = useNaflis((s) => s.setVerifyModalOpen);
   const role = useNaflis((s) => s.role);
   useSuggestRegisteredCampus();
+  // A server-rendered load runs the route's beforeLoad on the server, where there is
+  // no session; once the browser has the stored session and its roles, enter the
+  // student workspace if the account holds it (as a client-side visit would).
+  useEffect(() => {
+    let live = true;
+    void sessionReady().then(() => {
+      if (live) useNaflis.getState().enterContext(["student"]);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
   // The student Home draws its own phone header (greeting, campus pill, search).
   const isHome = pathname === "/student-os" || pathname === "/student-os/";
   // Shop pages carry their own phone header (tabs, search, Sell button).

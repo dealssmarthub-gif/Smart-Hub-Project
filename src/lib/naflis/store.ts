@@ -8,7 +8,7 @@ import { canTransition, orderStateLabel, toOrderState, type OrderActor, type Ord
 import { deliveryUnlocked, type DeliveryRule, type Frequency, type PurchaseConfig, type PurchaseMethod } from "./purchase";
 import { maskSensitive, SENSITIVE_LABEL } from "./privacyShield";
 import { ROLE_META } from "./roles";
-import { STAFF_TEMPLATES, can, type Permission, type StaffGrant } from "./permissions";
+import { STAFF_TEMPLATES, can, grantFromRow, type Permission, type StaffGrant } from "./permissions";
 import type { Tier } from "./intelligence";
 import {
   canClaimTransition,
@@ -1231,6 +1231,8 @@ interface State {
   revokeRole: (r: Role, userId?: string) => void;
   /** Pull the account's roles from Supabase `profiles` (no-op offline). */
   refreshRoles: () => Promise<void>;
+  /** Pull the account's staff grants from Supabase (own grants; all for a super admin). No-op offline. */
+  refreshStaffGrants: () => Promise<void>;
   setUser: (id: string | null) => void;
   signIn: (userId: string) => void;
   signOut: () => void;
@@ -1625,21 +1627,46 @@ export const useNaflis = create<State>()(
       refreshRoles: async () => {
         const id = get().currentUserId;
         if (!supabase || !id) return;
+        const client = supabase;
+        const loadProfile = async () => {
+          try {
+            const { data, error } = await client.from("profiles").select("*").eq("id", id).maybeSingle();
+            if (error || !data || get().currentUserId !== id) return;
+            const fetched: Role[] = [data.role, ...(Array.isArray(data.roles) ? data.roles : [])]
+              .filter(Boolean)
+              .map(normalizeRole);
+            set((s) => ({
+              users: s.users.map((u) =>
+                u.id === id
+                  ? { ...u, roles: Array.from(new Set([...(u.roles ?? []), ...fetched])), institutionId: data.institution_id ?? u.institutionId }
+                  : u,
+              ),
+            }));
+          } catch {
+            // offline / column not migrated yet — keep local roles
+          }
+        };
+        // Staff grants load alongside the roles, so the staff portal knows its scope on first render.
+        await Promise.all([loadProfile(), get().refreshStaffGrants()]);
+      },
+      refreshStaffGrants: async () => {
+        const id = get().currentUserId;
+        if (!supabase || !id) return;
         try {
-          const { data, error } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
+          // RLS returns the caller's own grants (every grant for a super admin); the
+          // database re-checks scope on every write, so these only drive the UI.
+          const { data, error } = await supabase.from("staff_grants").select("*");
           if (error || !data || get().currentUserId !== id) return;
-          const fetched: Role[] = [data.role, ...(Array.isArray(data.roles) ? data.roles : [])]
-            .filter(Boolean)
-            .map(normalizeRole);
+          const fetched = data.map(grantFromRow);
+          // Live: the server's grants are the whole truth. Demo: merge, so the seeded
+          // personas' grants survive (an anonymous query returns none).
           set((s) => ({
-            users: s.users.map((u) =>
-              u.id === id
-                ? { ...u, roles: Array.from(new Set([...(u.roles ?? []), ...fetched])), institutionId: data.institution_id ?? u.institutionId }
-                : u,
-            ),
+            staffGrants: IS_LIVE
+              ? fetched
+              : [...fetched, ...s.staffGrants.filter((g) => !fetched.some((f) => f.id === g.id))],
           }));
         } catch {
-          // offline / column not migrated yet — keep local roles
+          // offline — keep what's loaded
         }
       },
       setUser: (id) => set({ currentUserId: id }),
@@ -1652,7 +1679,14 @@ export const useNaflis = create<State>()(
       signOut: () => {
         const s = get();
         if (s.impersonation) get().endImpersonation("exit");
-        set({ currentUserId: null, role: "guest", impersonation: null, adminReturn: null });
+        set({
+          currentUserId: null,
+          role: "guest",
+          impersonation: null,
+          adminReturn: null,
+          // Live: grants belong to the account that loaded them.
+          ...(IS_LIVE ? { staffGrants: [] } : {}),
+        });
       },
       syncUser: (sessionUser) => {
         if (!sessionUser) {

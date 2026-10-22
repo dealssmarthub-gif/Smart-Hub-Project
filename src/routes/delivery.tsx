@@ -8,13 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNaflis } from "@/lib/naflis/store";
+import { sessionReady } from "@/lib/sessionReady";
 import { orderStateLabel } from "@/lib/naflis/orderMachine";
 import { runOrderTransition } from "@/services/orderService";
 import { GHS, fmtDate } from "@/lib/naflis/format";
 import { IS_LIVE } from "@/lib/appMode";
 
 export const Route = createFileRoute("/delivery")({
-  beforeLoad: () => {
+  // Signed-in check runs client-side once the stored session and roles are loaded (see sessionReady).
+  ssr: false,
+  beforeLoad: async () => {
+    await sessionReady();
     if (!useNaflis.getState().enterContext(["delivery"])) {
       throw redirect({
         to: "/login",
