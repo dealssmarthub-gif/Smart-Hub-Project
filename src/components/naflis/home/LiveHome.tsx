@@ -1,6 +1,6 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { PlusCircle, Search, Store } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState } from "react";
 import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
 import { ProductCard } from "@/components/naflis/ProductCard";
@@ -9,28 +9,8 @@ import { Input } from "@/components/ui/input";
 import { useNaflis } from "@/lib/naflis/store";
 import { fetchSellerProducts } from "@/services/sellerApi";
 import { useCategories } from "@/services/categories";
-
-const primaryBtn =
-  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground shadow-soft transition hover:bg-primary-deep";
-
-/** "Sell an item": signed in opens the listing form; signed out signs in first, then comes back. */
-export function SellButton({ className = primaryBtn }: { className?: string }) {
-  const signedIn = useNaflis((s) => Boolean(s.currentUserId));
-  const openForm = useNaflis((s) => s.setStudentModalOpen);
-  const navigate = useNavigate();
-  const pathname = useRouterState({ select: (r) => r.location.pathname });
-  return (
-    <button
-      type="button"
-      className={className}
-      onClick={() =>
-        signedIn ? openForm(true) : navigate({ to: "/login", search: { redirect: pathname } })
-      }
-    >
-      <PlusCircle className="h-4 w-4" strokeWidth={1.8} /> Sell an item
-    </button>
-  );
-}
+import { CampusFilter } from "@/components/naflis/shop/CampusFilter";
+import { EmptyMarket, SellButton, useMarketplace } from "@/components/naflis/shop/Marketplace";
 
 /**
  * Live Home: the marketplace first. Search, categories and the latest items
@@ -41,7 +21,8 @@ export function LiveHome() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const { names: categories } = useCategories("mall");
-  const { data: products = [], isPending } = useQuery({
+  // Fills the store; the page reads the store (one marketplace for every mall page).
+  const { isPending } = useQuery({
     queryKey: ["home-products"],
     queryFn: async () => {
       const rows = (await fetchSellerProducts()) ?? [];
@@ -50,6 +31,7 @@ export function LiveHome() {
     },
     staleTime: 60_000,
   });
+  const { all, items: products, campus, setCampus, options } = useMarketplace();
 
   return (
     <AppShell showCampus={false}>
@@ -97,10 +79,13 @@ export function LiveHome() {
         </section>
 
         <section aria-labelledby="latest">
-          <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <h2 id="latest" className="text-lg font-extrabold">
               Latest items
             </h2>
+            {all.length > 0 && (
+              <CampusFilter value={campus} options={options} onChange={setCampus} />
+            )}
             {products.length > 0 && (
               <Link
                 to="/buyer"
@@ -110,21 +95,14 @@ export function LiveHome() {
               </Link>
             )}
           </div>
-          {isPending ? (
+          {isPending && all.length === 0 ? (
             <p className="rounded-3xl bg-card p-6 text-sm text-muted-foreground">Loading items…</p>
           ) : products.length === 0 ? (
-            <div className="rounded-3xl border border-border-soft bg-card p-8 text-center shadow-soft">
-              <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-tile-lavender text-tile-lavender-icon">
-                <Store className="h-6 w-6" strokeWidth={1.8} />
-              </span>
-              <h3 className="mt-3 text-lg font-extrabold">Nothing for sale yet</h3>
-              <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
-                Be the first to list something. Items appear here once the seller is approved.
-              </p>
-              <div className="mt-4 flex justify-center">
-                <SellButton />
-              </div>
-            </div>
+            <EmptyMarket
+              campus={campus}
+              anyElsewhere={all.length > 0}
+              onShowAll={() => setCampus(null)}
+            />
           ) : (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
               {products.slice(0, 24).map((p) => (
@@ -134,7 +112,7 @@ export function LiveHome() {
           )}
         </section>
 
-        {products.length > 0 && (
+        {all.length > 0 && (
           <section className="flex flex-col items-start justify-between gap-3 rounded-3xl bg-tile-lavender p-6 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-lg font-extrabold">Have something to sell?</h2>

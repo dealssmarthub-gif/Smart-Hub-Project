@@ -12,6 +12,11 @@ export function isStudentAccount(held: Role[]): boolean {
   return held.includes("student");
 }
 
+/** The signed-in student's own campus, where the mall's campus filter starts. Null until it's known. */
+export function useStudentCampus(): string | null {
+  return null;
+}
+
 /** Show Student OS links: signed in, a student, and Student OS switched on. */
 export function useIsStudent(): boolean {
   const signedIn = useNaflis((s) => Boolean(s.currentUserId));

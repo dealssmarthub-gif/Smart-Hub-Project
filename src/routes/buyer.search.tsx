@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNaflis } from "@/lib/naflis/store";
 import { categoryFamily, useCategories } from "@/services/categories";
+import { CampusFilter } from "@/components/naflis/shop/CampusFilter";
+import { EmptyMarket, useMarketplace } from "@/components/naflis/shop/Marketplace";
 import { GHS } from "@/lib/naflis/format";
 import { toast } from "sonner";
 import { IS_LIVE } from "@/lib/appMode";
@@ -27,7 +29,8 @@ export const Route = createFileRoute("/buyer/search")({
 
 function SearchPage() {
   const search = Route.useSearch();
-  const products = useNaflis((s) => s.products);
+  // One marketplace (mall products and student listings), filtered by campus first.
+  const { all, items: products, campus, setCampus, options } = useMarketplace();
   const recordSearch = useNaflis((s) => s.recordSearch);
   const logDemandSearch = useNaflis((s) => s.logDemandSearch);
   const selectedCampus = useNaflis((s) => s.selectedCampus);
@@ -157,6 +160,11 @@ function SearchPage() {
 
         {/* Results */}
         <div>
+          {all.length > 0 && (
+            <div className="mb-3">
+              <CampusFilter value={campus} options={options} onChange={setCampus} />
+            </div>
+          )}
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               {filtered.length} {filtered.length === 1 ? "product" : "products"}
@@ -185,7 +193,13 @@ function SearchPage() {
             )}
           </div>
 
-          {filtered.length === 0 ? (
+          {IS_LIVE && products.length === 0 ? (
+            <EmptyMarket
+              campus={campus}
+              anyElsewhere={all.length > 0}
+              onShowAll={() => setCampus(null)}
+            />
+          ) : filtered.length === 0 ? (
             <div className="rounded-2xl border border-border-soft bg-card p-10 text-center">
               <Package className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
               <h3 className="text-lg font-semibold">No matches yet</h3>

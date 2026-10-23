@@ -139,6 +139,18 @@ function ProductDetail() {
             )}
           </div>
           <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl">{product.name}</h1>
+          {(product.listingType === "student" || product.campus || product.condition) && (
+            <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              {/* Self-declared, so plain text: never styled as verified. */}
+              {product.listingType === "student" && (
+                <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold">
+                  Student seller
+                </span>
+              )}
+              {product.campus && <span>{product.campus}</span>}
+              {product.condition && <span>· {product.condition}</span>}
+            </p>
+          )}
 
           <div className="flex flex-wrap items-center gap-3 text-sm">
             {product.reviews > 0 && (

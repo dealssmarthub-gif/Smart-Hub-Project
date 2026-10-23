@@ -50,7 +50,8 @@ export function mapDbVendor(row: any, category?: string): VendorProfile {
 }
 
 /**
- * Every product from approved sellers.
+ * Every listing from approved sellers: mall products and student listings in
+ * one marketplace (each carries listingType and campus for the campus filter).
  * Returns null when there is no remote catalog (demo mode) — the local catalog stands.
  */
 export async function fetchSellerProducts(): Promise<Product[] | null> {
@@ -59,9 +60,7 @@ export async function fetchSellerProducts(): Promise<Product[] | null> {
   const { data, error } = await supabase
     .from("products")
     .select("*, vendors!inner(status, store_name, logo_url, description)")
-    .eq("vendors.status", "approved")
-    // Student listings have their own marketplace (services/studentListings.ts).
-    .eq("listing_type", "mall");
+    .eq("vendors.status", "approved");
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => mapDbProduct(row));
 }

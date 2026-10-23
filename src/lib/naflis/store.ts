@@ -92,6 +92,12 @@ export interface Product {
   createdAt: number;
   /** Seller-configured purchase methods; missing means legacy defaults (see getPurchaseConfig). */
   purchaseConfig?: PurchaseConfig;
+  /** "student" for a student's own listing (self-declared, never verified). */
+  listingType?: "mall" | "student";
+  /** Where the item is; none means it isn't tied to one campus (shown under every campus). */
+  campus?: string;
+  /** Student listings: the seller's own description of the condition. */
+  condition?: string;
 }
 
 export interface CartItem {
@@ -1206,6 +1212,8 @@ interface State {
   // Student OS state
   /** Active campus — the campus context the student is browsing. */
   selectedCampus: string;
+  /** Mall campus filter: null = all campuses, undefined = not chosen yet (students start at their own). */
+  mallCampus?: string | null;
   /** Registered institution — where the student is verified. Changes only through verification. */
   registeredInstitution: string | null;
   /** Pending "switch campus?" prompt. */
@@ -1289,6 +1297,7 @@ interface State {
 
   // Student OS actions
   setSelectedCampus: (campus: string) => void;
+  setMallCampus: (campus: string | null) => void;
   /** Asks the student before changing the active campus. Automatic prompts respect "Not now". */
   requestCampusSwitch: (campus: string, reason: "manual" | "location" | "registered") => void;
   resolveCampusPrompt: (accept: boolean) => void;
@@ -2422,6 +2431,7 @@ export const useNaflis = create<State>()(
 
       // Student OS actions
       setSelectedCampus: (campus) => set({ selectedCampus: campus }),
+      setMallCampus: (campus) => set({ mallCampus: campus }),
       requestCampusSwitch: (campus, reason) => {
         const s = get();
         if (campus === s.selectedCampus) return;
@@ -2943,6 +2953,7 @@ export const useNaflis = create<State>()(
                 wishlist: s.wishlist,
                 savedOpportunities: s.savedOpportunities,
                 selectedCampus: s.selectedCampus,
+                mallCampus: s.mallCampus,
                 campusPromptSnooze: s.campusPromptSnooze,
               }) as unknown as State,
           }

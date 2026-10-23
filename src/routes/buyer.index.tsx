@@ -9,6 +9,8 @@ import { useCategories } from "@/services/categories";
 import { GHS } from "@/lib/naflis/format";
 import { fetchSellerProducts } from "@/services/sellerApi";
 import { IS_LIVE } from "@/lib/appMode";
+import { CampusFilter } from "@/components/naflis/shop/CampusFilter";
+import { EmptyMarket, useMarketplace } from "@/components/naflis/shop/Marketplace";
 
 export const Route = createFileRoute("/buyer/")({
   component: BuyerHome,
@@ -34,27 +36,32 @@ function BuyerHome() {
     };
     fetchApprovedProducts();
   }, []);
+  // One marketplace: mall products and student listings, filtered by campus.
+  const { all, items, campus, setCampus, options } = useMarketplace(products);
   const promos = useNaflis((s) => s.promos);
   const { tree: categories } = useCategories("mall");
   const user = useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
 
-  const flash = useMemo(() => products.filter((p) => p.flashSale).slice(0, 4), [products]);
+  const flash = useMemo(() => items.filter((p) => p.flashSale).slice(0, 4), [items]);
   // Live has no demand data, so "trending" becomes newest first.
   const trending = useMemo(
-    () => [...products].sort((a, b) => (IS_LIVE ? (b.createdAt || 0) - (a.createdAt || 0) : b.demand - a.demand)).slice(0, 8),
-    [products],
+    () =>
+      [...items]
+        .sort((a, b) => (IS_LIVE ? (b.createdAt || 0) - (a.createdAt || 0) : b.demand - a.demand))
+        .slice(0, IS_LIVE ? 24 : 8),
+    [items],
   );
   // Only genuine reductions (a stored old price above today's price).
   const priceDrop = useMemo(
     () =>
-      products
+      items
         .filter((p) => p.originalPrice > p.price)
         .sort((a, b) => (b.originalPrice - b.price) / b.originalPrice - (a.originalPrice - a.price) / a.originalPrice)
         .slice(0, 4),
-    [products],
+    [items],
   );
   // Products don't store a location in live mode yet.
-  const nearYou = useMemo(() => (IS_LIVE ? [] : products.filter((p) => p.location === "Accra").slice(0, 4)), [products]);
+  const nearYou = useMemo(() => (IS_LIVE ? [] : items.filter((p) => p.location === "Accra").slice(0, 4)), [items]);
 
   return (
     <div className="space-y-8">
@@ -114,15 +121,15 @@ function BuyerHome() {
         </div>
       </section>
 
-      {/* No products at all yet */}
-      {products.length === 0 && (
-        <section className="rounded-3xl border border-dashed bg-card p-10 text-center">
-          <Package className="mx-auto h-10 w-10 text-muted-foreground" />
-          <h2 className="mt-3 text-base font-bold">No products yet</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
-            Products appear here once sellers are approved and list them.
-          </p>
-        </section>
+      {all.length > 0 && (
+        <div className="flex justify-end">
+          <CampusFilter value={campus} options={options} onChange={setCampus} />
+        </div>
+      )}
+
+      {/* Nothing here (at all, or at this campus): never blank. */}
+      {items.length === 0 && (
+        <EmptyMarket campus={campus} anyElsewhere={all.length > 0} onShowAll={() => setCampus(null)} />
       )}
 
       {/* Each product row only shows when it has products. */}
@@ -143,7 +150,7 @@ function BuyerHome() {
             subtitle={IS_LIVE ? "The latest products from approved sellers" : "Popular in your region"}
           />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {trending.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+            {trending.slice(0, IS_LIVE ? 24 : 4).map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </section>
       )}

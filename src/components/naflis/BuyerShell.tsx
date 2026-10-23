@@ -6,6 +6,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
+import { ListStudentItemModal } from "@/components/naflis/ListStudentItemModal";
 import { useNaflis } from "@/lib/naflis/store";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { useIsStudent } from "@/lib/naflis/student";
@@ -140,6 +141,8 @@ export function BuyerShell() {
           <Outlet />
         </main>
       </div>
+      {/* "Sell an item" on mall pages opens this form. */}
+      <ListStudentItemModal />
     </AppShell>
   );
 }

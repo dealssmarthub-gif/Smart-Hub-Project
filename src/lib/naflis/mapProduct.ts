@@ -43,6 +43,10 @@ export function mapDbProduct(row: any, overrides: Partial<Product> = {}): Produc
     verifiedDiscount: false,
     createdAt,
     purchaseConfig,
+    listingType: row.listing_type === "student" ? "student" : "mall",
+    // No campus: not tied to one, so it shows under every campus filter.
+    campus: row.campus || undefined,
+    condition: row.item_condition || undefined,
     ...overrides,
   };
 }
