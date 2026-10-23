@@ -19,6 +19,7 @@ import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as SellerRouteImport } from './routes/seller'
+import { Route as StaffRouteImport } from './routes/staff'
 import { Route as StaffInviteRouteImport } from './routes/staff-invite'
 import { Route as StudentOsRouteImport } from './routes/student-os'
 import { Route as SuperRouteImport } from './routes/super'
@@ -100,6 +101,11 @@ const MeRoute = MeRouteImport.update({
 const SellerRoute = SellerRouteImport.update({
   id: '/seller',
   path: '/seller',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffRoute = StaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffInviteRoute = StaffInviteRouteImport.update({
@@ -274,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
   '/seller': typeof SellerRouteWithChildren
+  '/staff': typeof StaffRoute
   '/staff-invite': typeof StaffInviteRoute
   '/student-os': typeof StudentOsRouteWithChildren
   '/super': typeof SuperRouteWithChildren
@@ -317,6 +324,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
   '/seller': typeof SellerRouteWithChildren
+  '/staff': typeof StaffRoute
   '/staff-invite': typeof StaffInviteRoute
   '/buyer/cart': typeof BuyerCartRoute
   '/buyer/categories': typeof BuyerCategoriesRoute
@@ -360,6 +368,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
   '/seller': typeof SellerRouteWithChildren
+  '/staff': typeof StaffRoute
   '/staff-invite': typeof StaffInviteRoute
   '/student-os': typeof StudentOsRouteWithChildren
   '/super': typeof SuperRouteWithChildren
@@ -406,6 +415,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/me'
     | '/seller'
+    | '/staff'
     | '/staff-invite'
     | '/student-os'
     | '/super'
@@ -449,6 +459,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/me'
     | '/seller'
+    | '/staff'
     | '/staff-invite'
     | '/buyer/cart'
     | '/buyer/categories'
@@ -491,6 +502,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/me'
     | '/seller'
+    | '/staff'
     | '/staff-invite'
     | '/student-os'
     | '/super'
@@ -536,6 +548,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MeRoute: typeof MeRoute
   SellerRoute: typeof SellerRouteWithChildren
+  StaffRoute: typeof StaffRoute
   StaffInviteRoute: typeof StaffInviteRoute
   StudentOsRoute: typeof StudentOsRouteWithChildren
   SuperRoute: typeof SuperRouteWithChildren
@@ -611,6 +624,13 @@ declare module '@tanstack/react-router' {
       path: '/seller'
       fullPath: '/seller'
       preLoaderRoute: typeof SellerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff-invite': {
@@ -964,6 +984,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MeRoute: MeRoute,
   SellerRoute: SellerRouteWithChildren,
+  StaffRoute: StaffRoute,
   StaffInviteRoute: StaffInviteRoute,
   StudentOsRoute: StudentOsRouteWithChildren,
   SuperRoute: SuperRouteWithChildren,

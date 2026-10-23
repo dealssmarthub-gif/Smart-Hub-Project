@@ -19,8 +19,8 @@ import { toast } from "sonner";
 import { ROLE_ICONS, useWorkspaces } from "@/components/naflis/ContextSwitcher";
 import { StudentVerificationModal } from "@/components/naflis/StudentVerificationModal";
 import { ListingImage } from "@/components/naflis/home/HomeBlocks";
-import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
-import { PLACES, type Destination, type FlagKey } from "@/components/naflis/shell/places";
+import { AppShell, PAGE_WIDTH, useViewer } from "@/components/naflis/shell/AppShell";
+import { placesFor, type FlagKey } from "@/components/naflis/shell/places";
 import { STAFF_ROLES, useSignOut } from "@/components/naflis/shell/UserMenu";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { GHS } from "@/lib/naflis/format";
@@ -159,7 +159,7 @@ function ActiveOrderCard() {
           When you buy something, you can follow it here until it reaches you.
         </p>
         <Link
-          to="/student-os/marketplace"
+          to="/buyer"
           className="mt-4 inline-flex h-11 items-center gap-1.5 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground hover:bg-primary-deep"
         >
           <Store className="h-4 w-4" strokeWidth={1.8} /> Go to Shop
@@ -271,9 +271,12 @@ function MePage() {
   const signedIn = Boolean(user);
   const campus = useNaflis((s) => s.registeredInstitution ?? s.selectedCampus);
 
-  const visible = (d: Destination) => (!d.flag || flags[d.flag]) && (!d.signedIn || signedIn);
+  // Same rules as the menus: Student OS (Campus, the Student OS link) only for signed-in students.
+  const viewer = useViewer();
+  const isStudent = viewer.isStudent;
+  const places = placesFor(viewer);
   const place = (id: "me" | "shop" | "campus" | "home") =>
-    PLACES.find((p) => p.id === id)!.destinations.filter(visible);
+    places.find((p) => p.id === id)?.destinations ?? [];
   // Live: no dashboards that run on in-browser data only (appMode LIVE_HIDDEN_PATHS).
   // Institutional portals are reached by their own URL, never from this page.
   const staff = held.filter(
@@ -297,7 +300,7 @@ function MePage() {
                   <div className="min-w-0">
                     <p className="truncate text-lg font-extrabold">{user.name}</p>
                     <p className="truncate text-sm text-muted-foreground">{user.email}</p>
-                    {campus && flags.student_os && (
+                    {campus && isStudent && (
                       <p className="mt-0.5 flex items-center gap-1 truncate text-sm text-muted-foreground">
                         <Building2 className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} /> {campus}
                       </p>

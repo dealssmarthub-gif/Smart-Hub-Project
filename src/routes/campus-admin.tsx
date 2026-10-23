@@ -57,7 +57,8 @@ export const Route = createFileRoute("/campus-admin")({
   beforeLoad: async () => {
     await sessionReady();
     if (!useNaflis.getState().enterContext(["src_head", "dean", "super_admin"])) {
-      throw redirect({ to: "/login", search: { redirect: "/campus-admin" } });
+      // Signed out, or no staff role: the staff sign-in page (never the mall login).
+      throw redirect({ to: "/staff", search: { redirect: "/campus-admin" } });
     }
   },
   component: CampusAdminPortal,

@@ -4,10 +4,11 @@ import type { ReactNode } from "react";
 import { Logo } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { useFeatureFlag } from "@/lib/featureFlags";
-import { useNaflis, useUserRoles } from "@/lib/naflis/store";
+import { useNaflis } from "@/lib/naflis/store";
+import { useIsStudent } from "@/lib/naflis/student";
 import { NotificationBell } from "@/components/naflis/home/HomeBlocks";
 import { CampusPicker } from "./CampusPicker";
-import { PLACES, placeFor, type PlaceId } from "./places";
+import { PLACES, placeFor, placesFor, type PlaceId, type Viewer } from "./places";
 import { UserMenu } from "./UserMenu";
 import { IS_LIVE } from "@/lib/appMode";
 
@@ -19,15 +20,17 @@ export const PAGE_WIDTH = "mx-auto w-full max-w-[1160px] px-4 sm:px-6";
  * `onEscrowClick` lets the landing page open its explainer in place; elsewhere
  * "How escrow works" links to that section of the landing page.
  */
-/**
- * Where "Home" goes: the signed-in student hub for accounts that hold the
- * student role, the public landing page for everyone else.
- */
-export function useHomePath(): "/" | "/student-os" {
+/** Who is looking: drives which places and destinations the menus show. */
+export function useViewer(): Viewer {
   const signedIn = useNaflis((s) => Boolean(s.currentUserId));
-  const held = useUserRoles();
-  const studentOs = useFeatureFlag("student_os");
-  return signedIn && studentOs && held.includes("student") ? "/student-os" : "/";
+  const isStudent = useIsStudent();
+  const flags = {
+    student_os: useFeatureFlag("student_os"),
+    src_portal: useFeatureFlag("src_portal"),
+    reserve_and_pay: useFeatureFlag("reserve_and_pay"),
+    take_now_pay_later: useFeatureFlag("take_now_pay_later"),
+  };
+  return { flags, signedIn, isStudent };
 }
 
 export function TopNav({
@@ -40,7 +43,7 @@ export function TopNav({
   mobile?: boolean;
 }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const studentOs = useFeatureFlag("student_os");
+  const isStudent = useIsStudent();
   const active = placeFor(pathname);
   const link = (id: PlaceId) =>
     `inline-flex h-11 items-center rounded-full px-4 text-sm font-semibold transition ${
@@ -60,10 +63,11 @@ export function TopNav({
       <div className={`${PAGE_WIDTH} flex h-16 items-center gap-3 md:h-[72px]`}>
         <Logo className="shrink-0" compact />
         <nav aria-label="Main" className="ml-4 hidden items-center gap-1 md:flex">
-          <Link to={studentOs ? shop.to : "/buyer"} className={link("shop")}>
+          <Link to={shop.to} className={link("shop")}>
             Shop
           </Link>
-          {studentOs && (
+          {/* Student OS: linked only for signed-in students. */}
+          {isStudent && (
             <Link to={campus.to} className={link("campus")}>
               Campus
             </Link>
@@ -94,12 +98,9 @@ export function TopNav({
 /** Floating bottom tab bar for phones: Home, Shop, Campus, Me. */
 export function MobileTabBar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const studentOs = useFeatureFlag("student_os");
-  const home = useHomePath();
   const active = placeFor(pathname);
-  const places = PLACES.map((p) => (p.id === "home" ? { ...p, to: home } : p))
-    .filter((p) => studentOs || p.id !== "campus")
-    .map((p) => (p.id === "shop" && !studentOs ? { ...p, to: "/buyer" } : p));
+  // Home, Shop and Me for everyone; Campus (Student OS) only for signed-in students.
+  const places = placesFor(useViewer());
 
   return (
     <nav
@@ -136,12 +137,14 @@ export function MobileTabBar() {
 export function SiteFooter() {
   const year = new Date().getFullYear();
   const linkClass = "inline-flex min-h-11 min-w-11 items-center hover:text-foreground";
+  const isStudent = useIsStudent();
+  const signedIn = useNaflis((s) => Boolean(s.currentUserId));
   return (
     <footer className="border-t border-border-soft bg-card/60">
       <div
         className={`${PAGE_WIDTH} flex flex-col gap-2 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between`}
       >
-        <p>© {year} NAFLIS Mall · Campus marketplace &amp; student hub</p>
+        <p>© {year} NAFLIS Mall</p>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5">
           {!IS_LIVE && (
             <>
@@ -153,12 +156,16 @@ export function SiteFooter() {
               </Link>
             </>
           )}
-          <Link to="/student-os" className={linkClass}>
-            Student OS
-          </Link>
-          <Link to="/login" className={linkClass}>
-            Sign in
-          </Link>
+          {isStudent && (
+            <Link to="/student-os" className={linkClass}>
+              Student OS
+            </Link>
+          )}
+          {!signedIn && (
+            <Link to="/login" className={linkClass}>
+              Sign in
+            </Link>
+          )}
         </nav>
       </div>
     </footer>

@@ -173,11 +173,13 @@ function LoginPage() {
               {mode === "signin" ? "Sign In" : "Create Account"}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {mode === "signin"
-                ? IS_LIVE
-                  ? "Access your dashboard to shop and use Student OS."
-                  : "Access your dashboard to shop, track escrowed orders and use Student OS."
-                : "Join NAFLIS Mall to buy smarter and unlock Student OS."}
+              {IS_LIVE
+                ? mode === "signin"
+                  ? "Sign in to contact sellers and sell your own items."
+                  : "Join NAFLIS Mall to contact sellers and sell your own items."
+                : mode === "signin"
+                  ? "Access your dashboard to shop, track escrowed orders and use Student OS."
+                  : "Join NAFLIS Mall to buy smarter and unlock Student OS."}
             </p>
           </div>
 
