@@ -30,7 +30,7 @@ export const Route = createFileRoute("/buyer/search")({
 function SearchPage() {
   const search = Route.useSearch();
   // One marketplace (mall products and student listings), filtered by campus first.
-  const { all, items: products, campus, setCampus, options } = useMarketplace();
+  const { all, items: products, campus, setCampus, options, loading } = useMarketplace();
   const recordSearch = useNaflis((s) => s.recordSearch);
   const logDemandSearch = useNaflis((s) => s.logDemandSearch);
   const selectedCampus = useNaflis((s) => s.selectedCampus);
@@ -193,7 +193,9 @@ function SearchPage() {
             )}
           </div>
 
-          {IS_LIVE && products.length === 0 ? (
+          {loading ? (
+            <p className="rounded-2xl bg-card p-6 text-sm text-muted-foreground">Loading items…</p>
+          ) : IS_LIVE && products.length === 0 ? (
             <EmptyMarket
               campus={campus}
               anyElsewhere={all.length > 0}

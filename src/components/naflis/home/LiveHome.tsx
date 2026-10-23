@@ -1,13 +1,10 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useState } from "react";
 import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
 import { ProductCard } from "@/components/naflis/ProductCard";
 import { ListStudentItemModal } from "@/components/naflis/ListStudentItemModal";
 import { Input } from "@/components/ui/input";
-import { useNaflis } from "@/lib/naflis/store";
-import { fetchSellerProducts } from "@/services/sellerApi";
 import { useCategories } from "@/services/categories";
 import { CampusFilter } from "@/components/naflis/shop/CampusFilter";
 import { EmptyMarket, SellButton, useMarketplace } from "@/components/naflis/shop/Marketplace";
@@ -21,17 +18,8 @@ export function LiveHome() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const { names: categories } = useCategories("mall");
-  // Fills the store; the page reads the store (one marketplace for every mall page).
-  const { isPending } = useQuery({
-    queryKey: ["home-products"],
-    queryFn: async () => {
-      const rows = (await fetchSellerProducts()) ?? [];
-      useNaflis.setState({ products: rows });
-      return rows;
-    },
-    staleTime: 60_000,
-  });
-  const { all, items: products, campus, setCampus, options } = useMarketplace();
+  // useMarketplace loads the catalogue (one marketplace for every mall page).
+  const { all, items: products, campus, setCampus, options, loading } = useMarketplace();
 
   return (
     <AppShell showCampus={false}>
@@ -95,7 +83,7 @@ export function LiveHome() {
               </Link>
             )}
           </div>
-          {isPending && all.length === 0 ? (
+          {loading ? (
             <p className="rounded-3xl bg-card p-6 text-sm text-muted-foreground">Loading items…</p>
           ) : products.length === 0 ? (
             <EmptyMarket

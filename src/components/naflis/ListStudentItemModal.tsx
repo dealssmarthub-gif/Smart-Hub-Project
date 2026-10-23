@@ -17,6 +17,12 @@ import { clearOwnContactPhone, createStudentListing, fetchOwnVendor, PHONE_PATTE
 import { Upload, X, Camera, Plus, Sparkles, MapPin, Tag } from "lucide-react";
 import { toast } from "sonner";
 
+// Who sees the seller's phone: live, signed-in buyers who tap Contact seller (20261024120000).
+const PHONE_HINT_LIVE =
+  "anyone signed in who taps Contact seller on your listings sees this number and your name. It applies to all your listings; leave it empty and buyers can't call or WhatsApp you.";
+const PHONE_HINT_DEMO =
+  "anyone who views your listings can see this number and your name. It applies to all your listings; leave it empty and buyers won't see a contact button.";
+
 export function ListStudentItemModal() {
   const open = useNaflis((s) => s.studentModalOpen);
   const setOpen = useNaflis((s) => s.setStudentModalOpen);
@@ -431,9 +437,10 @@ export function ListStudentItemModal() {
                 aria-describedby="item-phone-hint"
               />
               <p id="item-phone-hint" className="text-[11px] text-muted-foreground">
-                <strong className="font-semibold text-foreground">Visible to buyers:</strong> anyone who views your listings
-                can see this number and your name. It applies to all your listings; leave it empty and buyers won't see a
-                contact button.
+                <strong className="font-semibold text-foreground">
+                  {IS_LIVE ? "Shown to signed-in buyers:" : "Visible to buyers:"}
+                </strong>{" "}
+                {IS_LIVE ? PHONE_HINT_LIVE : PHONE_HINT_DEMO}
               </p>
               {publicPhone && (
                 <button

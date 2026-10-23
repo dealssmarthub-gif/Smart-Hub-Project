@@ -1,6 +1,9 @@
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { PlusCircle, Store } from "lucide-react";
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { IS_LIVE } from "@/lib/appMode";
+import { fetchSellerProducts } from "@/services/sellerApi";
 import { useNaflis, type Product } from "@/lib/naflis/store";
 import { campusOptions, filterByCampus, useMallCampus } from "@/lib/naflis/campusFilter";
 import { useStudentCampus } from "@/lib/naflis/student";
@@ -15,12 +18,24 @@ const secondaryBtn =
  * by the mall's campus. Students start at their own campus.
  */
 export function useMarketplace(source?: Product[]) {
+  // Live: load the catalogue into the store once (shared cache), so any page that
+  // lists items works when opened directly, not only after Home. Demo keeps its seed.
+  const { isPending } = useQuery({
+    queryKey: ["home-products"],
+    queryFn: async () => {
+      const rows = (await fetchSellerProducts()) ?? [];
+      useNaflis.setState({ products: rows });
+      return rows;
+    },
+    staleTime: 60_000,
+    enabled: IS_LIVE,
+  });
   const stored = useNaflis((s) => s.products);
   const all = source ?? stored;
   const [campus, setCampus] = useMallCampus(useStudentCampus());
   const items = useMemo(() => filterByCampus(all, campus), [all, campus]);
   const options = useMemo(() => campusOptions(all), [all]);
-  return { all, items, campus, setCampus, options };
+  return { all, items, campus, setCampus, options, loading: IS_LIVE && isPending && all.length === 0 };
 }
 
 /** "Sell an item": signed in opens the listing form; signed out signs in first, then comes back. */

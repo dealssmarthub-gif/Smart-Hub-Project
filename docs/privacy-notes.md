@@ -2,7 +2,7 @@
 
 What each kind of personal data is visible to, as enforced by the database (row-level security), not just by what the app shows. "Anyone" means anyone with the public anon key, which ships in the website, so they can query the API directly as well as browse the site.
 
-Last checked against migrations up to `20261023120000_student_profile_fields` (written and tested, not yet applied to live). If `20261022120000_products_visible_when_vendor_approved` isn't applied yet, the "Listings" section's previous rule applies, as noted there.
+Last checked against migrations up to `20261024120000_contact_phone_private`. `20261023120000_student_profile_fields` and `20261024120000_contact_phone_private` are written and tested but not yet applied to live; until `20261024120000` is applied, the previous rule in "Sellers" applies, as noted there. If `20261022120000_products_visible_when_vendor_approved` isn't applied yet, the "Listings" section's previous rule applies, as noted there.
 
 ## Accounts (`profiles`)
 - **Email, phone, credit score and limit, roles, institution:** the account owner, plus staff with the admin, super admin, finance or dispute role. Not public (`20261015121000_profiles_private`).
@@ -11,9 +11,14 @@ Last checked against migrations up to `20261023120000_student_profile_fields` (w
 - The account phone is never copied into a listing automatically. The sell form's phone field starts empty, or with the seller's contact phone if they have already published one.
 
 ## Sellers (`vendors`) and the contact phone
-- **Approved vendors are public:** shop name, description, logo, owner account id and **contact phone** (`contact_phone`, added in `20261021120000`).
+- **Approved vendors are public:** shop name, description, logo, plan and status. **Not public** (`20261024120000`): the owner account id (`user_id`) and the **contact phone** (`contact_phone`). Anonymous visitors can't read either through the API, a join, a view or a function; `supabase/tests/contact_phone_private.test.sql` checks every route.
+  - **Before `20261024120000` is applied (live today):** the owner id and contact phone of approved vendors are readable by anyone through the API, as they were.
+- **The contact phone, for signed-in users only:** the site shows it when a signed-in user taps **Contact seller**, from the database function `naflis_vendor_contact`. It answers for approved sellers only, and each user can see the numbers of at most **50 different sellers per rolling 24 hours** (seeing the same seller again doesn't count). Nobody reads the phone column directly, signed in or not.
+  - **Every reveal is recorded** in `contact_reveals`: who saw which seller's number, and when. Only admins and super admins can read it. It's kept for abuse checks; nothing deletes it automatically yet.
+  - The seller sees and edits their own number (also while pending), and admins see every number. Neither is counted or recorded.
+  - Signed-in users can read a shop's owner id (the database's ownership checks need it); anonymous visitors can't.
   - Anyone's first listing ("Sell an item") creates their vendor with **their account name as the shop name**, so the name is public once the vendor is approved. Listings show it as "Seller: …" and "By …".
-  - The contact phone is what buyers call or WhatsApp. The seller types it on the sell form under the note "Visible to buyers: anyone who views your listings can see this number and your name". If it's left empty, buyers see no contact button and no number. There is no fallback number.
+  - The contact phone is what buyers call or WhatsApp. The seller types it on the sell form under the note "Shown to signed-in buyers: anyone signed in who taps Contact seller on your listings sees this number and your name". If it's left empty, Contact seller says the seller hasn't added a number. There is no fallback number.
   - An admin can also set it when creating a vendor (Super Admin → Vendors), with the owner's agreement.
 - **Pending or rejected vendors:** visible only to the owner and to admins / super admins.
 - **Removing a published number:** the seller can do it themselves. The sell form shows their current public number with **Remove … from my listings now**, and saving a listing with the field empty also removes it. The number is per seller, so it changes on all their listings at once. The database already allowed this ("Users can update their own vendor profile"); `supabase/tests/product_visibility.test.sql` checks it, and that nobody can clear someone else's number.

@@ -22,6 +22,7 @@ import { fetchSellerProduct } from "@/services/sellerApi";
 import { PurchaseOptions } from "@/components/naflis/PurchaseOptions";
 import type { Product, Store } from "@/lib/naflis/store";
 import { IS_LIVE } from "@/lib/appMode";
+import { ContactSeller } from "@/components/naflis/ContactSeller";
 import { ListingImage } from "@/components/naflis/home/HomeBlocks";
 
 export const Route = createFileRoute("/buyer/product/$id")({
@@ -38,9 +39,16 @@ function ProductDetail() {
   const setPriceAlert = useNaflis((s) => s.setPriceAlert);
   const products = useNaflis((s) => s.products);
 
-  const [dbProduct, setDbProduct] = useState<Product | null>(null);
-  const [dbStore, setDbStore] = useState<Store | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Opened from a list: show what the store already holds at once, then refresh it.
+  const [dbProduct, setDbProduct] = useState<Product | null>(
+    () => useNaflis.getState().products.find((p) => p.id === id) ?? null,
+  );
+  const [dbStore, setDbStore] = useState<Store | null>(() => {
+    const s = useNaflis.getState();
+    const local = s.products.find((p) => p.id === id);
+    return local ? (s.stores.find((st) => st.id === local.storeId) ?? null) : null;
+  });
+  const [loading, setLoading] = useState(() => !dbProduct);
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
@@ -54,7 +62,6 @@ function ProductDetail() {
 
     const fetchProduct = async () => {
       try {
-        setLoading(true);
         const data = await fetchSellerProduct(id);
 
         if (!data) return loadLocal();
@@ -204,28 +211,16 @@ function ProductDetail() {
             }}
           />
 
-          {/* Live: buying on the site isn't connected yet, so buyers contact the seller directly when they published a phone. */}
-          {IS_LIVE && telHref(store?.contactPhone) && (
+          {/* Live: buying on the site isn't connected yet, so buyers contact the seller directly.
+              Signed out: sign in first. Signed in: the number comes from the database on request. */}
+          {IS_LIVE && (
             <div className="space-y-2 rounded-xl border border-border-soft bg-card p-4">
               <p className="text-sm font-semibold">Contact {store?.name || "the seller"} to buy</p>
-              <div className="grid grid-cols-2 gap-2">
-                {whatsappNumber(store?.contactPhone) && (
-                  <Button asChild size="lg">
-                    <a
-                      href={`https://wa.me/${whatsappNumber(store?.contactPhone)}?text=${encodeURIComponent(`Hi, I saw ${product.name} on NAFLIS Mall.`)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <MessageSquare className="mr-1 h-4 w-4" /> WhatsApp
-                    </a>
-                  </Button>
-                )}
-                <Button asChild size="lg" variant="secondary">
-                  <a href={telHref(store?.contactPhone)!}>
-                    <Phone className="mr-1 h-4 w-4" /> Call {store?.contactPhone}
-                  </a>
-                </Button>
-              </div>
+              <ContactSeller
+                vendorId={product.storeId}
+                sellerName={store?.name ?? ""}
+                itemTitle={product.name}
+              />
             </div>
           )}
 

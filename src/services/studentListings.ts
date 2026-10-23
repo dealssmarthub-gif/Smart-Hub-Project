@@ -1,13 +1,15 @@
 import { supabase } from "@/lib/supabase";
 import { useNaflis, type StudentItemCondition, type StudentListing } from "@/lib/naflis/store";
 import { mapDbProduct } from "@/lib/naflis/mapProduct";
+import { revealSellerPhone } from "@/services/sellerContact";
 
 // Student marketplace listings in Supabase (migration 20261021120000). A listing
 // is a `products` row with listing_type = 'student', owned by the seller's
 // vendor. A student without a vendor gets one on their first listing; it starts
 // pending, and its listings appear once an admin approves it (Super Admin →
-// Vendors). Buyers contact the seller on the vendor's contact_phone; there is
-// no fallback number.
+// Vendors). Buyers contact the seller on the vendor's contact phone, which the
+// app gets only from services/sellerContact (never from the vendors table);
+// there is no fallback number.
 
 /** Same rule as the vendors.contact_phone CHECK constraint. */
 export const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,19}$/;
@@ -21,7 +23,7 @@ export interface OwnVendor {
   contactPhone: string | null;
 }
 
-/** Maps a `products` row joined with `vendors(store_name, user_id, contact_phone)`. */
+/** Maps a `products` row joined with `vendors(store_name)` (public columns only). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped Supabase row, like mapDbProduct
 export function mapDbStudentListing(row: any): StudentListing {
   const price = Number(row.price) || 0;
@@ -36,8 +38,9 @@ export function mapDbStudentListing(row: any): StudentListing {
     campus: row.campus,
     condition: row.item_condition as StudentItemCondition,
     sellerName: row.vendors?.store_name ?? "",
-    sellerId: row.vendors?.user_id ?? "",
-    sellerPhone: row.vendors?.contact_phone ?? undefined,
+    // The owner id and phone aren't public: contact goes through the vendor id.
+    sellerId: "",
+    vendorId: row.vendor_id,
     image: images[0] ?? "",
     images,
     description: row.description ?? "",
@@ -53,7 +56,7 @@ export async function fetchStudentListings(): Promise<StudentListing[] | null> {
   if (!supabase) return null;
   const { data, error } = await supabase
     .from("products")
-    .select("*, vendors!inner(status, store_name, user_id, contact_phone)")
+    .select("*, vendors!inner(status, store_name)")
     .eq("listing_type", "student")
     .eq("vendors.status", "approved")
     .order("created_at", { ascending: false });
@@ -71,18 +74,19 @@ export async function fetchOwnVendor(userId: string): Promise<OwnVendor | null> 
   if (!supabase) return null;
   const { data, error } = await supabase
     .from("vendors")
-    .select("id, status, store_name, contact_phone")
+    .select("id, status, store_name")
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data
-    ? {
-        id: data.id,
-        status: data.status,
-        storeName: data.store_name,
-        contactPhone: data.contact_phone,
-      }
-    : null;
+  if (!data) return null;
+  // The seller's own phone: from the database function (never counted for the owner).
+  const own = await revealSellerPhone(data.id);
+  return {
+    id: data.id,
+    status: data.status,
+    storeName: data.store_name,
+    contactPhone: own.ok ? own.phone : null,
+  };
 }
 
 export interface NewStudentListing {
@@ -134,14 +138,14 @@ export async function createStudentListing(
         store_slug: `seller-${user.id}`,
         contact_phone: phone,
       })
-      .select("id, status, store_name, contact_phone")
+      .select("id, status, store_name")
       .single();
     if (error) throw new Error(`Couldn't set up your seller account: ${error.message}`);
     vendor = {
       id: data.id,
       status: data.status,
       storeName: data.store_name,
-      contactPhone: data.contact_phone,
+      contactPhone: phone,
     };
   } else if (phone !== vendor.contactPhone) {
     const { error } = await supabase
@@ -178,7 +182,7 @@ export async function createStudentListing(
 
   const listing = mapDbStudentListing({
     ...data,
-    vendors: { store_name: vendor.storeName, user_id: user.id, contact_phone: vendor.contactPhone },
+    vendors: { store_name: vendor.storeName },
   });
   // Only approved sellers' listings are public; a pending seller's listing waits for approval.
   if (vendor.status === "approved") {
@@ -210,7 +214,5 @@ export async function clearOwnContactPhone(): Promise<void> {
     .select("id");
   if (error) throw new Error(`Couldn't remove your number: ${error.message}`);
   if (!data?.length) throw new Error("You don't have a seller account yet.");
-  useNaflis.setState((st) => ({
-    studentListings: st.studentListings.map((l) => (l.sellerId === user.id ? { ...l, sellerPhone: undefined } : l)),
-  }));
+  // Nothing to update locally: listings never carry the phone in live mode.
 }

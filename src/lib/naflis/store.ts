@@ -404,6 +404,8 @@ export interface StudentListing {
   sellerName: string;
   sellerId: string;
   sellerPhone?: string;
+  /** Live: the seller's vendor id; the phone comes from services/sellerContact on request. */
+  vendorId?: string;
   sellerAvatar?: string;
   image: string;
   images?: string[];
