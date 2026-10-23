@@ -1,3 +1,5 @@
+import { safeReturnPath } from "@/lib/returnPoint";
+
 // ============================================================================
 // UNIFIED IDENTITY — one account, many roles
 // ============================================================================
@@ -120,8 +122,7 @@ export function defaultContext(held: Role[]): Role {
 /** Where to go after signing in: a same-site ?redirect wins, else the active workspace's home. */
 export function postSignInPath(role: Role, redirect?: string): string {
   // Only relative, same-origin paths — "//evil.com" or "https://…" would be an open redirect.
-  if (redirect && redirect.startsWith("/") && !redirect.startsWith("//") && !redirect.startsWith("/\\")) return redirect;
-  return roleHome(role);
+  return safeReturnPath(redirect) ?? roleHome(role);
 }
 
 export function roleHome(role: Role): RoleMeta["home"] {

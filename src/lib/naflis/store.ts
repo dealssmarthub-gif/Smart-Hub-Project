@@ -44,6 +44,10 @@ export interface User {
   creditScore?: number;
   creditLimit?: number;
   tags?: string[];
+  /** Self-declared at sign-up or on /me (profiles.is_student). Display only, never access. */
+  isStudent?: boolean;
+  /** The student's own campus (profiles.student_campus): where their marketplace starts. */
+  studentCampus?: string;
 }
 
 export interface Store {
@@ -1647,7 +1651,13 @@ export const useNaflis = create<State>()(
             set((s) => ({
               users: s.users.map((u) =>
                 u.id === id
-                  ? { ...u, roles: Array.from(new Set([...(u.roles ?? []), ...fetched])), institutionId: data.institution_id ?? u.institutionId }
+                  ? {
+                      ...u,
+                      roles: Array.from(new Set([...(u.roles ?? []), ...fetched])),
+                      institutionId: data.institution_id ?? u.institutionId,
+                      isStudent: Boolean(data.is_student),
+                      studentCampus: data.student_campus ?? undefined,
+                    }
                   : u,
               ),
             }));

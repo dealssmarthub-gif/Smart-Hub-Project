@@ -11,7 +11,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { renderWithLiveSnapshots } from "../liveSnapshots";
 
-type Account = { id: string; email: string; roles: string[] };
+type Account = { id: string; email: string; roles: string[]; isStudent?: boolean };
 const auth: { account: Account | null } = { account: null };
 
 vi.mock("@/lib/supabase", () => {
@@ -36,6 +36,9 @@ vi.mock("@/lib/supabase", () => {
             role: "buyer",
             roles: a.roles,
             institution_id: null,
+            // Live: "student" is the self-declared profile field, never a role.
+            is_student: a.isStudent ?? false,
+            student_campus: null,
           }
         : null;
     return [];
@@ -77,10 +80,18 @@ const BUYER = {
   email: "buyer@test.invalid",
   roles: ["buyer"],
 };
-const STUDENT = {
+const STUDENT: Account = {
   id: "44444444-0000-4000-8000-0000000000a2",
   email: "student@test.invalid",
+  roles: ["buyer"],
+  isStudent: true,
+};
+// Holds the old student role but hasn't said they are a student: live goes by the profile field.
+const ROLE_ONLY: Account = {
+  id: "44444444-0000-4000-8000-0000000000a3",
+  email: "roleonly@test.invalid",
   roles: ["buyer", "student"],
+  isStudent: false,
 };
 
 let m: {
@@ -159,6 +170,13 @@ describe("the mall never links to Student OS for non-students", () => {
       expect(html).not.toMatch(/Student OS/);
     },
   );
+
+  it("live goes by the self-declared field, not the old student role", async () => {
+    auth.account = ROLE_ONLY;
+    const { html } = await visit("/me");
+    expect(html).toContain(ROLE_ONLY.email);
+    expect(html).not.toContain('href="/student-os');
+  });
 
   it("a signed-in student does get Student OS", async () => {
     auth.account = STUDENT;

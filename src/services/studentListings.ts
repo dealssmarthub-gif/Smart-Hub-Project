@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { useNaflis, type StudentItemCondition, type StudentListing } from "@/lib/naflis/store";
+import { mapDbProduct } from "@/lib/naflis/mapProduct";
 
 // Student marketplace listings in Supabase (migration 20261021120000). A listing
 // is a `products` row with listing_type = 'student', owned by the seller's
@@ -90,7 +91,10 @@ export interface NewStudentListing {
   category: string;
   price: number;
   originalPrice?: number;
-  campus: string;
+  /** "student" for a self-declared student (campus required), "mall" for anyone else. */
+  listingType?: "student" | "mall";
+  /** Required for student listings; null = not tied to a campus (mall listings only). */
+  campus: string | null;
   condition: StudentItemCondition;
   meetupLocation?: string;
   images: string[];
@@ -126,8 +130,8 @@ export async function createStudentListing(
       .from("vendors")
       .insert({
         user_id: user.id,
-        store_name: input.sellerName.trim() || "Student seller",
-        store_slug: `student-${user.id}`,
+        store_name: input.sellerName.trim() || "Seller",
+        store_slug: `seller-${user.id}`,
         contact_phone: phone,
       })
       .select("id, status, store_name, contact_phone")
@@ -147,6 +151,8 @@ export async function createStudentListing(
     if (error) throw new Error(`Couldn't save your phone number: ${error.message}`);
     vendor = { ...vendor, contactPhone: phone };
   }
+  const listingType = input.listingType ?? "student";
+  if (listingType === "student" && !input.campus) throw new Error("Choose your campus.");
   if (vendor.status === "rejected")
     throw new Error("Your seller account wasn't approved, so new listings can't be posted.");
 
@@ -161,8 +167,8 @@ export async function createStudentListing(
       category: input.category,
       images: input.images,
       stock: 1,
-      listing_type: "student",
-      campus: input.campus,
+      listing_type: listingType,
+      campus: input.campus || null,
       item_condition: input.condition,
       meetup_location: input.meetupLocation || null,
     })
@@ -176,7 +182,16 @@ export async function createStudentListing(
   });
   // Only approved sellers' listings are public; a pending seller's listing waits for approval.
   if (vendor.status === "approved") {
-    useNaflis.setState((s) => ({ studentListings: [listing, ...s.studentListings] }));
+    // One marketplace: the mall list shows it at once; Student OS keeps its student list.
+    const product = mapDbProduct({
+      ...data,
+      vendors: { status: vendor.status, store_name: vendor.storeName },
+    });
+    useNaflis.setState((s) => ({
+      products: [product, ...s.products],
+      studentListings:
+        listingType === "student" ? [listing, ...s.studentListings] : s.studentListings,
+    }));
   }
   return { listing, vendor };
 }

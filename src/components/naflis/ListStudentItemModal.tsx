@@ -10,6 +10,7 @@ import {
   type StudentItemCondition,
 } from "@/lib/naflis/store";
 import { useCategories } from "@/services/categories";
+import { isStudentAccount } from "@/lib/naflis/student";
 import { supabase } from "@/lib/supabase";
 import { IS_LIVE } from "@/lib/appMode";
 import { clearOwnContactPhone, createStudentListing, fetchOwnVendor, PHONE_PATTERN } from "@/services/studentListings";
@@ -24,14 +25,22 @@ export function ListStudentItemModal() {
   const user = useCurrentUserSafe();
 
   const [title, setTitle] = useState("");
-  const { names: availableCategories } = useCategories("student");
+  // Live: one form for everyone. Self-declared students list as students (campus
+  // required, "Student seller" label); anyone else lists in the mall (campus optional).
+  const account = useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
+  const studentSeller = !IS_LIVE || isStudentAccount(account);
+  const { names: availableCategories } = useCategories(studentSeller ? "student" : "mall");
   const [pickedCategory, setCategory] = useState<string>("");
   const category = pickedCategory || availableCategories[0] || "";
   const [price, setPrice] = useState("");
   const [originalPrice, setOriginalPrice] = useState("");
   const [campus, setCampus] = useState(
-    selectedCampus !== "All Campuses" ? selectedCampus : "UG - Legon"
+    IS_LIVE ? "" : selectedCampus !== "All Campuses" ? selectedCampus : "UG - Legon"
   );
+  // Live: each time the form opens, a student starts at their own campus; anyone else at none.
+  useEffect(() => {
+    if (open && IS_LIVE) setCampus(studentSeller ? (account?.studentCampus ?? "") : "");
+  }, [open, studentSeller, account?.studentCampus]);
   const [condition, setCondition] = useState<StudentItemCondition>("Like New");
   const [hostelLocation, setHostelLocation] = useState("");
   const [description, setDescription] = useState("");
@@ -151,6 +160,10 @@ export function ListStudentItemModal() {
       return;
     }
 
+    if (IS_LIVE && studentSeller && !campus) {
+      toast.error("Choose your campus.");
+      return;
+    }
     const numOriginal = originalPrice ? parseFloat(originalPrice) : undefined;
     const sellerPhone = phone.trim();
     if (sellerPhone && !PHONE_PATTERN.test(sellerPhone)) {
@@ -171,7 +184,8 @@ export function ListStudentItemModal() {
           category,
           price: numPrice,
           originalPrice: numOriginal !== undefined && !isNaN(numOriginal) ? numOriginal : undefined,
-          campus,
+          listingType: studentSeller ? "student" : "mall",
+          campus: campus || null,
           condition,
           meetupLocation: hostelLocation.trim(),
           images,
@@ -180,7 +194,7 @@ export function ListStudentItemModal() {
         });
         toast.success(
           vendor.status === "approved"
-            ? "Listing posted to the Campus Marketplace."
+            ? "Listing posted."
             : "Listing saved. It will appear in the marketplace once an admin approves your seller account.",
         );
       } catch (err) {
@@ -230,10 +244,12 @@ export function ListStudentItemModal() {
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto border bg-card p-6 shadow-premium rounded-2xl">
         <DialogHeader className="space-y-1">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <Tag className="h-5 w-5 text-link" /> List a Campus Item
+            <Tag className="h-5 w-5 text-link" /> {IS_LIVE ? "Sell an item" : "List a Campus Item"}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Sell used textbooks, hostel appliances, tech gear, or dorm essentials to students on your campus.
+            {IS_LIVE
+              ? "Your first listing sets up your seller account. Listings appear once an admin approves it."
+              : "Sell used textbooks, hostel appliances, tech gear, or dorm essentials to students on your campus."}
           </DialogDescription>
         </DialogHeader>
 
@@ -283,7 +299,11 @@ export function ListStudentItemModal() {
               id="item-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Halliday & Resnick Physics 10th Ed or 90L Bedside Fridge"
+              placeholder={
+                studentSeller
+                  ? "e.g. Halliday & Resnick Physics 10th Ed or 90L Bedside Fridge"
+                  : "e.g. Desk fan, 16 inch"
+              }
               required
             />
           </div>
@@ -310,14 +330,20 @@ export function ListStudentItemModal() {
 
             <div className="space-y-1.5">
               <Label htmlFor="item-campus" className="text-xs font-semibold">
-                Campus Location
+                {IS_LIVE ? (studentSeller ? "Campus" : "Campus (optional)") : "Campus Location"}
               </Label>
               <select
                 id="item-campus"
                 value={campus}
                 onChange={(e) => setCampus(e.target.value)}
+                required={IS_LIVE && studentSeller}
                 className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
               >
+                {IS_LIVE && (
+                  <option value="" disabled={studentSeller}>
+                    {studentSeller ? "Choose…" : "Not tied to a campus"}
+                  </option>
+                )}
                 {availableCampuses.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -382,7 +408,7 @@ export function ListStudentItemModal() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="item-loc" className="text-xs font-semibold flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 text-link" /> Hostel / Meetup Spot
+                <MapPin className="h-3.5 w-3.5 text-link" /> {IS_LIVE ? "Meet-up spot (optional)" : "Hostel / Meetup Spot"}
               </Label>
               <Input
                 id="item-loc"
