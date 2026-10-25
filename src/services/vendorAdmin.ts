@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { PHONE_PATTERN, type VendorStatus } from "@/services/studentListings";
+import { revealSellerPhone } from "@/services/sellerContact";
 
 // Admin vendor management (Super Admin → Vendors). RLS from migration
 // 20261021120000 lets admins and super admins read every vendor, create one for
@@ -25,7 +26,8 @@ export async function listVendors(): Promise<AdminVendor[]> {
   const db = client();
   const { data, error } = await db
     .from("vendors")
-    .select("id, store_name, status, contact_phone, user_id, created_at, products(count)")
+    // Named columns: the phone isn't readable from the table (20261024120000).
+    .select("id, store_name, status, user_id, created_at, products(count)")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   const ids = [...new Set((data ?? []).map((v) => v.user_id))];
@@ -34,11 +36,18 @@ export async function listVendors(): Promise<AdminVendor[]> {
     ? await db.from("profiles").select("id, email, full_name").in("id", ids)
     : { data: [] as { id: string; email: string; full_name: string }[] };
   const byId = new Map((owners ?? []).map((o) => [o.id, o]));
-  return (data ?? []).map((v) => ({
+  // Admins get every phone from the same function buyers use, uncounted for them.
+  const phones = await Promise.all(
+    (data ?? []).map(async (v) => {
+      const r = await revealSellerPhone(v.id);
+      return r.ok ? r.phone : null;
+    }),
+  );
+  return (data ?? []).map((v, i) => ({
     id: v.id,
     storeName: v.store_name,
     status: v.status,
-    contactPhone: v.contact_phone,
+    contactPhone: phones[i],
     ownerEmail: byId.get(v.user_id)?.email ?? "",
     ownerName: byId.get(v.user_id)?.full_name ?? "",
     productCount: v.products?.[0]?.count ?? 0,

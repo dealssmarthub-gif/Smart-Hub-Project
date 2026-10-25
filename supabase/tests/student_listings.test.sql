@@ -106,14 +106,21 @@ SELECT 'admin-created vendor starts pending and grants seller', v.status = 'pend
 FROM public.vendors v JOIN public.profiles p ON p.id = v.user_id
 WHERE v.user_id = '00000000-0000-0000-0000-0000000005b1';
 
--- Anonymous visitor: approved listing and contact phone visible --------------
+-- Anonymous visitor: approved listing visible, contact phone not -------------
+-- (20261024120000: the phone comes only from naflis_vendor_contact, signed in.)
 SET LOCAL ROLE anon;
 SELECT set_config('request.jwt.claims', '{"role":"anon"}', true);
 INSERT INTO _results (check_name, pass, detail)
-SELECT 'approved listing shows with the vendor''s phone', count(*) = 1 AND bool_and(v.contact_phone = '+233 24 123 4567'),
-       coalesce(string_agg(p.title || ' / ' || coalesce(v.contact_phone, 'no phone'), ', '), 'none')
+SELECT 'approved listing shows with the shop name', count(*) = 1 AND bool_and(v.store_name IS NOT NULL),
+       coalesce(string_agg(p.title || ' / ' || v.store_name, ', '), 'none')
 FROM public.products p JOIN public.vendors v ON v.id = p.vendor_id
 WHERE p.listing_type = 'student' AND v.status = 'approved';
+DO $$ BEGIN
+    PERFORM v.contact_phone FROM public.vendors v;
+    INSERT INTO _results (check_name, pass, detail) VALUES ('anon cannot read the vendor''s phone', false, 'read succeeded');
+EXCEPTION WHEN insufficient_privilege THEN
+    INSERT INTO _results (check_name, pass, detail) VALUES ('anon cannot read the vendor''s phone', true, 'rejected (42501)');
+END $$;
 RESET ROLE;
 
 SELECT n, CASE WHEN pass THEN 'PASS' ELSE 'FAIL' END AS result, check_name, detail FROM _results ORDER BY n;

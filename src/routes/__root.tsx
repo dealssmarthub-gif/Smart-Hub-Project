@@ -17,6 +17,7 @@ import { supabase } from "@/lib/supabase";
 import { IS_LIVE, LIVE_MISCONFIGURED, hiddenInLive, liveFallback } from "@/lib/appMode";
 import { siteMeta } from "@/lib/siteMeta";
 import { sessionReady } from "@/lib/sessionReady";
+import { takeReturnPath } from "@/lib/returnPoint";
 import { useNaflis } from "@/lib/naflis/store";
 import { syncCampusContent } from "@/services/campusContent";
 import { syncStudentListings } from "@/services/studentListings";
@@ -143,12 +144,19 @@ function NotConfigured() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const syncUser = useNaflis((s) => s.syncUser);
+  const router = useRouter();
 
   useEffect(() => {
     if (supabase) {
       // 1. Initial check: restore the stored session with its roles and grants, and
       // start in the right workspace (shared with the route guards, so it runs once).
-      void sessionReady();
+      // Back from an email-confirmation link: go where they were before signing up.
+      void sessionReady().then(() => {
+        if (!useNaflis.getState().currentUserId) return;
+        const to = takeReturnPath();
+        // A full same-site path (it may carry ?query): hand it to history as is.
+        if (to && to !== router.state.location.href) router.history.replace(to);
+      });
 
       // 2. Auth state listener
       const {
@@ -165,7 +173,7 @@ function RootComponent() {
         subscription.unsubscribe();
       };
     }
-  }, [syncUser]);
+  }, [syncUser, router]);
 
   // Live mode: notices, events, resources and student listings come from Supabase
   // (the store starts empty). Demo mode keeps its seeded content.

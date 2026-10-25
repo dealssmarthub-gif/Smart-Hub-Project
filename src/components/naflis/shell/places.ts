@@ -41,6 +41,8 @@ export interface Destination {
   flag?: FlagKey;
   /** Only meaningful for a signed-in account. */
   signedIn?: boolean;
+  /** Student OS: linked only for signed-in students (see lib/naflis/student). */
+  studentOnly?: boolean;
 }
 
 export interface Place {
@@ -50,6 +52,31 @@ export interface Place {
   /** Where the tab goes. */
   to: string;
   destinations: Destination[];
+  /** The whole place is Student OS. */
+  studentOnly?: boolean;
+}
+
+/** What a viewer may see in the menus. */
+export interface Viewer {
+  flags: Partial<Record<FlagKey, boolean>>;
+  signedIn: boolean;
+  isStudent: boolean;
+}
+
+export function showDestination(d: Destination, v: Viewer): boolean {
+  return (
+    (!d.flag || Boolean(v.flags[d.flag])) &&
+    (!d.signedIn || v.signedIn) &&
+    (!d.studentOnly || v.isStudent)
+  );
+}
+
+/** The places and destinations this viewer sees. The mall never shows Student OS to non-students. */
+export function placesFor(v: Viewer): Place[] {
+  return PLACES.filter((p) => !p.studentOnly || v.isStudent).map((p) => ({
+    ...p,
+    destinations: p.destinations.filter((d) => showDestination(d, v)),
+  }));
 }
 
 const ALL_PLACES: Place[] = [
@@ -60,31 +87,40 @@ const ALL_PLACES: Place[] = [
     to: "/",
     destinations: [
       { to: "/", label: "Home", icon: Home },
-      { to: "/student-os", label: "Student OS hub", icon: GraduationCap, flag: "student_os" },
+      {
+        to: "/student-os",
+        label: "Student OS",
+        icon: GraduationCap,
+        flag: "student_os",
+        studentOnly: true,
+      },
     ],
   },
   {
     id: "shop",
     label: "Shop",
     icon: Store,
-    to: "/student-os/marketplace",
+    to: "/buyer",
     destinations: [
+      // Browsing the mall is open to everyone.
+      { to: "/buyer", label: "NAFLIS Mall", icon: ShoppingBag },
+      { to: "/buyer/categories", label: "Categories", icon: LayoutGrid },
+      { to: "/buyer/search", label: "Search the mall", icon: Search },
+      { to: "/buyer/deals", label: "Mall deals", icon: BadgePercent, signedIn: true },
       {
         to: "/student-os/marketplace",
         label: "Campus marketplace",
         icon: Store,
         flag: "student_os",
+        studentOnly: true,
       },
       {
         to: "/student-os/deals",
         label: "Group buys & discounts",
         icon: BadgePercent,
         flag: "student_os",
+        studentOnly: true,
       },
-      { to: "/buyer", label: "NAFLIS Mall", icon: ShoppingBag, signedIn: true },
-      { to: "/buyer/deals", label: "Mall deals", icon: BadgePercent, signedIn: true },
-      { to: "/buyer/categories", label: "Mall categories", icon: LayoutGrid, signedIn: true },
-      { to: "/buyer/search", label: "Search the mall", icon: Search, signedIn: true },
       {
         to: "/buyer/reserve",
         label: "Reserve & Pay",
@@ -106,6 +142,7 @@ const ALL_PLACES: Place[] = [
     label: "Campus",
     icon: BookOpen,
     to: "/student-os/resources",
+    studentOnly: true,
     destinations: [
       {
         to: "/student-os/resources",

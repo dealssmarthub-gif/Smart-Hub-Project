@@ -3,11 +3,12 @@
 // The database side is supabase/tests/staff_portal_access.test.sql.
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import * as React from "react";
 import { renderToString } from "react-dom/server";
 import { QueryClient } from "@tanstack/react-query";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
+import { renderWithLiveSnapshots } from "./liveSnapshots";
 import { routeTree } from "@/routeTree.gen";
 import { useNaflis } from "@/lib/naflis/store";
 import { isInstitutionalRole } from "@/lib/naflis/roles";
@@ -42,6 +43,10 @@ const st = () => useNaflis.getState();
 const PORTAL_TEXT =
   /SRC access|Institutional \/ SRC|SRC & institution access|Open SRC Portal|Executive Sign In|Governance Portal/i;
 
+// Signed-in renders must see the signed-in store (see liveSnapshots).
+const restoreSnapshots = renderWithLiveSnapshots();
+afterAll(() => restoreSnapshots());
+
 beforeEach(() => {
   localStorage.clear();
   st().resetDemo();
@@ -62,6 +67,7 @@ describe("institutional portal links", () => {
       "routes/campus-admin.tsx",
       "routes/campus-admin.dashboard.tsx",
       "routes/staff-invite.tsx",
+      "routes/staff.tsx",
       "routeTree.gen.ts",
     ]);
     const offenders = sourceFiles(src)
@@ -116,19 +122,20 @@ describe("institutional portal links", () => {
     expect(html).not.toContain('href="/campus-admin');
     expect(html).not.toMatch(PORTAL_TEXT);
     expect(html).not.toContain("SRC Executive dashboard");
+    if (p === "/me") expect(html).toContain("esi@src.ug.gh"); // really rendered signed in
   });
 });
 
 describe("the portal URL still works and is still guarded", () => {
   it("a signed-out visit goes to sign-in and comes back afterwards", async () => {
     const to = await landAt("/campus-admin");
-    expect(to.pathname).toBe("/login");
+    expect(to.pathname).toBe("/staff");
     expect(to.search).toMatchObject({ redirect: "/campus-admin" });
   });
 
   it("a student without a staff role is turned away", async () => {
     st().signIn("u_buyer1"); // seed: buyer + student
-    expect((await landAt("/campus-admin")).pathname).toBe("/login");
+    expect((await landAt("/campus-admin")).pathname).toBe("/staff");
   });
 
   it("an SRC executive gets in by URL, even from the student workspace", async () => {
@@ -140,6 +147,6 @@ describe("the portal URL still works and is still guarded", () => {
 
   it("an SRC executive still can't open Super Admin", async () => {
     st().signIn("u_src1");
-    expect((await landAt("/super")).pathname).toBe("/login");
+    expect((await landAt("/super")).pathname).toBe("/staff");
   });
 });

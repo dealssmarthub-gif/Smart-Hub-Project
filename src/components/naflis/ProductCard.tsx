@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Heart, Zap, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,9 @@ export function ProductCard({ product, compact = false }: { product: Product; co
   const toggleWishlist = useNaflis((s) => s.toggleWishlist);
   const addToCart = useNaflis((s) => s.addToCart);
   const inWishlist = wishlist.includes(product.id);
+  const signedIn = useNaflis((s) => Boolean(s.currentUserId));
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
   const off = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
   return (
@@ -39,6 +42,11 @@ export function ProductCard({ product, compact = false }: { product: Product; co
           aria-label="Wishlist"
           onClick={(e) => {
             e.preventDefault();
+            // Live: the wishlist belongs to an account; sign in first, then come back.
+            if (IS_LIVE && !signedIn) {
+              navigate({ to: "/login", search: { redirect: pathname } });
+              return;
+            }
             toggleWishlist(product.id);
             toast.success(inWishlist ? "Removed from wishlist" : "Added to wishlist");
           }}
@@ -51,6 +59,17 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       <div className="flex flex-1 flex-col gap-2 p-3">
         <div className="min-w-0">
           <p className="truncate text-[11px] uppercase tracking-wide text-muted-foreground">{product.brand}</p>
+          {(product.listingType === "student" || product.campus) && (
+            <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+              {/* Self-declared, so plain text: never styled as verified. */}
+              {product.listingType === "student" && (
+                <span className="rounded-full bg-muted px-2 py-0.5 font-semibold">
+                  Student seller
+                </span>
+              )}
+              {product.campus && <span className="truncate">{product.campus}</span>}
+            </p>
+          )}
           <Link
             to="/buyer/product/$id"
             params={{ id: product.id }}

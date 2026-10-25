@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   BadgeCheck,
   Building2,
@@ -19,8 +20,8 @@ import { toast } from "sonner";
 import { ROLE_ICONS, useWorkspaces } from "@/components/naflis/ContextSwitcher";
 import { StudentVerificationModal } from "@/components/naflis/StudentVerificationModal";
 import { ListingImage } from "@/components/naflis/home/HomeBlocks";
-import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
-import { PLACES, type Destination, type FlagKey } from "@/components/naflis/shell/places";
+import { AppShell, PAGE_WIDTH, useViewer } from "@/components/naflis/shell/AppShell";
+import { placesFor, type FlagKey } from "@/components/naflis/shell/places";
 import { STAFF_ROLES, useSignOut } from "@/components/naflis/shell/UserMenu";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { GHS } from "@/lib/naflis/format";
@@ -29,6 +30,9 @@ import { ROLE_META, isInstitutionalRole, roleHome } from "@/lib/naflis/roles";
 import { IS_LIVE, hiddenInLive } from "@/lib/appMode";
 import { useNaflis, useUserRoles, useWallet } from "@/lib/naflis/store";
 import { runOrderTransition } from "@/services/orderService";
+import { saveStudentProfile } from "@/services/studentProfile";
+import { StudentQuestion } from "@/components/naflis/StudentQuestion";
+import { studentAnswerError, type StudentAnswer } from "@/lib/naflis/studentAnswer";
 
 // "Me": the account hub, and the one place on a phone that lists every
 // destination the old "More" sheet and sidebars offered.
@@ -86,6 +90,45 @@ function Row({
     <button type="button" onClick={onClick} className={cls}>
       {body}
     </button>
+  );
+}
+
+/** "Are you a student?" on /me: lets an existing account opt in or out. Display only. */
+function StudentDetailsCard({ isStudent, campus }: { isStudent: boolean; campus: string }) {
+  const [answer, setAnswer] = useState<StudentAnswer>({ isStudent, campus });
+  const [saving, setSaving] = useState(false);
+  const changed = answer.isStudent !== isStudent || answer.campus !== campus;
+  const save = async () => {
+    const problem = studentAnswerError(answer);
+    if (problem) return void toast.error(problem);
+    setSaving(true);
+    try {
+      await saveStudentProfile({ isStudent: answer.isStudent === true, campus: answer.campus });
+      toast.success("Saved.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't save.");
+    } finally {
+      setSaving(false);
+    }
+  };
+  return (
+    <section className="space-y-4 rounded-3xl border border-border-soft bg-card p-5 shadow-soft">
+      <StudentQuestion value={answer} onChange={setAnswer} />
+      <p className="text-xs text-muted-foreground">
+        Students also get campus tools and see their own campus first. It doesn't change what you
+        can do on NAFLIS Mall.
+      </p>
+      {changed && (
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="inline-flex h-11 items-center rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground hover:bg-primary-deep disabled:opacity-60"
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+      )}
+    </section>
   );
 }
 
@@ -159,7 +202,7 @@ function ActiveOrderCard() {
           When you buy something, you can follow it here until it reaches you.
         </p>
         <Link
-          to="/student-os/marketplace"
+          to="/buyer"
           className="mt-4 inline-flex h-11 items-center gap-1.5 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground hover:bg-primary-deep"
         >
           <Store className="h-4 w-4" strokeWidth={1.8} /> Go to Shop
@@ -269,11 +312,16 @@ function MePage() {
   const signOut = useSignOut();
   const flags = useFlags();
   const signedIn = Boolean(user);
-  const campus = useNaflis((s) => s.registeredInstitution ?? s.selectedCampus);
+  // Live: the student's own campus (profile field); demo: the verified or picked campus.
+  const pickedCampus = useNaflis((s) => s.registeredInstitution ?? s.selectedCampus);
+  const campus = IS_LIVE ? user?.studentCampus : pickedCampus;
 
-  const visible = (d: Destination) => (!d.flag || flags[d.flag]) && (!d.signedIn || signedIn);
+  // Same rules as the menus: Student OS (Campus, the Student OS link) only for signed-in students.
+  const viewer = useViewer();
+  const isStudent = viewer.isStudent;
+  const places = placesFor(viewer);
   const place = (id: "me" | "shop" | "campus" | "home") =>
-    PLACES.find((p) => p.id === id)!.destinations.filter(visible);
+    places.find((p) => p.id === id)?.destinations ?? [];
   // Live: no dashboards that run on in-browser data only (appMode LIVE_HIDDEN_PATHS).
   // Institutional portals are reached by their own URL, never from this page.
   const staff = held.filter(
@@ -297,7 +345,7 @@ function MePage() {
                   <div className="min-w-0">
                     <p className="truncate text-lg font-extrabold">{user.name}</p>
                     <p className="truncate text-sm text-muted-foreground">{user.email}</p>
-                    {campus && flags.student_os && (
+                    {campus && isStudent && (
                       <p className="mt-0.5 flex items-center gap-1 truncate text-sm text-muted-foreground">
                         <Building2 className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} /> {campus}
                       </p>
@@ -336,6 +384,14 @@ function MePage() {
                 </div>
               )}
             </section>
+            {/* Live: the self-declared student answer (display only). */}
+            {signedIn && IS_LIVE && user && (
+              <StudentDetailsCard
+                key={user.id}
+                isStudent={Boolean(user.isStudent)}
+                campus={user.studentCampus ?? ""}
+              />
+            )}
             {/* Demo only: wallet and orders run on in-browser data. */}
             {signedIn && !IS_LIVE && <WalletCard />}
           </div>

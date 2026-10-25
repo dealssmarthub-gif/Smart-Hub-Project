@@ -44,6 +44,10 @@ export interface User {
   creditScore?: number;
   creditLimit?: number;
   tags?: string[];
+  /** Self-declared at sign-up or on /me (profiles.is_student). Display only, never access. */
+  isStudent?: boolean;
+  /** The student's own campus (profiles.student_campus): where their marketplace starts. */
+  studentCampus?: string;
 }
 
 export interface Store {
@@ -92,6 +96,12 @@ export interface Product {
   createdAt: number;
   /** Seller-configured purchase methods; missing means legacy defaults (see getPurchaseConfig). */
   purchaseConfig?: PurchaseConfig;
+  /** "student" for a student's own listing (self-declared, never verified). */
+  listingType?: "mall" | "student";
+  /** Where the item is; none means it isn't tied to one campus (shown under every campus). */
+  campus?: string;
+  /** Student listings: the seller's own description of the condition. */
+  condition?: string;
 }
 
 export interface CartItem {
@@ -394,6 +404,8 @@ export interface StudentListing {
   sellerName: string;
   sellerId: string;
   sellerPhone?: string;
+  /** Live: the seller's vendor id; the phone comes from services/sellerContact on request. */
+  vendorId?: string;
   sellerAvatar?: string;
   image: string;
   images?: string[];
@@ -1206,6 +1218,8 @@ interface State {
   // Student OS state
   /** Active campus — the campus context the student is browsing. */
   selectedCampus: string;
+  /** Mall campus filter: null = all campuses, undefined = not chosen yet (students start at their own). */
+  mallCampus?: string | null;
   /** Registered institution — where the student is verified. Changes only through verification. */
   registeredInstitution: string | null;
   /** Pending "switch campus?" prompt. */
@@ -1289,6 +1303,7 @@ interface State {
 
   // Student OS actions
   setSelectedCampus: (campus: string) => void;
+  setMallCampus: (campus: string | null) => void;
   /** Asks the student before changing the active campus. Automatic prompts respect "Not now". */
   requestCampusSwitch: (campus: string, reason: "manual" | "location" | "registered") => void;
   resolveCampusPrompt: (accept: boolean) => void;
@@ -1638,7 +1653,13 @@ export const useNaflis = create<State>()(
             set((s) => ({
               users: s.users.map((u) =>
                 u.id === id
-                  ? { ...u, roles: Array.from(new Set([...(u.roles ?? []), ...fetched])), institutionId: data.institution_id ?? u.institutionId }
+                  ? {
+                      ...u,
+                      roles: Array.from(new Set([...(u.roles ?? []), ...fetched])),
+                      institutionId: data.institution_id ?? u.institutionId,
+                      isStudent: Boolean(data.is_student),
+                      studentCampus: data.student_campus ?? undefined,
+                    }
                   : u,
               ),
             }));
@@ -2422,6 +2443,7 @@ export const useNaflis = create<State>()(
 
       // Student OS actions
       setSelectedCampus: (campus) => set({ selectedCampus: campus }),
+      setMallCampus: (campus) => set({ mallCampus: campus }),
       requestCampusSwitch: (campus, reason) => {
         const s = get();
         if (campus === s.selectedCampus) return;
@@ -2943,6 +2965,7 @@ export const useNaflis = create<State>()(
                 wishlist: s.wishlist,
                 savedOpportunities: s.savedOpportunities,
                 selectedCampus: s.selectedCampus,
+                mallCampus: s.mallCampus,
                 campusPromptSnooze: s.campusPromptSnooze,
               }) as unknown as State,
           }

@@ -25,6 +25,7 @@ import { useCategories } from "@/services/categories";
 import { GHS, telHref, whatsappNumber } from "@/lib/naflis/format";
 import { toast } from "sonner";
 import { IS_LIVE } from "@/lib/appMode";
+import { ContactSeller } from "@/components/naflis/ContactSeller";
 
 export const Route = createFileRoute("/student-os/marketplace")({
   component: StudentMarketplace,
@@ -256,8 +257,8 @@ function StudentMarketplace() {
                   </div>
 
                   <div className={`grid grid-cols-1 gap-2 ${!IS_LIVE && telHref(item.sellerPhone) ? "sm:grid-cols-2" : ""}`}>
-                    {/* Only when the seller gave a phone number; there is no fallback. */}
-                    {telHref(item.sellerPhone) && (
+                    {/* Live: always (the number is fetched on request, signed in). Demo: when the seller gave one. */}
+                    {(IS_LIVE ? Boolean(item.vendorId) : Boolean(telHref(item.sellerPhone))) && (
                       <button type="button" onClick={() => setContactModalItem(item)} className={secondaryBtn}>
                         <MessageCircle className="h-4 w-4 text-link" strokeWidth={1.8} /> Contact seller
                       </button>
@@ -324,26 +325,35 @@ function StudentMarketplace() {
                   <p className="text-subtle-foreground">Location: {contactModalItem.hostelLocation}</p>
                 )}
               </div>
-              <div className="space-y-2">
-                {whatsappNumber(contactModalItem.sellerPhone) && (
-                  <a
-                    href={`https://wa.me/${whatsappNumber(contactModalItem.sellerPhone)}?text=Hi%20${encodeURIComponent(contactModalItem.sellerName)}%2C%20I%20saw%20your%20listing%20on%20Smart%20Hub%20Student%20OS%3A%20${encodeURIComponent(contactModalItem.title)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-tile-mint-icon text-sm font-bold text-white transition hover:opacity-90"
-                  >
-                    <MessageCircle className="h-4 w-4" strokeWidth={1.8} /> WhatsApp Seller
-                  </a>
-                )}
-                {telHref(contactModalItem.sellerPhone) && (
-                  <a
-                    href={telHref(contactModalItem.sellerPhone)!}
-                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-bold text-foreground transition hover:bg-accent"
-                  >
-                    <Phone className="h-4 w-4 text-link" strokeWidth={1.8} /> Call {contactModalItem.sellerPhone}
-                  </a>
-                )}
-              </div>
+              {IS_LIVE && contactModalItem.vendorId ? (
+                <ContactSeller
+                  vendorId={contactModalItem.vendorId}
+                  sellerName={contactModalItem.sellerName}
+                  itemTitle={contactModalItem.title}
+                  autoReveal
+                />
+              ) : (
+                <div className="space-y-2">
+                  {whatsappNumber(contactModalItem.sellerPhone) && (
+                    <a
+                      href={`https://wa.me/${whatsappNumber(contactModalItem.sellerPhone)}?text=Hi%20${encodeURIComponent(contactModalItem.sellerName)}%2C%20I%20saw%20your%20listing%20on%20Smart%20Hub%20Student%20OS%3A%20${encodeURIComponent(contactModalItem.title)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-tile-mint-icon text-sm font-bold text-white transition hover:opacity-90"
+                    >
+                      <MessageCircle className="h-4 w-4" strokeWidth={1.8} /> WhatsApp Seller
+                    </a>
+                  )}
+                  {telHref(contactModalItem.sellerPhone) && (
+                    <a
+                      href={telHref(contactModalItem.sellerPhone)!}
+                      className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-bold text-foreground transition hover:bg-accent"
+                    >
+                      <Phone className="h-4 w-4 text-link" strokeWidth={1.8} /> Call {contactModalItem.sellerPhone}
+                    </a>
+                  )}
+                </div>
+              )}
               <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
                 Always meet in well-lit public campus locations (Library, Quad, Hall porter lodge).

@@ -129,19 +129,19 @@ describe("direct visits to staff routes wait for the session", () => {
   it("a signed-in student is still sent to sign-in", async () => {
     auth.account = STUDENT;
     const to = await directVisit("/campus-admin");
-    expect(to.pathname).toBe("/login");
+    expect(to.pathname).toBe("/staff");
     expect(to.search).toMatchObject({ redirect: "/campus-admin" });
-    expect((await directVisit("/super")).pathname).toBe("/login");
+    expect((await directVisit("/super")).pathname).toBe("/staff");
   });
 
   it("an SRC executive still can't open Super Admin", async () => {
     auth.account = SRC;
-    expect((await directVisit("/super")).pathname).toBe("/login");
+    expect((await directVisit("/super")).pathname).toBe("/staff");
   });
 
   it("with no session, both go to sign-in", async () => {
-    expect((await directVisit("/campus-admin")).pathname).toBe("/login");
-    expect((await directVisit("/super")).pathname).toBe("/login");
+    expect((await directVisit("/campus-admin")).pathname).toBe("/staff");
+    expect((await directVisit("/super")).pathname).toBe("/staff");
   });
 
   it("the session is read once per page load, not on every navigation", async () => {

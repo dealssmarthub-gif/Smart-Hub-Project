@@ -56,13 +56,16 @@ describe("student listing rows", () => {
     expect(l.isVerifiedStudent).toBe(false);
   });
 
-  it("uses the vendor's phone and a real, higher original price", () => {
+  it("never carries the vendor's phone (it's fetched on request), keeps a real, higher original price", () => {
     const l = mapDbStudentListing({
       ...row,
+      vendor_id: "v-1",
       original_price: "60",
+      // Even if a row ever held it, the listing doesn't take it (20261024120000).
       vendors: { ...row.vendors, contact_phone: "024 123 4567" },
     });
-    expect(l.sellerPhone).toBe("024 123 4567");
+    expect(l.sellerPhone).toBeUndefined();
+    expect(l.vendorId).toBe("v-1");
     expect(l.originalPrice).toBe(60);
   });
 });

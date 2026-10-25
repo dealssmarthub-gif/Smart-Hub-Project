@@ -6,14 +6,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
+import { ListStudentItemModal } from "@/components/naflis/ListStudentItemModal";
 import { useNaflis } from "@/lib/naflis/store";
 import { useFeatureFlag } from "@/lib/featureFlags";
+import { useIsStudent } from "@/lib/naflis/student";
 import { hiddenInLive } from "@/lib/appMode";
 import { useEffect, useState } from "react";
 
 const NAV = [
   { to: "/buyer", label: "Home", icon: Home, exact: true },
-  { to: "/student-os", label: "Student OS", icon: GraduationCap, flag: "student_os" },
+  {
+    to: "/student-os",
+    label: "Student OS",
+    icon: GraduationCap,
+    flag: "student_os",
+    studentOnly: true,
+  },
   { to: "/buyer/categories", label: "Categories", icon: LayoutGrid },
   { to: "/buyer/deals", label: "Deals", icon: BadgePercent },
   { to: "/buyer/search", label: "Search", icon: Search },
@@ -40,7 +48,12 @@ export function BuyerShell() {
     reserve_and_pay: useFeatureFlag("reserve_and_pay"),
     take_now_pay_later: useFeatureFlag("take_now_pay_later"),
   };
-  const nav = NAV.filter((n) => (!n.flag || flags[n.flag]) && !hiddenInLive(n.to));
+  const isStudent = useIsStudent();
+  // Student OS is linked only for signed-in students; the mall itself is for everyone.
+  const nav = NAV.filter(
+    (n) =>
+      (!n.flag || flags[n.flag]) && !hiddenInLive(n.to) && (!("studentOnly" in n) || isStudent),
+  );
   const runSchedulers = useNaflis((s) => s.runSchedulers);
 
   // Demo-mode housekeeping: expire lapsed reservations and flag late installments.
@@ -128,6 +141,8 @@ export function BuyerShell() {
           <Outlet />
         </main>
       </div>
+      {/* "Sell an item" on mall pages opens this form. */}
+      <ListStudentItemModal />
     </AppShell>
   );
 }

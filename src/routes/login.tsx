@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ArrowLeft, Mail, Lock, User, Phone, Sparkles, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Mail, Lock, User, Sparkles, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,9 @@ import { supabase } from "@/lib/supabase";
 import { IS_LIVE } from "@/lib/appMode";
 import { useNaflis } from "@/lib/naflis/store";
 import { ROLE_META, postSignInPath, type Role } from "@/lib/naflis/roles";
+import { StudentQuestion } from "@/components/naflis/StudentQuestion";
+import { signUpMetadata, studentAnswerError, type StudentAnswer } from "@/lib/naflis/studentAnswer";
+import { clearReturnPath, rememberReturnPath } from "@/lib/returnPoint";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -31,7 +34,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [student, setStudent] = useState<StudentAnswer>({ isStudent: null, campus: "" });
   const [isLoading, setIsLoading] = useState(false);
 
   // Opening /login never signs anyone in or navigates away. If a session already
@@ -97,12 +100,14 @@ function LoginPage() {
           }
         } else if (data.user) {
           toast.success("Successfully logged in!");
+          clearReturnPath();
           const role = await useNaflis.getState().completeSignIn(data.user);
           navigate({ to: postSignInPath(role, search.redirect) });
         }
       } else {
-        if (!fullName || !phone) {
-          toast.error("Please fill in your name and phone number.");
+        const answerError = studentAnswerError(student);
+        if (!fullName.trim() || answerError) {
+          toast.error(!fullName.trim() ? "Please enter your name." : answerError);
           setIsLoading(false);
           return;
         }
@@ -111,12 +116,8 @@ function LoginPage() {
           email,
           password,
           options: {
-            data: {
-              role: "buyer",
-              full_name: fullName,
-              phone: phone,
-              phone_number: phone,
-            },
+            // Profile fields only: sign-up never grants a role (handle_new_user).
+            data: signUpMetadata(fullName, student),
           },
         });
 
@@ -136,7 +137,11 @@ function LoginPage() {
             const role = await useNaflis.getState().completeSignIn(data.user);
             navigate({ to: postSignInPath(role, search.redirect) });
           } else {
-            toast.success("Signup successful! Please check your email for verification.");
+            // Email confirmation: the link opens the home page, so remember where they were going.
+            rememberReturnPath(search.redirect);
+            toast.success(
+              "Check your email to confirm your account. We'll bring you back here afterwards.",
+            );
             setMode("signin");
           }
         }
@@ -173,11 +178,13 @@ function LoginPage() {
               {mode === "signin" ? "Sign In" : "Create Account"}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {mode === "signin"
-                ? IS_LIVE
-                  ? "Access your dashboard to shop and use Student OS."
-                  : "Access your dashboard to shop, track escrowed orders and use Student OS."
-                : "Join NAFLIS Mall to buy smarter and unlock Student OS."}
+              {IS_LIVE
+                ? mode === "signin"
+                  ? "Sign in to contact sellers and sell your own items."
+                  : "Join NAFLIS Mall to contact sellers and sell your own items."
+                : mode === "signin"
+                  ? "Access your dashboard to shop, track escrowed orders and use Student OS."
+                  : "Join NAFLIS Mall to buy smarter and unlock Student OS."}
             </p>
           </div>
 
@@ -244,23 +251,6 @@ function LoginPage() {
                     />
                   </div>
                 </div>
-
-                {/* Phone */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="e.g. 024 123 4567"
-                      className="pl-9"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
               </>
             )}
 
@@ -309,6 +299,8 @@ function LoginPage() {
                 </button>
               </div>
             </div>
+
+            {mode === "signup" && <StudentQuestion value={student} onChange={setStudent} />}
 
             <Button type="submit" size="lg" className="w-full font-bold" disabled={isLoading}>
               {isLoading ? (

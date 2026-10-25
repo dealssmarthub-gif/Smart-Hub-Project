@@ -1,3 +1,5 @@
+import { safeReturnPath } from "@/lib/returnPoint";
+
 // ============================================================================
 // UNIFIED IDENTITY — one account, many roles
 // ============================================================================
@@ -49,6 +51,34 @@ export function isInstitutionalRole(role: Role): boolean {
   return INSTITUTIONAL_ROLES.includes(role);
 }
 
+/**
+ * The staff sign-in page (/staff) only ever sends people on to a staff area:
+ * /campus-admin or /super (and below). Anything else, including other sites,
+ * falls back to the campus portal.
+ */
+export function staffTarget(redirect: unknown): string {
+  if (
+    typeof redirect !== "string" ||
+    !redirect.startsWith("/") ||
+    redirect.startsWith("//") ||
+    redirect.startsWith("/\\")
+  ) {
+    return "/campus-admin";
+  }
+  const path = redirect.split(/[?#]/)[0];
+  const ok = ["/campus-admin", "/super"].some(
+    (base) => path === base || path.startsWith(`${base}/`),
+  );
+  return ok ? redirect : "/campus-admin";
+}
+
+/** Roles that may open a staff area (the same lists the route guards use). */
+export function staffRolesFor(target: string): Role[] {
+  return target === "/super" || target.startsWith("/super/")
+    ? ["super_admin"]
+    : ["src_head", "dean", "super_admin"];
+}
+
 /** Display order in the context switcher. */
 const ROLE_ORDER: Role[] = [
   "buyer", "student", "src_head", "dean", "delivery", "finance", "dispute", "admin", "super_admin",
@@ -92,8 +122,7 @@ export function defaultContext(held: Role[]): Role {
 /** Where to go after signing in: a same-site ?redirect wins, else the active workspace's home. */
 export function postSignInPath(role: Role, redirect?: string): string {
   // Only relative, same-origin paths — "//evil.com" or "https://…" would be an open redirect.
-  if (redirect && redirect.startsWith("/") && !redirect.startsWith("//") && !redirect.startsWith("/\\")) return redirect;
-  return roleHome(role);
+  return safeReturnPath(redirect) ?? roleHome(role);
 }
 
 export function roleHome(role: Role): RoleMeta["home"] {

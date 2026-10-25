@@ -29,12 +29,21 @@ export interface InventoryLevel {
   stock: number;
 }
 
+/**
+ * The vendor columns anyone may read (migration 20261024120000). Every read of
+ * vendors names its columns: the owner id and contact phone aren't readable by
+ * visitors, and the phone comes only from services/sellerContact.
+ */
+export const VENDOR_PUBLIC_COLUMNS =
+  "id, store_name, store_slug, description, logo_url, status, subscription_tier, created_at";
+
 /** Maps a Supabase `vendors` row to the app's Store shape. */
 export function mapDbVendor(row: any, category?: string): VendorProfile {
   return {
     id: row.id,
     name: row.store_name,
-    ownerId: row.user_id,
+    // Not public (owner id): only known for the signed-in seller's own shop.
+    ownerId: row.user_id ?? "",
     logo: row.logo_url || `https://api.dicebear.com/9.x/notionists/svg?seed=${row.store_name}`,
     // Only what the vendors row holds: no invented tagline, rating or location.
     tagline: row.description || "",
@@ -45,12 +54,12 @@ export function mapDbVendor(row: any, category?: string): VendorProfile {
     location: "",
     categories: category ? [category] : [],
     subscription: row.subscription_tier ?? "starter",
-    contactPhone: row.contact_phone || undefined,
   };
 }
 
 /**
- * Every product from approved sellers.
+ * Every listing from approved sellers: mall products and student listings in
+ * one marketplace (each carries listingType and campus for the campus filter).
  * Returns null when there is no remote catalog (demo mode) — the local catalog stands.
  */
 export async function fetchSellerProducts(): Promise<Product[] | null> {
@@ -59,9 +68,7 @@ export async function fetchSellerProducts(): Promise<Product[] | null> {
   const { data, error } = await supabase
     .from("products")
     .select("*, vendors!inner(status, store_name, logo_url, description)")
-    .eq("vendors.status", "approved")
-    // Student listings have their own marketplace (services/studentListings.ts).
-    .eq("listing_type", "mall");
+    .eq("vendors.status", "approved");
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => mapDbProduct(row));
 }
@@ -73,7 +80,10 @@ export async function fetchSellerProducts(): Promise<Product[] | null> {
 export async function fetchSellerProduct(productId: string): Promise<{ product: Product; vendor: VendorProfile | null } | null> {
   // TODO(seller-api): GET {SELLER_API_URL}/v1/products/{productId}?include=vendor
   if (!supabase) return null;
-  const { data, error } = await supabase.from("products").select("*, vendors(*)").eq("id", productId).maybeSingle();
+  const { data, error } = await supabase
+    .from("products")
+    .select(`*, vendors(${VENDOR_PUBLIC_COLUMNS})`)
+    .eq("id", productId).maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) return null;
   return { product: mapDbProduct(data), vendor: data.vendors ? mapDbVendor(data.vendors, data.category) : null };
@@ -84,7 +94,10 @@ export async function fetchVendorProfile(vendorId: string): Promise<VendorProfil
   // TODO(seller-api): GET {SELLER_API_URL}/v1/vendors/{vendorId}
   const local = () => useNaflis.getState().stores.find((s) => s.id === vendorId) ?? null;
   if (!supabase) return local();
-  const { data, error } = await supabase.from("vendors").select("*").eq("id", vendorId).maybeSingle();
+  const { data, error } = await supabase
+    .from("vendors")
+    .select(VENDOR_PUBLIC_COLUMNS)
+    .eq("id", vendorId).maybeSingle();
   if (error) throw new Error(error.message);
   return data ? mapDbVendor(data) : local();
 }
