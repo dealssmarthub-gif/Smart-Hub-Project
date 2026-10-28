@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import {
   Heart, Share2, Bell, MessageSquare, ShieldCheck, Truck, Clock, TrendingUp,
-  Zap, AlertTriangle, Eye, Users, Star, Loader2, Phone,
+  Zap, AlertTriangle, Eye, Users, Star, Phone,
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useNaflis } from "@/lib/naflis/store";
 import { GHS, pct, telHref, whatsappNumber } from "@/lib/naflis/format";
 import { ProductCard } from "@/components/naflis/ProductCard";
+import { BrandLoading } from "@/components/naflis/Logo";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -97,12 +98,7 @@ function ProductDetail() {
   );
 
   if (loading) {
-    return (
-      <div className="flex flex-col justify-center items-center py-20 min-h-[50vh]">
-        <Loader2 className="h-10 w-10 text-link animate-spin" />
-        <p className="mt-3 text-sm text-muted-foreground font-semibold">Loading product specifications...</p>
-      </div>
-    );
+    return <BrandLoading label="Loading product…" className="min-h-[50vh] py-20" />;
   }
 
   const product = dbProduct;

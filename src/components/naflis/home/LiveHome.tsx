@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { useState } from "react";
 import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
 import { ProductCard } from "@/components/naflis/ProductCard";
+import { BrandLoading } from "@/components/naflis/Logo";
 import { ListStudentItemModal } from "@/components/naflis/ListStudentItemModal";
 import { Input } from "@/components/ui/input";
 import { useCategories } from "@/services/categories";
@@ -84,7 +85,7 @@ export function LiveHome() {
             )}
           </div>
           {loading ? (
-            <p className="rounded-3xl bg-card p-6 text-sm text-muted-foreground">Loading items…</p>
+            <BrandLoading label="Loading items…" className="rounded-3xl bg-card p-6" />
           ) : products.length === 0 ? (
             <EmptyMarket
               campus={campus}

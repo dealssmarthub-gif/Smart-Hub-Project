@@ -1,5 +1,6 @@
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { PlusCircle, Store } from "lucide-react";
+import { PlusCircle } from "lucide-react";
+import { BrandMark } from "@/components/naflis/Logo";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { IS_LIVE } from "@/lib/appMode";
@@ -71,9 +72,7 @@ export function EmptyMarket({
   const filtered = Boolean(campus) && anyElsewhere;
   return (
     <div className="rounded-3xl border border-border-soft bg-card p-8 text-center shadow-soft">
-      <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-tile-brand text-tile-brand-icon">
-        <Store className="h-6 w-6" strokeWidth={1.8} />
-      </span>
+      <BrandMark className="mx-auto h-12 w-12" />
       <h3 className="mt-3 text-lg font-extrabold">
         {filtered ? `Nothing at ${campus} yet` : "Nothing for sale yet"}
       </h3>

@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
-import { Logo } from "@/components/naflis/Logo";
+import { BrandMark, Logo, Wordmark } from "@/components/naflis/Logo";
 import { ThemeToggle } from "@/components/naflis/ThemeToggle";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { useNaflis } from "@/lib/naflis/store";
@@ -144,7 +144,12 @@ export function SiteFooter() {
       <div
         className={`${PAGE_WIDTH} flex flex-col gap-2 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between`}
       >
-        <p>© {year} NAFLIS Mall</p>
+        <div className="flex items-center gap-2">
+          <BrandMark className="h-7 w-7" />
+          <p>
+            <Wordmark /> <span className="whitespace-nowrap">© {year}</span>
+          </p>
+        </div>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5">
           {!IS_LIVE && (
             <>

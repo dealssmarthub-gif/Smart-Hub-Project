@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect } from "react";
 import { z } from "zod";
 import { Search as SearchIcon, X, Bell, Package } from "lucide-react";
 import { ProductCard } from "@/components/naflis/ProductCard";
+import { BrandLoading } from "@/components/naflis/Logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -194,7 +195,7 @@ function SearchPage() {
           </div>
 
           {loading ? (
-            <p className="rounded-2xl bg-card p-6 text-sm text-muted-foreground">Loading items…</p>
+            <BrandLoading label="Loading items…" className="rounded-2xl bg-card p-6" />
           ) : IS_LIVE && products.length === 0 ? (
             <EmptyMarket
               campus={campus}
