@@ -49,7 +49,7 @@ const TYPE_LABEL: Record<string, string> = {
 // Each resource type keeps one pastel colour for its file icon.
 const TYPE_TONE: Record<string, { bg: string; ink: string }> = {
   "Past Questions": { bg: "bg-tile-peach", ink: "text-peach-ink" },
-  "Lecture Notes": { bg: "bg-tile-lavender", ink: "text-accent-foreground" },
+  "Lecture Notes": { bg: "bg-tile-brand", ink: "text-accent-foreground" },
   "Summary / Cheatsheet": { bg: "bg-tile-mint", ink: "text-verified" },
   "Lab Manual": { bg: "bg-tile-sky", ink: "text-[#1d4ed8] dark:text-[#93b4ff]" },
   "Campus Guide": { bg: "bg-tile-butter", ink: "text-[#7a5200] dark:text-[#f5d27a]" },
@@ -57,7 +57,7 @@ const TYPE_TONE: Record<string, { bg: string; ink: string }> = {
 const OTHER_TONE = { bg: "bg-tile-rose", ink: "text-[#9d1d4b] dark:text-[#ff9fbd]" };
 
 const AROUND: { tone: TileTone; icon: typeof CalendarDays; title: string; hint: string; to: string }[] = [
-  { tone: "lavender", icon: CalendarDays, title: "Calendar", hint: "Lectures, labs, exams and SRC events.", to: "/student-os/calendar" },
+  { tone: "brand", icon: CalendarDays, title: "Calendar", hint: "Lectures, labs, exams and SRC events.", to: "/student-os/calendar" },
   { tone: "peach", icon: Ticket, title: IS_LIVE ? "Events" : "Events & tickets", hint: IS_LIVE ? "Campus events published by the SRC." : "Campus events with QR tickets.", to: "/student-os/events" },
   { tone: "mint", icon: Briefcase, title: "Opportunities", hint: "Jobs, internships and scholarships.", to: "/student-os/opportunities" },
   { tone: "rose", icon: SearchCheck, title: "Lost & found", hint: "Report or claim lost items.", to: "/student-os/lost-found" },

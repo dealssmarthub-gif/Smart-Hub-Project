@@ -145,7 +145,7 @@ function SuperDashboard() {
           ].map((p) => (
             <div key={p.title} className="rounded-2xl border border-border-soft bg-card p-4">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-gold" />
+                <Shield className="h-4 w-4 text-orange-ink" />
                 <p className="font-semibold">{p.title}</p>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{p.body}</p>

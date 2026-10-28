@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { Building2, Loader2 } from "lucide-react";
+import { AlertCircle, Building2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -146,7 +146,8 @@ function StaffSignIn() {
               />
             </div>
             {error && (
-              <p role="alert" className="text-sm font-semibold text-error">
+              <p role="alert" className="flex items-start gap-2 text-sm font-semibold text-error">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 {error}
               </p>
             )}

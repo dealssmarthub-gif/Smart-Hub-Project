@@ -67,15 +67,15 @@ function BuyerHome() {
     <div className="space-y-8">
       {/* Hero banner */}
       <div className="rounded-2xl gradient-hero p-6 text-white shadow-premium sm:p-8">
-        <p className="text-xs uppercase tracking-widest text-white/90">Welcome back{user ? `, ${user.name.split(" ")[0]}` : ""}</p>
+        <p className="text-xs uppercase tracking-widest text-white">Welcome back{user ? `, ${user.name.split(" ")[0]}` : ""}</p>
         <h1 className="mt-1 text-2xl font-bold sm:text-3xl">Great deals matched to your budget</h1>
-        <p className="mt-2 max-w-xl text-sm text-white/80">
+        <p className="mt-2 max-w-xl text-sm text-white">
           {IS_LIVE
             ? "Products from approved sellers, all in one place."
             : "Flash sales, verified discounts, and flexible payment options — all in one place."}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button asChild size="sm" className="bg-white text-navy hover:bg-white/90">
+          <Button asChild size="sm" className="bg-white text-primary-deep hover:bg-white/90">
             <Link to="/buyer/search">{IS_LIVE ? "Browse products" : "Browse deals"}</Link>
           </Button>
           {/* Demo only: wallet funding isn't live yet. */}
@@ -135,7 +135,7 @@ function BuyerHome() {
       {/* Each product row only shows when it has products. */}
       {flash.length > 0 && (
         <section>
-          <SectionHeader icon={<Zap className="h-5 w-5 text-gold" />} title="Flash sales" subtitle="Ending in hours — verified discounts" />
+          <SectionHeader icon={<Zap className="h-5 w-5 text-orange-ink" />} title="Flash sales" subtitle="Ending in hours — verified discounts" />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {flash.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>

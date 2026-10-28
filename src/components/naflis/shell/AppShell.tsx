@@ -105,7 +105,7 @@ export function MobileTabBar() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-40 rounded-[28px] border border-border-soft bg-card p-1.5 shadow-[0_10px_30px_rgba(60,40,170,0.16)] md:hidden"
+      className="fixed inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-40 rounded-[28px] border border-border-soft bg-card p-1.5 shadow-soft md:hidden"
     >
       <ul className="flex items-center justify-between gap-1">
         {places.map((p) => {

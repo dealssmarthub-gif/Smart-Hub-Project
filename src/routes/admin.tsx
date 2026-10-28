@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { LayoutDashboard, Activity, ShieldAlert, Users, Package } from "lucide-react";
+import { LayoutDashboard, Activity, AlertTriangle, ShieldAlert, Users, Package, XCircle } from "lucide-react";
 import { useMemo } from "react";
 import { RoleShell, MetricCard } from "@/components/naflis/RoleShell";
 import { Badge } from "@/components/ui/badge";
@@ -128,7 +128,13 @@ function AdminDashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="capitalize">{u.role}</Badge>
-                {u.verified ? <Badge className="bg-success text-success-foreground">Verified</Badge> : <Badge variant="destructive">Unverified</Badge>}
+                {u.verified ? (
+                  <Badge className="bg-success text-success-foreground">Verified</Badge>
+                ) : (
+                  <Badge variant="destructive" className="gap-1">
+                    <XCircle className="h-3 w-3" aria-hidden /> Unverified
+                  </Badge>
+                )}
               </div>
             </div>
           ))}
@@ -159,7 +165,13 @@ function AdminDashboard() {
                   <p className="text-xs text-muted-foreground">Subject: {a.subject}</p>
                 </div>
               </div>
-              <Badge variant={a.severity === "high" ? "destructive" : "secondary"} className="capitalize">{a.severity}</Badge>
+              <Badge
+                variant={a.severity === "high" ? "destructive" : "secondary"}
+                className="gap-1 capitalize"
+              >
+                {a.severity === "high" && <AlertTriangle className="h-3 w-3" aria-hidden />}
+                {a.severity}
+              </Badge>
             </div>
           ))}
         </TabsContent>

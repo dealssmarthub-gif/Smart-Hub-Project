@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowLeft, Check, Copy, KeyRound, Loader2, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { ArrowLeft, Check, Copy, KeyRound, Loader2, ShieldCheck, UserPlus, Users, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { RoleShell } from "@/components/naflis/RoleShell";
 import { Badge } from "@/components/ui/badge";
@@ -221,7 +221,10 @@ function GrantRow({ grant }: { grant: StaffGrant }) {
           <p className="text-xs text-muted-foreground">{grant.title} · {scopeLabel(grant)}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={statusVariant} className="capitalize">{status}</Badge>
+          <Badge variant={statusVariant} className="gap-1 capitalize">
+            {statusVariant === "destructive" && <XCircle className="h-3 w-3" aria-hidden />}
+            {status}
+          </Badge>
           {grant.status !== "revoked" && (
             <>
               <Button size="sm" variant="ghost" onClick={() => setEditing((v) => !v)}>{editing ? "Cancel" : "Edit"}</Button>

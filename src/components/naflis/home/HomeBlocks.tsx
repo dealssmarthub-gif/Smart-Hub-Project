@@ -49,11 +49,11 @@ export function ListingImage({
   );
 }
 
-export type TileTone = "lavender" | "peach" | "mint" | "sky" | "butter" | "rose";
+export type TileTone = "brand" | "peach" | "mint" | "sky" | "butter" | "rose";
 
 // Static class names so Tailwind generates them.
 const TONE: Record<TileTone, { bg: string; icon: string }> = {
-  lavender: { bg: "bg-tile-lavender", icon: "bg-tile-lavender-icon" },
+  brand: { bg: "bg-tile-brand", icon: "bg-tile-brand-icon" },
   peach: { bg: "bg-tile-peach", icon: "bg-tile-peach-icon" },
   mint: { bg: "bg-tile-mint", icon: "bg-tile-mint-icon" },
   sky: { bg: "bg-tile-sky", icon: "bg-tile-sky-icon" },
@@ -221,7 +221,7 @@ export function GroupBuyCard({
   );
 }
 
-/** Dark indigo escrow banner with a single action. */
+/** Dark red escrow banner with a single action. */
 export function EscrowBanner({
   title,
   body,
@@ -248,9 +248,9 @@ export function EscrowBanner({
   );
 }
 
-/** White pill button for use on the indigo / violet blocks. */
+/** White pill button for use on the dark red and brand-red blocks. */
 export const onDarkButton =
-  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-white px-4 text-sm font-bold text-[#2F2A8F] transition hover:bg-white/90";
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-white px-4 text-sm font-bold text-primary-deep transition hover:bg-white/90";
 
 /** One-line SRC notice. */
 export function SrcNoticeRow({

@@ -101,7 +101,7 @@ export function LiveHome() {
         </section>
 
         {all.length > 0 && (
-          <section className="flex flex-col items-start justify-between gap-3 rounded-3xl bg-tile-lavender p-6 sm:flex-row sm:items-center">
+          <section className="flex flex-col items-start justify-between gap-3 rounded-3xl bg-tile-brand p-6 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-lg font-extrabold">Have something to sell?</h2>
               <p className="text-sm text-subtle-foreground">

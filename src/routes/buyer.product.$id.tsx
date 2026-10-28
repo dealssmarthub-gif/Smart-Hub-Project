@@ -140,7 +140,7 @@ function ProductDetail() {
               </Badge>
             )}
             {product.flashSale && (
-              <Badge className="gap-1 bg-gold text-gold-foreground">
+              <Badge className="gap-1 bg-orange text-orange-foreground">
                 <Zap className="h-3 w-3" /> Flash sale
               </Badge>
             )}
@@ -162,7 +162,7 @@ function ProductDetail() {
           <div className="flex flex-wrap items-center gap-3 text-sm">
             {product.reviews > 0 && (
               <span className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-gold text-gold" />
+                <Star className="h-4 w-4 fill-orange-ink text-orange-ink" />
                 {product.rating.toFixed(1)} · {product.reviews} reviews
               </span>
             )}

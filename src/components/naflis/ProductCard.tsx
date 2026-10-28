@@ -28,7 +28,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
             <Badge className="bg-error text-error-foreground">-{pct(off)}</Badge>
           )}
           {product.flashSale && (
-            <Badge className="bg-gold text-gold-foreground gap-1">
+            <Badge className="bg-orange text-orange-foreground gap-1">
               <Zap className="h-3 w-3" /> Flash
             </Badge>
           )}
