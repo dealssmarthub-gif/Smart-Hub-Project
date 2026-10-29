@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { PHONE_PATTERN, type VendorStatus } from "@/services/studentListings";
 import { revealSellerPhone } from "@/services/sellerContact";
+import { makeStoreSlug } from "@/lib/naflis/storeSlug";
 
 // Admin vendor management (Super Admin → Vendors). RLS from migration
 // 20261021120000 lets admins and super admins read every vendor, create one for
@@ -90,11 +91,8 @@ export async function createVendorFor(input: {
   const { error } = await db.from("vendors").insert({
     user_id: owner.id,
     store_name: input.storeName.trim(),
-    store_slug: `${input.storeName
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")}-${owner.id.slice(0, 8)}`,
+    // Public: from the shop name, never the owner id (20261029120000).
+    store_slug: makeStoreSlug(input.storeName.trim()),
     contact_phone: phone,
   });
   if (error) {
