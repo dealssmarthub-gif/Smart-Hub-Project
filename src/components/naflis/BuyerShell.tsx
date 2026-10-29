@@ -1,7 +1,7 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Home, Search, ShoppingCart, Heart, Wallet, Bell, Package, MessageSquare, TrendingUp, Clock, GraduationCap,
-  LayoutGrid, BadgePercent,
+  LayoutGrid, BadgePercent, Store,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -11,10 +11,11 @@ import { useNaflis } from "@/lib/naflis/store";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { useIsStudent } from "@/lib/naflis/student";
 import { hiddenInLive } from "@/lib/appMode";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const NAV = [
   { to: "/buyer", label: "Home", icon: Home, exact: true },
+  { to: "/shops", label: "Shops", icon: Store },
   {
     to: "/student-os",
     label: "Student OS",
@@ -72,6 +73,19 @@ export function BuyerShell() {
   };
   const isActive = (n: (typeof NAV)[number]) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
 
+  // Phones: the chip row scrolls sideways; bring the current section's chip into
+  // view (sideways only, so the page itself never jumps).
+  const chipRow = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const row = chipRow.current;
+    const chip = row?.querySelector<HTMLElement>("[data-current]");
+    if (!row || !chip) return;
+    const r = row.getBoundingClientRect();
+    const c = chip.getBoundingClientRect();
+    if (c.left < r.left + 16) row.scrollLeft += c.left - r.left - 16;
+    else if (c.right > r.right - 16) row.scrollLeft += c.right - r.right + 16;
+  }, [pathname]);
+
   return (
     <AppShell showCampus={false}>
       <div className={`${PAGE_WIDTH} pt-4`}>
@@ -94,7 +108,11 @@ export function BuyerShell() {
           </label>
         </form>
         {/* Phones: the mall's sections as a scrollable row (the sidebar is desktop-only). */}
-        <nav aria-label="NAFLIS Mall" className="no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 md:hidden">
+        <nav
+          ref={chipRow}
+          aria-label="NAFLIS Mall"
+          className="no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto overscroll-x-contain px-4 md:hidden"
+        >
           {nav.map((n) => {
             const Icon = n.icon;
             const badge = badges[n.to];
@@ -102,6 +120,8 @@ export function BuyerShell() {
               <Link
                 key={n.to}
                 to={n.to}
+                activeOptions={{ exact: Boolean(n.exact) }}
+                data-current={isActive(n) || undefined}
                 className={`relative inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-xs font-bold transition ${
                   isActive(n) ? "bg-primary text-primary-foreground" : "bg-card text-subtle-foreground hover:bg-accent"
                 }`}
@@ -125,6 +145,7 @@ export function BuyerShell() {
                 <Link
                   key={n.to}
                   to={n.to}
+                  activeOptions={{ exact: Boolean(n.exact) }}
                   className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition ${
                     isActive(n) ? "bg-accent font-semibold text-accent-foreground" : "text-subtle-foreground hover:bg-muted"
                   }`}

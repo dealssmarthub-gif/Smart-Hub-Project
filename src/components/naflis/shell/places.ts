@@ -104,6 +104,7 @@ const ALL_PLACES: Place[] = [
     destinations: [
       // Browsing the mall is open to everyone.
       { to: "/buyer", label: "NAFLIS Mall", icon: ShoppingBag },
+      { to: "/shops", label: "Shops", icon: Store },
       { to: "/buyer/categories", label: "Categories", icon: LayoutGrid },
       { to: "/buyer/search", label: "Search the mall", icon: Search },
       { to: "/buyer/deals", label: "Mall deals", icon: BadgePercent, signedIn: true },
@@ -216,7 +217,8 @@ export function placeFor(pathname: string): PlaceId | null {
   if (
     under(pathname, "/student-os/marketplace") ||
     under(pathname, "/student-os/deals") ||
-    under(pathname, "/buyer")
+    under(pathname, "/buyer") ||
+    under(pathname, "/shops")
   )
     return "shop";
   return null;

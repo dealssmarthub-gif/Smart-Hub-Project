@@ -18,6 +18,7 @@ export function mapDbProduct(row: any, overrides: Partial<Product> = {}): Produc
     name: row.title ?? "Untitled product",
     brand: row.vendors?.store_name ?? "",
     storeId: row.vendor_id,
+    storeSlug: row.vendors?.store_slug || undefined,
     category: row.category ?? "Uncategorised",
     // No stock photo: cards show a neutral placeholder when the seller added none.
     image: row.images?.[0] || "",
