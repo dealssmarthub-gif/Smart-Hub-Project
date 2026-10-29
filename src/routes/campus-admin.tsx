@@ -476,7 +476,7 @@ export function CampusAdminPortal() {
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">
                 SRC & Institutional Leadership Console
               </h1>
-              <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
+              <p className="text-xs sm:text-sm text-white leading-relaxed">
                 {IS_LIVE
                   ? "Publish notices and events for your campus, pin important dates, and share lecture slides and past questions."
                   : "Publish verified student notices, pin priority campus assembly dates, dispatch lecture slide archives, and monitor student academic tool requests in real time."}
@@ -706,6 +706,8 @@ export function CampusAdminPortal() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDeleteEvent(e.id)}
+                          aria-label="Delete event"
+                          title="Delete event"
                           className="text-xs h-8 text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -822,6 +824,8 @@ export function CampusAdminPortal() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDeleteResource(r.id)}
+                          aria-label="Delete resource"
+                          title="Delete resource"
                           className="text-xs h-8 text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-3.5 w-3.5" />

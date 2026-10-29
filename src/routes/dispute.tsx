@@ -170,7 +170,7 @@ function DisputeCard({ dispute, order, buyerName }: { dispute: ReturnType<typeof
               <span className="w-16 text-xs font-semibold">Buyer {splitPct}%</span>
               <Button size="sm" onClick={() => resolve("split")}>Split escrow</Button>
             </div>
-            <Button size="sm" variant="destructive" onClick={() => resolve("escalate")}>Escalate</Button>
+            <Button size="sm" variant="destructive" onClick={() => resolve("escalate")}><AlertTriangle className="mr-1 h-4 w-4" aria-hidden /> Escalate</Button>
           </div>
         </div>
       )}

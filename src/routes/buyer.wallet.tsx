@@ -27,12 +27,12 @@ function WalletPage() {
   return (
     <div className="space-y-6">
       <div className="rounded-[30px] gradient-hero p-6 text-white shadow-soft">
-        <div className="flex items-center gap-2 text-white/90">
+        <div className="flex items-center gap-2 text-white">
           <Wallet className="h-4 w-4" />
           <span className="text-xs uppercase tracking-widest">NAFLIS Wallet</span>
         </div>
         <p className="mt-2 text-4xl font-extrabold">{GHS(wallet.balance)}</p>
-        <p className="text-xs text-white/90">Available balance</p>
+        <p className="text-xs text-white">Available balance</p>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="In escrow" value={GHS(wallet.escrow)} />
           <Stat label="Reserved" value={GHS(wallet.reserved)} />
@@ -52,7 +52,7 @@ function WalletPage() {
       <div className="rounded-3xl border border-border-soft bg-card shadow-soft p-5">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h3 className="flex items-center gap-2 font-bold"><Zap className="h-4 w-4 text-gold" /> Auto-funding</h3>
+            <h3 className="flex items-center gap-2 font-bold"><Zap className="h-4 w-4 text-orange-ink" /> Auto-funding</h3>
             <p className="text-sm text-muted-foreground">
               Automatically top up when balance falls below GHS {wallet.autoFund.threshold} or an installment is due.
             </p>

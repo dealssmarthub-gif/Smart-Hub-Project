@@ -1,5 +1,5 @@
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { Loader2, LogIn, MessageCircle, Phone } from "lucide-react";
+import { AlertCircle, Loader2, LogIn, MessageCircle, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { telHref, whatsappNumber } from "@/lib/naflis/format";
 import { useNaflis } from "@/lib/naflis/store";
@@ -71,7 +71,11 @@ export function ContactSeller({
 
   if (!result.ok) {
     return (
-      <p role="status" className="rounded-xl bg-muted p-3 text-sm text-muted-foreground">
+      <p
+        role="status"
+        className="flex items-start gap-2 rounded-xl bg-muted p-3 text-sm text-muted-foreground"
+      >
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-error" strokeWidth={1.8} aria-hidden />
         {result.message}
       </p>
     );

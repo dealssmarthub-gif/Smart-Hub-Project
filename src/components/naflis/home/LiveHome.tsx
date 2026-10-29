@@ -3,16 +3,20 @@ import { Search } from "lucide-react";
 import { useState } from "react";
 import { AppShell, PAGE_WIDTH } from "@/components/naflis/shell/AppShell";
 import { ProductCard } from "@/components/naflis/ProductCard";
+import { BrandLoading } from "@/components/naflis/Logo";
 import { ListStudentItemModal } from "@/components/naflis/ListStudentItemModal";
 import { Input } from "@/components/ui/input";
 import { useCategories } from "@/services/categories";
 import { CampusFilter } from "@/components/naflis/shop/CampusFilter";
 import { EmptyMarket, SellButton, useMarketplace } from "@/components/naflis/shop/Marketplace";
+import { ShowMore, SortControl } from "@/components/naflis/shop/SortControl";
+import { useMallOrder, usePaged } from "@/components/naflis/shop/useMallOrder";
 
 /**
- * Live Home: the marketplace first. Search, categories and the latest items
- * from approved sellers; a friendly empty state with "Sell an item" when there
- * is nothing yet. No Student OS content (students reach it from the menus).
+ * Live Home: the marketplace first. Search, categories and every approved
+ * seller's items (shuffled for the session unless a sort is picked); a friendly
+ * empty state with "Sell an item" when there is nothing yet. No Student OS
+ * content (students reach it from the menus).
  */
 export function LiveHome() {
   const navigate = useNavigate();
@@ -20,6 +24,8 @@ export function LiveHome() {
   const { names: categories } = useCategories("mall");
   // useMarketplace loads the catalogue (one marketplace for every mall page).
   const { all, items: products, campus, setCampus, options, loading } = useMarketplace();
+  const { ordered, sort, setSort } = useMallOrder(products);
+  const page = usePaged(ordered);
 
   return (
     <AppShell showCampus={false}>
@@ -67,13 +73,10 @@ export function LiveHome() {
         </section>
 
         <section aria-labelledby="latest">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
             <h2 id="latest" className="text-lg font-extrabold">
-              Latest items
+              In the mall
             </h2>
-            {all.length > 0 && (
-              <CampusFilter value={campus} options={options} onChange={setCampus} />
-            )}
             {products.length > 0 && (
               <Link
                 to="/buyer"
@@ -83,8 +86,14 @@ export function LiveHome() {
               </Link>
             )}
           </div>
+          {all.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-2">
+              <CampusFilter value={campus} options={options} onChange={setCampus} />
+              <SortControl value={sort} onChange={setSort} />
+            </div>
+          )}
           {loading ? (
-            <p className="rounded-3xl bg-card p-6 text-sm text-muted-foreground">Loading items…</p>
+            <BrandLoading label="Loading items…" className="rounded-3xl bg-card p-6" />
           ) : products.length === 0 ? (
             <EmptyMarket
               campus={campus}
@@ -92,16 +101,19 @@ export function LiveHome() {
               onShowAll={() => setCampus(null)}
             />
           ) : (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
-              {products.slice(0, 24).map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
+                {page.visible.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+              {page.hasMore && <ShowMore remaining={page.remaining} onClick={page.showMore} />}
+            </>
           )}
         </section>
 
         {all.length > 0 && (
-          <section className="flex flex-col items-start justify-between gap-3 rounded-3xl bg-tile-lavender p-6 sm:flex-row sm:items-center">
+          <section className="flex flex-col items-start justify-between gap-3 rounded-3xl bg-tile-brand p-6 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-lg font-extrabold">Have something to sell?</h2>
               <p className="text-sm text-subtle-foreground">

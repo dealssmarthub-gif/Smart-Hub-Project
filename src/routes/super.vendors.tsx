@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Loader2, Phone, Plus, Store, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, Loader2, Phone, Plus, Store, X } from "lucide-react";
 import { toast } from "sonner";
 import { RoleShell } from "@/components/naflis/RoleShell";
 import { Badge } from "@/components/ui/badge";
@@ -80,7 +80,8 @@ function VendorManagement() {
               </p>
             )}
             {vendors.error && (
-              <p className="rounded-lg bg-error/10 p-3 text-sm text-error">
+              <p className="flex items-start gap-2 rounded-lg bg-error/10 p-3 text-sm text-error">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 Couldn't load vendors: {(vendors.error as Error).message}
               </p>
             )}

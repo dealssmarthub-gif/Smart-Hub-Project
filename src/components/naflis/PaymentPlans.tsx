@@ -86,7 +86,13 @@ function PlanCard({ plan }: { plan: InstallmentPlan }) {
             </p>
           </div>
         </div>
-        <Badge variant={plan.status === "late" ? "destructive" : plan.status === "completed" ? "default" : "secondary"} className="capitalize">
+        <Badge
+          variant={
+            plan.status === "late" ? "destructive" : plan.status === "completed" ? "default" : "secondary"
+          }
+          className="gap-1 capitalize"
+        >
+          {plan.status === "late" && <AlertTriangle className="h-3 w-3" aria-hidden />}
           {plan.status}
         </Badge>
       </div>
@@ -146,7 +152,9 @@ function PlanCard({ plan }: { plan: InstallmentPlan }) {
       {next && (
         <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
           {next.graceUntil < now && plan.lateFeePct > 0 && (
-            <span className="mr-auto text-xs text-error">+{plan.lateFeePct}% late fee applies</span>
+            <span className="mr-auto inline-flex items-center gap-1 text-xs text-error">
+              <AlertTriangle className="h-3 w-3" aria-hidden /> +{plan.lateFeePct}% late fee applies
+            </span>
           )}
           <MethodPicker value={method} onChange={setMethod} disabled={paying} />
           <Button size="sm" onClick={payNext} disabled={paying}>

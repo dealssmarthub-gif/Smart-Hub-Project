@@ -70,11 +70,11 @@ function StaffInvite() {
               {invite.status !== "invited" ? (
                 <Badge variant="secondary" className="capitalize">Invitation {invite.status}</Badge>
               ) : expired ? (
-                <p className="text-sm text-error">This invitation has expired. Ask your Super Admin for a new one.</p>
+                <p className="flex items-start gap-2 text-sm text-error"><XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden /> This invitation has expired. Ask your Super Admin for a new one.</p>
               ) : !user ? (
                 <Button asChild className="w-full"><Link to="/login" search={{ redirect: `/staff-invite?token=${token}` }}>Sign in as {invite.email} to accept</Link></Button>
               ) : wrongAccount ? (
-                <p className="text-sm text-error">You're signed in as {user.email}. Sign in with {invite.email} to accept.</p>
+                <p className="flex items-start gap-2 text-sm text-error"><XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden /> You're signed in as {user.email}. Sign in with {invite.email} to accept.</p>
               ) : (
                 <Button className="w-full" onClick={accept} disabled={busy}>{busy && <Loader2 className="mr-1 h-4 w-4 animate-spin" />} Accept invitation</Button>
               )}

@@ -35,7 +35,7 @@ function InstallmentsPage() {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl gradient-hero p-6 text-white shadow-premium">
-        <div className="flex items-center gap-2 text-white/90">
+        <div className="flex items-center gap-2 text-white">
           <TrendingUp className="h-4 w-4" />
           <span className="text-xs font-semibold uppercase tracking-widest">Take Now, Pay Later</span>
         </div>
@@ -43,23 +43,23 @@ function InstallmentsPage() {
 
         <div className="mt-6 grid gap-4 md:grid-cols-[1fr_1fr] md:items-center">
           <div>
-            <p className="text-xs text-white/90">Credit score</p>
+            <p className="text-xs text-white">Credit score</p>
             <p className="text-5xl font-extrabold">{score}</p>
             <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/10">
               <div className="h-full gradient-gold" style={{ width: `${scorePct}%` }} />
             </div>
-            <p className="mt-1 text-xs text-white/90">Out of 1000</p>
+            <p className="mt-1 text-xs text-white">Out of 1000</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-lg bg-white/10 p-3">
-              <p className="text-xs text-white/90">Available credit</p>
+              <p className="text-xs text-white">Available credit</p>
               <p className="text-xl font-bold">{GHS(fromMinor(decision.availableMinor))}</p>
-              <p className="text-[10px] text-white/90">of {GHS(fromMinor(decision.limitMinor))} limit</p>
+              <p className="text-[10px] text-white">of {GHS(fromMinor(decision.limitMinor))} limit</p>
             </div>
             <div className="rounded-lg bg-white/10 p-3">
-              <p className="text-xs text-white/90">Status</p>
+              <p className="text-xs text-white">Status</p>
               <p className="text-xl font-bold">{decision.eligible ? "Approved" : "Not eligible yet"}</p>
-              <p className="text-[10px] capitalize text-white/90">{decision.band} band</p>
+              <p className="text-[10px] capitalize text-white">{decision.band} band</p>
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import {
   Heart, Share2, Bell, MessageSquare, ShieldCheck, Truck, Clock, TrendingUp,
-  Zap, AlertTriangle, Eye, Users, Star, Loader2, Phone,
+  Zap, AlertTriangle, Eye, Users, Star, Phone,
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useNaflis } from "@/lib/naflis/store";
 import { GHS, pct, telHref, whatsappNumber } from "@/lib/naflis/format";
 import { ProductCard } from "@/components/naflis/ProductCard";
+import { BrandLoading } from "@/components/naflis/Logo";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -97,12 +98,7 @@ function ProductDetail() {
   );
 
   if (loading) {
-    return (
-      <div className="flex flex-col justify-center items-center py-20 min-h-[50vh]">
-        <Loader2 className="h-10 w-10 text-link animate-spin" />
-        <p className="mt-3 text-sm text-muted-foreground font-semibold">Loading product specifications...</p>
-      </div>
-    );
+    return <BrandLoading label="Loading product…" className="min-h-[50vh] py-20" />;
   }
 
   const product = dbProduct;
@@ -140,7 +136,7 @@ function ProductDetail() {
               </Badge>
             )}
             {product.flashSale && (
-              <Badge className="gap-1 bg-gold text-gold-foreground">
+              <Badge className="gap-1 bg-orange text-orange-foreground">
                 <Zap className="h-3 w-3" /> Flash sale
               </Badge>
             )}
@@ -162,14 +158,26 @@ function ProductDetail() {
           <div className="flex flex-wrap items-center gap-3 text-sm">
             {product.reviews > 0 && (
               <span className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-gold text-gold" />
+                <Star className="h-4 w-4 fill-orange-ink text-orange-ink" />
                 {product.rating.toFixed(1)} · {product.reviews} reviews
               </span>
             )}
             {store && (
               <span className="flex items-center gap-1">
                 <ShieldCheck className="h-4 w-4 text-link" />
-                {store.name} {store.verified && <span className="text-xs text-link">{IS_LIVE ? "(approved seller)" : "(verified)"}</span>}
+                {/* Approved shops with a public address link to their shop page. */}
+                {store.verified && (store.slug || product.storeSlug) ? (
+                  <Link
+                    to="/shops/$slug"
+                    params={{ slug: (store.slug || product.storeSlug)! }}
+                    className="font-semibold text-link underline-offset-2 hover:underline"
+                  >
+                    {store.name}
+                  </Link>
+                ) : (
+                  store.name
+                )}{" "}
+                {store.verified &&<span className="text-xs text-link">{IS_LIVE ? "(approved seller)" : "(verified)"}</span>}
               </span>
             )}
             {/* Only when the product has a delivery time (database products don't yet). */}

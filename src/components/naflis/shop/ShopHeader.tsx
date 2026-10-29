@@ -105,7 +105,7 @@ export function SellFab() {
     <button
       type="button"
       onClick={() => setStudentModalOpen(true)}
-      className="fixed bottom-[calc(max(12px,env(safe-area-inset-bottom))+76px)] right-4 z-30 inline-flex h-12 items-center gap-1.5 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground shadow-[0_10px_24px_rgba(60,40,170,0.35)] transition hover:bg-primary-deep md:hidden"
+      className="fixed bottom-[calc(max(12px,env(safe-area-inset-bottom))+76px)] right-4 z-30 inline-flex h-12 items-center gap-1.5 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground shadow-brand transition hover:bg-primary-deep md:hidden"
     >
       <PlusCircle className="h-5 w-5" strokeWidth={1.8} /> Sell an item
     </button>

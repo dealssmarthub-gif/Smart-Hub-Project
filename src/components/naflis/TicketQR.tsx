@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
-import { Camera, CameraOff, Loader2 } from "lucide-react";
+import { AlertCircle, Camera, CameraOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /** Renders `value` as a QR code image. */
@@ -87,7 +87,11 @@ export function QrScanner({ onScan }: { onScan: (value: string) => void }) {
       <Button size="sm" variant="outline" onClick={() => { setError(null); setActive((v) => !v); }}>
         {active ? <CameraOff className="mr-1 h-4 w-4" /> : <Camera className="mr-1 h-4 w-4" />} {active ? "Stop camera" : "Scan with camera"}
       </Button>
-      {error && <p className="text-xs text-error">{error}</p>}
+      {error && (
+        <p className="flex items-center gap-1 text-xs text-error">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden /> {error}
+        </p>
+      )}
     </div>
   );
 }

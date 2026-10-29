@@ -61,7 +61,7 @@ export function RolePreview({
               <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
               <p className="mt-2 max-w-2xl text-muted-foreground">{subtitle}</p>
             </div>
-            <Badge className="bg-gold text-gold-foreground">{phase}</Badge>
+            <Badge className="bg-orange text-orange-foreground">{phase}</Badge>
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

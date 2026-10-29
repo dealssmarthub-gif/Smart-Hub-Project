@@ -63,6 +63,8 @@ export interface Store {
   location: string;
   categories: string[];
   subscription: "starter" | "growth" | "professional" | "enterprise";
+  /** Public shop address (/shops/<slug>); absent for demo stores. */
+  slug?: string;
   /** Public phone for buyers (vendors.contact_phone); absent when the seller gave none. */
   contactPhone?: string;
 }
@@ -72,6 +74,8 @@ export interface Product {
   name: string;
   brand: string;
   storeId: string;
+  /** The seller's public shop address (/shops/<slug>); absent for demo products. */
+  storeSlug?: string;
   category: string;
   image: string;
   images?: string[];

@@ -42,6 +42,7 @@ export function mapDbVendor(row: any, category?: string): VendorProfile {
   return {
     id: row.id,
     name: row.store_name,
+    slug: row.store_slug || undefined,
     // Not public (owner id): only known for the signed-in seller's own shop.
     ownerId: row.user_id ?? "",
     logo: row.logo_url || `https://api.dicebear.com/9.x/notionists/svg?seed=${row.store_name}`,
@@ -67,7 +68,7 @@ export async function fetchSellerProducts(): Promise<Product[] | null> {
   if (!supabase) return null;
   const { data, error } = await supabase
     .from("products")
-    .select("*, vendors!inner(status, store_name, logo_url, description)")
+    .select("*, vendors!inner(status, store_name, store_slug, logo_url, description)")
     .eq("vendors.status", "approved");
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => mapDbProduct(row));
@@ -100,6 +101,65 @@ export async function fetchVendorProfile(vendorId: string): Promise<VendorProfil
     .eq("id", vendorId).maybeSingle();
   if (error) throw new Error(error.message);
   return data ? mapDbVendor(data) : local();
+}
+
+/** A shop as the directory and shop page show it: public columns only, never the owner or phone. */
+export interface PublicShop {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  logoUrl: string | null;
+}
+
+/** What /shops reads. No owner id, phone or status: shops are approved-only by the filter below. */
+const SHOP_COLUMNS = "id, store_name, store_slug, description, logo_url";
+
+interface ShopRow {
+  id: string;
+  store_name: string;
+  store_slug: string | null;
+  description: string | null;
+  logo_url: string | null;
+}
+
+const mapShop = (row: ShopRow): PublicShop => ({
+  id: row.id,
+  name: row.store_name,
+  slug: row.store_slug ?? "",
+  description: row.description ?? "",
+  logoUrl: row.logo_url || null,
+});
+
+/**
+ * Every approved shop. The status filter is explicit: the database also shows
+ * an owner their own pending shop, which must never appear in the directory.
+ * Demo mode has no shops directory (empty list).
+ */
+export async function fetchApprovedShops(): Promise<PublicShop[]> {
+  // TODO(seller-api): GET {SELLER_API_URL}/v1/shops?status=approved
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("vendors")
+    .select(SHOP_COLUMNS)
+    .eq("status", "approved")
+    .order("store_name");
+  if (error) throw new Error(error.message);
+  return (data ?? []).filter((row) => row.store_slug).map(mapShop);
+}
+
+/** One approved shop by its public address, or null (unknown, pending or rejected). */
+export async function fetchApprovedShop(slug: string): Promise<PublicShop | null> {
+  // TODO(seller-api): GET {SELLER_API_URL}/v1/shops/{slug}
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("vendors")
+    .select(SHOP_COLUMNS)
+    .eq("store_slug", slug)
+    .eq("status", "approved")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? mapShop(data) : null;
 }
 
 /** Current stock for the given products. Products the source doesn't know are omitted. */

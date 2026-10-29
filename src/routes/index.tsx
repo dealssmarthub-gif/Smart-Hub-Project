@@ -50,9 +50,11 @@ import {
 import { supabase } from "@/lib/supabase";
 import { IS_LIVE } from "@/lib/appMode";
 import { LiveHome } from "@/components/naflis/home/LiveHome";
+import { mallSortSearch } from "@/lib/naflis/mallOrder";
 
 export const Route = createFileRoute("/")({
   // Live: the product-first mall Home for everyone. Demo keeps its landing page.
+  validateSearch: mallSortSearch.parse,
   component: IS_LIVE ? LiveHome : Landing,
 });
 
@@ -392,9 +394,9 @@ function Landing() {
             </div>
           </div>
 
-          {/* Illustration: real listings floating on a lavender circle */}
+          {/* Illustration: real listings floating on a brand-tint circle */}
           <div className="relative mx-auto hidden aspect-square w-full max-w-[460px] lg:block" aria-hidden>
-            <div className="absolute inset-6 rounded-full bg-tile-lavender" />
+            <div className="absolute inset-6 rounded-full bg-tile-brand" />
             {heroListing && (
               <div className="absolute left-0 top-10 w-56 overflow-hidden rounded-3xl border border-border-soft bg-card shadow-soft">
                 <div className="h-32"><ListingImage src={heroListing.image} alt="" /></div>
@@ -477,7 +479,7 @@ function Landing() {
             hint={IS_LIVE ? "Trade with students on your campus, keep up with SRC notices and find study materials." : "Campus Toolkits & Modules — engineered specifically for university life, academic success, and trusted student trade. 5 integrated pillars."}
           />
           <div className={`grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 ${IS_LIVE ? "" : "lg:grid-cols-5"}`}>
-            <Tile tone="lavender" icon={Store} title="Student Marketplace" hint="Campus peer-to-peer thrift, textbooks, laptops, fridges & dorm furniture." to="/student-os/marketplace" cta="Open Market" />
+            <Tile tone="brand" icon={Store} title="Student Marketplace" hint="Campus peer-to-peer thrift, textbooks, laptops, fridges & dorm furniture." to="/student-os/marketplace" cta="Open Market" />
             {!IS_LIVE && <Tile tone="peach" icon={BadgePercent} title="Student Deals & Group Buys" hint="Verified discounts, split group orders & volume bulk price drops." to="/student-os/deals" cta="Join Group Buys" />}
             {/* Students read notices in the Calendar; the publishers' portal is never linked from here. */}
             <Tile tone="rose" icon={Building2} title="Official SRC Notices" hint="Direct administrative bulletins, townhall assemblies & campus welfare updates." to="/student-os/calendar" cta="See notices & events" />
@@ -599,7 +601,7 @@ function Landing() {
                 ["Release with 6-Digit PIN", "Only when 100% satisfied, share your unique 6-digit confirmation code. If the item fails inspection, cancel instantly for full automatic refund."],
               ].map(([title, body], i) => (
                 <li key={title} className="rounded-3xl bg-white/10 p-5">
-                  <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-base font-extrabold text-[#2F2A8F]">{i + 1}</span>
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-base font-extrabold text-primary-deep">{i + 1}</span>
                   <h3 className="mt-3 text-base font-bold">{title}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-white/85">{body}</p>
                 </li>

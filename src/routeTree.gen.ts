@@ -19,6 +19,7 @@ import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as SellerRouteImport } from './routes/seller'
+import { Route as ShopsRouteImport } from './routes/shops'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as StaffInviteRouteImport } from './routes/staff-invite'
 import { Route as StudentOsRouteImport } from './routes/student-os'
@@ -38,6 +39,8 @@ import { Route as BuyerWalletRouteImport } from './routes/buyer.wallet'
 import { Route as BuyerWishlistRouteImport } from './routes/buyer.wishlist'
 import { Route as CampusAdminDashboardRouteImport } from './routes/campus-admin.dashboard'
 import { Route as SellerSplatRouteImport } from './routes/seller.$'
+import { Route as ShopsIndexRouteImport } from './routes/shops.index'
+import { Route as ShopsSlugRouteImport } from './routes/shops.$slug'
 import { Route as StudentOsIndexRouteImport } from './routes/student-os.index'
 import { Route as StudentOsCalendarRouteImport } from './routes/student-os.calendar'
 import { Route as StudentOsDealsRouteImport } from './routes/student-os.deals'
@@ -101,6 +104,11 @@ const MeRoute = MeRouteImport.update({
 const SellerRoute = SellerRouteImport.update({
   id: '/seller',
   path: '/seller',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopsRoute = ShopsRouteImport.update({
+  id: '/shops',
+  path: '/shops',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffRoute = StaffRouteImport.update({
@@ -198,6 +206,16 @@ const SellerSplatRoute = SellerSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => SellerRoute,
 } as any)
+const ShopsIndexRoute = ShopsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShopsRoute,
+} as any)
+const ShopsSlugRoute = ShopsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ShopsRoute,
+} as any)
 const StudentOsIndexRoute = StudentOsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -280,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
   '/seller': typeof SellerRouteWithChildren
+  '/shops': typeof ShopsRouteWithChildren
   '/staff': typeof StaffRoute
   '/staff-invite': typeof StaffInviteRoute
   '/student-os': typeof StudentOsRouteWithChildren
@@ -298,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/buyer/wishlist': typeof BuyerWishlistRoute
   '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
   '/seller/$': typeof SellerSplatRoute
+  '/shops/$slug': typeof ShopsSlugRoute
   '/student-os/calendar': typeof StudentOsCalendarRoute
   '/student-os/deals': typeof StudentOsDealsRoute
   '/student-os/events': typeof StudentOsEventsRoute
@@ -309,6 +329,7 @@ export interface FileRoutesByFullPath {
   '/super/vendors': typeof SuperVendorsRoute
   '/super/view-as': typeof SuperViewAsRoute
   '/buyer/': typeof BuyerIndexRoute
+  '/shops/': typeof ShopsIndexRoute
   '/student-os/': typeof StudentOsIndexRoute
   '/super/': typeof SuperIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
@@ -340,6 +361,7 @@ export interface FileRoutesByTo {
   '/buyer/wishlist': typeof BuyerWishlistRoute
   '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
   '/seller/$': typeof SellerSplatRoute
+  '/shops/$slug': typeof ShopsSlugRoute
   '/student-os/calendar': typeof StudentOsCalendarRoute
   '/student-os/deals': typeof StudentOsDealsRoute
   '/student-os/events': typeof StudentOsEventsRoute
@@ -351,6 +373,7 @@ export interface FileRoutesByTo {
   '/super/vendors': typeof SuperVendorsRoute
   '/super/view-as': typeof SuperViewAsRoute
   '/buyer': typeof BuyerIndexRoute
+  '/shops': typeof ShopsIndexRoute
   '/student-os': typeof StudentOsIndexRoute
   '/super': typeof SuperIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
@@ -368,6 +391,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
   '/seller': typeof SellerRouteWithChildren
+  '/shops': typeof ShopsRouteWithChildren
   '/staff': typeof StaffRoute
   '/staff-invite': typeof StaffInviteRoute
   '/student-os': typeof StudentOsRouteWithChildren
@@ -386,6 +410,7 @@ export interface FileRoutesById {
   '/buyer/wishlist': typeof BuyerWishlistRoute
   '/campus-admin/dashboard': typeof CampusAdminDashboardRoute
   '/seller/$': typeof SellerSplatRoute
+  '/shops/$slug': typeof ShopsSlugRoute
   '/student-os/calendar': typeof StudentOsCalendarRoute
   '/student-os/deals': typeof StudentOsDealsRoute
   '/student-os/events': typeof StudentOsEventsRoute
@@ -397,6 +422,7 @@ export interface FileRoutesById {
   '/super/vendors': typeof SuperVendorsRoute
   '/super/view-as': typeof SuperViewAsRoute
   '/buyer/': typeof BuyerIndexRoute
+  '/shops/': typeof ShopsIndexRoute
   '/student-os/': typeof StudentOsIndexRoute
   '/super/': typeof SuperIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
@@ -415,6 +441,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/me'
     | '/seller'
+    | '/shops'
     | '/staff'
     | '/staff-invite'
     | '/student-os'
@@ -433,6 +460,7 @@ export interface FileRouteTypes {
     | '/buyer/wishlist'
     | '/campus-admin/dashboard'
     | '/seller/$'
+    | '/shops/$slug'
     | '/student-os/calendar'
     | '/student-os/deals'
     | '/student-os/events'
@@ -444,6 +472,7 @@ export interface FileRouteTypes {
     | '/super/vendors'
     | '/super/view-as'
     | '/buyer/'
+    | '/shops/'
     | '/student-os/'
     | '/super/'
     | '/buyer/orders/$orderId'
@@ -475,6 +504,7 @@ export interface FileRouteTypes {
     | '/buyer/wishlist'
     | '/campus-admin/dashboard'
     | '/seller/$'
+    | '/shops/$slug'
     | '/student-os/calendar'
     | '/student-os/deals'
     | '/student-os/events'
@@ -486,6 +516,7 @@ export interface FileRouteTypes {
     | '/super/vendors'
     | '/super/view-as'
     | '/buyer'
+    | '/shops'
     | '/student-os'
     | '/super'
     | '/buyer/orders/$orderId'
@@ -502,6 +533,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/me'
     | '/seller'
+    | '/shops'
     | '/staff'
     | '/staff-invite'
     | '/student-os'
@@ -520,6 +552,7 @@ export interface FileRouteTypes {
     | '/buyer/wishlist'
     | '/campus-admin/dashboard'
     | '/seller/$'
+    | '/shops/$slug'
     | '/student-os/calendar'
     | '/student-os/deals'
     | '/student-os/events'
@@ -531,6 +564,7 @@ export interface FileRouteTypes {
     | '/super/vendors'
     | '/super/view-as'
     | '/buyer/'
+    | '/shops/'
     | '/student-os/'
     | '/super/'
     | '/buyer/orders/$orderId'
@@ -548,6 +582,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MeRoute: typeof MeRoute
   SellerRoute: typeof SellerRouteWithChildren
+  ShopsRoute: typeof ShopsRouteWithChildren
   StaffRoute: typeof StaffRoute
   StaffInviteRoute: typeof StaffInviteRoute
   StudentOsRoute: typeof StudentOsRouteWithChildren
@@ -624,6 +659,13 @@ declare module '@tanstack/react-router' {
       path: '/seller'
       fullPath: '/seller'
       preLoaderRoute: typeof SellerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shops': {
+      id: '/shops'
+      path: '/shops'
+      fullPath: '/shops'
+      preLoaderRoute: typeof ShopsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff': {
@@ -758,6 +800,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/seller/$'
       preLoaderRoute: typeof SellerSplatRouteImport
       parentRoute: typeof SellerRoute
+    }
+    '/shops/': {
+      id: '/shops/'
+      path: '/'
+      fullPath: '/shops/'
+      preLoaderRoute: typeof ShopsIndexRouteImport
+      parentRoute: typeof ShopsRoute
+    }
+    '/shops/$slug': {
+      id: '/shops/$slug'
+      path: '/$slug'
+      fullPath: '/shops/$slug'
+      preLoaderRoute: typeof ShopsSlugRouteImport
+      parentRoute: typeof ShopsRoute
     }
     '/student-os/': {
       id: '/student-os/'
@@ -931,6 +987,18 @@ const SellerRouteChildren: SellerRouteChildren = {
 const SellerRouteWithChildren =
   SellerRoute._addFileChildren(SellerRouteChildren)
 
+interface ShopsRouteChildren {
+  ShopsSlugRoute: typeof ShopsSlugRoute
+  ShopsIndexRoute: typeof ShopsIndexRoute
+}
+
+const ShopsRouteChildren: ShopsRouteChildren = {
+  ShopsSlugRoute: ShopsSlugRoute,
+  ShopsIndexRoute: ShopsIndexRoute,
+}
+
+const ShopsRouteWithChildren = ShopsRoute._addFileChildren(ShopsRouteChildren)
+
 interface StudentOsRouteChildren {
   StudentOsCalendarRoute: typeof StudentOsCalendarRoute
   StudentOsDealsRoute: typeof StudentOsDealsRoute
@@ -984,6 +1052,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MeRoute: MeRoute,
   SellerRoute: SellerRouteWithChildren,
+  ShopsRoute: ShopsRouteWithChildren,
   StaffRoute: StaffRoute,
   StaffInviteRoute: StaffInviteRoute,
   StudentOsRoute: StudentOsRouteWithChildren,

@@ -131,8 +131,8 @@ function StudentOSDashboard() {
           <h1 className="text-[26px] font-extrabold leading-tight tracking-tight md:text-4xl">
             Hi{firstName ? `, ${firstName}` : ""}
           </h1>
-          <p className="text-base font-semibold text-white/90 md:text-lg">What do you need today?</p>
-          <p className="max-w-2xl pt-1 text-sm leading-relaxed text-white/80">
+          <p className="text-base font-semibold text-white md:text-lg">What do you need today?</p>
+          <p className="max-w-2xl pt-1 text-sm leading-relaxed text-white">
             <span className="font-bold text-white">Open Student OS &amp; Campus Marketplace.</span>{" "}
             {IS_LIVE
               ? "Trade peer-to-peer with classmates, find lecture notes and past questions, and keep up with SRC notices and events."
@@ -183,7 +183,7 @@ function StudentOSDashboard() {
       <section>
         <SectionHeader title="Quick access" />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <Tile tone="lavender" icon={Store} title="Marketplace" hint="Find roommate / hostel items: dorm appliances, room items & sublets." to="/student-os/marketplace" />
+          <Tile tone="brand" icon={Store} title="Marketplace" hint="Find roommate / hostel items: dorm appliances, room items & sublets." to="/student-os/marketplace" />
           {IS_LIVE ? (
             <Tile tone="peach" icon={CalendarDays} title="Calendar" hint="Lectures, exams and SRC events." to="/student-os/calendar" />
           ) : (

@@ -293,7 +293,7 @@ function MonthGrid({ anchor, gridStart, byDay, now, onPick }: {
               <div className="mt-1 space-y-0.5 text-[10px]">
                 {count("exam") > 0 && <p className="truncate rounded bg-error/15 px-1 font-semibold text-error">{items.filter((o) => o.type === "exam").map((o) => o.courseCode).join(", ")}</p>}
                 {count("class") > 0 && <p className="truncate rounded bg-primary/10 px-1 text-link">{count("class")} class{count("class") > 1 ? "es" : ""}</p>}
-                {count("event") > 0 && <p className="truncate rounded bg-gold/15 px-1">{count("event")} event</p>}
+                {count("event") > 0 && <p className="truncate rounded bg-orange/15 px-1">{count("event")} event</p>}
               </div>
             </button>
           );

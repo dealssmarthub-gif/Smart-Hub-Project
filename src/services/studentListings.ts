@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { useNaflis, type StudentItemCondition, type StudentListing } from "@/lib/naflis/store";
 import { mapDbProduct } from "@/lib/naflis/mapProduct";
 import { revealSellerPhone } from "@/services/sellerContact";
+import { makeStoreSlug } from "@/lib/naflis/storeSlug";
 
 // Student marketplace listings in Supabase (migration 20261021120000). A listing
 // is a `products` row with listing_type = 'student', owned by the seller's
@@ -135,7 +136,8 @@ export async function createStudentListing(
       .insert({
         user_id: user.id,
         store_name: input.sellerName.trim() || "Seller",
-        store_slug: `seller-${user.id}`,
+        // Public: from the shop name, never the owner id (20261029120000).
+        store_slug: makeStoreSlug(input.sellerName.trim() || "Seller"),
         contact_phone: phone,
       })
       .select("id, status, store_name")

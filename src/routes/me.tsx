@@ -150,12 +150,12 @@ function WalletCard() {
   return (
     <section className="rounded-[30px] gradient-hero p-5 text-white shadow-soft sm:p-6">
       <div className="flex items-center justify-between gap-3">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/85">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
           <Wallet className="h-4 w-4" strokeWidth={1.8} /> NAFLIS Wallet
         </p>
         <Link
           to="/buyer/wallet"
-          className="-mr-2 inline-flex min-h-11 min-w-11 items-center justify-center px-2 text-xs font-semibold text-white/85 underline-offset-4 hover:underline"
+          className="-mr-2 inline-flex min-h-11 min-w-11 items-center justify-center px-2 text-xs font-semibold text-white underline-offset-4 hover:underline"
         >
           Details
         </Link>
@@ -163,9 +163,7 @@ function WalletCard() {
       <p className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
         {GHS(wallet.balance)}
       </p>
-      <p className="text-xs text-white/85">
-        Available balance · {GHS(wallet.escrow)} held in escrow
-      </p>
+      <p className="text-xs text-white">Available balance · {GHS(wallet.escrow)} held in escrow</p>
       <Link
         to="/buyer/wallet"
         className="mt-4 inline-flex h-11 items-center gap-1.5 rounded-xl bg-white px-5 text-sm font-bold text-primary-deep shadow-soft hover:bg-white/90"
@@ -194,7 +192,7 @@ function ActiveOrderCard() {
   if (!order) {
     return (
       <section className="rounded-3xl border border-border-soft bg-card p-6 text-center shadow-soft">
-        <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-tile-lavender text-tile-lavender-icon">
+        <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-tile-brand text-tile-brand-icon">
           <Package className="h-6 w-6" strokeWidth={1.8} />
         </span>
         <h2 className="mt-3 text-lg font-extrabold">No active order</h2>

@@ -174,6 +174,13 @@ function LoginPage() {
       <main className="flex-1 flex items-center justify-center px-4 py-10 sm:py-14">
         <div className="max-w-md w-full space-y-6">
           <div className="text-center space-y-2">
+            <img
+              src="/icon-192.png"
+              alt="NAFLIS Mall"
+              width={192}
+              height={192}
+              className="mx-auto mb-4 h-24 w-24 drop-shadow-md"
+            />
             <h1 className="text-3xl font-extrabold tracking-tight">
               {mode === "signin" ? "Sign In" : "Create Account"}
             </h1>

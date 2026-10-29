@@ -3,7 +3,7 @@
 // NOTE: "Section 57" of the product spec wasn't available while writing this.
 // Journeys A–P below are this codebase's own acceptance journeys, one per
 // feature area built in P0–P4. Re-letter / extend them to match Section 57.
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNaflis } from "@/lib/naflis/store";
 import { resolveRoles } from "@/lib/naflis/roles";
 import { buildCategoryTree, categoryFamily, fetchCategories, FALLBACK_CATEGORIES } from "@/services/categories";
@@ -294,6 +294,16 @@ describe("Journey N — Super Admin View-As is audited and read-only for money",
 });
 
 describe("Journey O — ticketed event with QR check-in", () => {
+  // The seeded event's ticket sales close 2026-10-24T17:00Z: pin the clock inside the sales window
+  // so the test doesn't depend on today's date. Only Date is faked; timers and promises run normally.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-20T12:00:00Z"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("buys once per key and admits once at an in-scope gate", async () => {
     st().setRole("buyer");
     const key = W.newIdempotencyKey("tkt");

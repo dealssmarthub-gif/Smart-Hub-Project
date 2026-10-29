@@ -18,6 +18,7 @@
   --radius-4xl: calc(var(--radius) + 18px);
 
   --shadow-soft: var(--shadow-soft-value);
+  --shadow-brand: var(--shadow-brand-value);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -29,7 +30,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-deep: var(--primary-deep);
   --color-primary-soft: var(--primary-soft);
-  /* Accent for text, icons and links. Same violet as --primary in light mode; lighter on dark backgrounds. */
+  /* Accent for text, icons and links. Same red as --primary in light mode; a lighter tint on dark backgrounds. */
   --color-link: var(--link);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -58,13 +59,13 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* The dark indigo block used for escrow explainers. */
+  /* The dark red block used for escrow explainers. */
   --color-escrow: var(--escrow);
   --color-escrow-foreground: var(--escrow-foreground);
 
   /* Pastel tiles: background + the colour of the icon circle (white icon on top). */
-  --color-tile-lavender: var(--tile-lavender);
-  --color-tile-lavender-icon: var(--tile-lavender-icon);
+  --color-tile-brand: var(--tile-brand);
+  --color-tile-brand-icon: var(--tile-brand-icon);
   --color-tile-peach: var(--tile-peach);
   --color-tile-peach-icon: var(--tile-peach-icon);
   --color-tile-mint: var(--tile-mint);
@@ -85,6 +86,9 @@
   --color-sea-blue-foreground: var(--sea-blue-foreground);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
+  --color-orange: var(--orange);
+  --color-orange-foreground: var(--orange-foreground);
+  --color-orange-ink: var(--orange-ink);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
@@ -96,63 +100,64 @@
 
 :root {
   --radius: 14px;
-  --shadow-soft-value: 0 6px 18px rgba(60, 40, 170, 0.07);
+  --shadow-soft-value: 0 6px 18px rgba(120, 10, 10, 0.07);
+  --shadow-brand-value: 0 10px 24px rgba(160, 1, 2, 0.3);
 
-  --brand-50: #f5f3ff;
-  --brand-100: #ece8ff;
-  --brand-200: #dad5f5;
-  --brand-300: #bcb0ff;
-  --brand-400: #8f7cf2;
-  --brand-500: #5b45e0;
-  --brand-600: #4733c4;
-  --brand-700: #3a29a3;
-  --brand-800: #2f2a8f;
-  --brand-900: #241d6b;
-  --brand-950: #160f45;
+  /* Brand palette, from the logo. Gold only ever sits on red or dark surfaces, never as text on light. */
+  --brand-red: #db020b;
+  --brand-red-deep: #a00102;
+  --brand-gold: #fde81a;
+  --brand-orange: #fb8c06;
 
-  --navy: #2f2a8f;
-  --midnight: #1e1b3a;
-  --sea-blue: #5b45e0;
+  --navy: #5a0a0d;
+  --midnight: #1c1414;
+  --sea-blue: #db020b;
   --sea-blue-foreground: #ffffff;
-  --gold: #f59e0b;
-  --gold-foreground: #1e1b3a;
+  --gold: var(--brand-gold);
+  --gold-foreground: #1c1414;
+  /* Small accents and badges: orange with dark text (white on orange is 2.4:1). */
+  --orange: var(--brand-orange);
+  --orange-foreground: #1c1414;
+  /* Icons and text on light surfaces that would otherwise be gold or orange. */
+  --orange-ink: #a85200; /* 5.1:1 on the page background */
   --success: #0b7a62; /* 5.3:1 on white, so it works as text too */
   --success-foreground: #ffffff;
   --warning: #b45309;
   --warning-foreground: #ffffff;
-  --error: #c62828; /* ≥ 4.5:1 on the page background */
+  --error: #b42318; /* 6.2:1 on the page background; always shown with an icon and text */
   --error-foreground: #ffffff;
 
-  --background: #f6f5ff;
-  --foreground: #1e1b3a;
+  --background: #faf7f5;
+  --foreground: #1c1414;
   --card: #ffffff;
-  --card-foreground: #1e1b3a;
+  --card-foreground: #1c1414;
   --popover: #ffffff;
-  --popover-foreground: #1e1b3a;
-  --primary: #5b45e0;
+  --popover-foreground: #1c1414;
+  --primary: var(--brand-red); /* white text 5.2:1 */
   --primary-foreground: #ffffff;
-  --primary-deep: #4733c4;
-  --primary-soft: #ece8ff;
-  --link: #5b45e0;
-  --secondary: #ece8ff;
-  --secondary-foreground: #4733c4;
-  --muted: #eeebfb;
-  --muted-foreground: #66638a;
-  --subtle-foreground: #4a4672;
-  --accent: #ece8ff;
-  --accent-foreground: #4733c4;
-  --destructive: #c62828;
+  --primary-deep: var(--brand-red-deep); /* hover / pressed, white text 8.4:1 */
+  --primary-soft: #fdecec;
+  --link: var(--brand-red); /* 4.9:1 on the page background, 4.6:1 on primary-soft */
+  --secondary: #f3eeeb;
+  --secondary-foreground: #1c1414;
+  --muted: #f3eeeb;
+  --muted-foreground: #655957;
+  --subtle-foreground: #4a3f3d;
+  --accent: #fdecec;
+  --accent-foreground: #a00102;
+  --destructive: #b42318;
   --destructive-foreground: #ffffff;
-  --border: #dad5f5;
-  --border-soft: #eeebfb;
-  --input: #dad5f5;
-  --ring: #5b45e0;
+  --border: #ebe2de;
+  --border-soft: #f3eeeb;
+  --input: #968884; /* field and switch borders, 3.4:1 on cards (WCAG 1.4.11) */
+  --ring: var(--brand-red);
 
-  --escrow: #2f2a8f;
+  /* The dark block used for escrow explainers and pinned notices (gold reads on it). */
+  --escrow: #5a0a0d;
   --escrow-foreground: #ffffff;
 
-  --tile-lavender: #ece8ff;
-  --tile-lavender-icon: #5b45e0;
+  --tile-brand: #fdecec;
+  --tile-brand-icon: #db020b;
   --tile-peach: #ffe9dc;
   --tile-peach-icon: #e8590c;
   --tile-mint: #ddf5ec;
@@ -166,82 +171,74 @@
   --verified: #0b6b56;
   --peach-ink: #a63d07;
 
-  --chart-1: #5b45e0;
+  --chart-1: #db020b;
   --chart-2: #0e8a6f;
-  --chart-3: #e8590c;
+  --chart-3: #fb8c06;
   --chart-4: #c2255c;
   --chart-5: #2563eb;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #1e1b3a;
-  --sidebar-primary: #5b45e0;
+  --sidebar-foreground: #1c1414;
+  --sidebar-primary: var(--brand-red);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ece8ff;
-  --sidebar-accent-foreground: #4733c4;
-  --sidebar-border: #dad5f5;
-  --sidebar-ring: #5b45e0;
+  --sidebar-accent: #fdecec;
+  --sidebar-accent-foreground: #a00102;
+  --sidebar-border: #ebe2de;
+  --sidebar-ring: var(--brand-red);
 }
 
-/* Dark theme: the same palette on a deep indigo-black, with a lighter violet so text stays ≥ 4.5:1. */
+/* Dark theme: warm near-black, filled buttons keep the brand red with white text, and red used as
+   text or links takes a lighter tint so it stays ≥ 4.5:1. */
 .dark {
   --shadow-soft-value: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --shadow-brand-value: 0 10px 24px rgba(0, 0, 0, 0.45);
 
-  --brand-50: #1d1838;
-  --brand-100: #241e45;
-  --brand-200: #3a3270;
-  --brand-300: #5d50b8;
-  --brand-400: #8f7cf2;
-  --brand-500: #5b45e0;
-  --brand-600: #4733c4;
-  --brand-700: #b9b0ff;
-  --brand-800: #d4ceff;
-  --brand-900: #e6e2ff;
-  --brand-950: #f3f1ff;
-
-  --navy: #0b0918;
-  --midnight: #110e22;
-  --sea-blue: #a99cff;
-  --sea-blue-foreground: #110e22;
-  --gold: #fbbf24;
-  --gold-foreground: #110e22;
+  --navy: #0f0a0a;
+  --midnight: #160f0f;
+  --sea-blue: #ff7a7a;
+  --sea-blue-foreground: #160f0f;
+  --gold: var(--brand-gold);
+  --gold-foreground: #160f0f;
+  --orange: var(--brand-orange);
+  --orange-foreground: #160f0f;
+  --orange-ink: #ffb35c;
   --success: #4fd1ae;
-  --success-foreground: #110e22;
+  --success-foreground: #160f0f;
   --warning: #fbbf24;
-  --warning-foreground: #110e22;
+  --warning-foreground: #160f0f;
   --error: #f87171;
-  --error-foreground: #110e22;
+  --error-foreground: #160f0f;
 
-  --background: #110e22;
-  --foreground: #f2f0ff;
-  --card: #1a1633;
-  --card-foreground: #f2f0ff;
-  --popover: #1a1633;
-  --popover-foreground: #f2f0ff;
-  /* Filled buttons keep the brand violet with white text (6.2:1) in both themes. */
-  --primary: #5b45e0;
+  --background: #160f0f;
+  --foreground: #f7efed;
+  --card: #241818;
+  --card-foreground: #f7efed;
+  --popover: #241818;
+  --popover-foreground: #f7efed;
+  --primary: var(--brand-red);
   --primary-foreground: #ffffff;
-  --primary-deep: #4733c4;
-  --primary-soft: #262050;
-  --link: #a99cff;
-  --secondary: #262050;
-  --secondary-foreground: #d4ceff;
-  --muted: #221d40;
-  --muted-foreground: #b9b4dc;
-  --subtle-foreground: #d4d0f0;
-  --accent: #262050;
-  --accent-foreground: #d4ceff;
+  --primary-deep: var(--brand-red-deep);
+  --primary-soft: #3a1517;
+  --link: #ff7a7a; /* 7.5:1 on the background, 6.8:1 on cards */
+  --secondary: #2c1e1e;
+  --secondary-foreground: #f7efed;
+  --muted: #2c1e1e;
+  --muted-foreground: #c0b2ad;
+  --subtle-foreground: #ddd2ce;
+  --accent: #3a1517;
+  --accent-foreground: #ffc9c9;
   --destructive: #f87171;
-  --destructive-foreground: #110e22;
-  --border: #322b5c;
-  --border-soft: #26204a;
-  --input: #322b5c;
-  --ring: #a99cff;
+  --destructive-foreground: #160f0f;
+  --border: #3d2b2b;
+  --border-soft: #2e2121;
+  --input: #8a7672; /* 4.0:1 on cards */
+  --ring: #ff7a7a;
 
-  --escrow: #251f6e;
+  --escrow: #4a0a0d;
   --escrow-foreground: #ffffff;
 
-  --tile-lavender: #262050;
-  --tile-lavender-icon: #5b45e0;
+  --tile-brand: #3a1517;
+  --tile-brand-icon: #db020b;
   --tile-peach: #3a2418;
   --tile-peach-icon: #e8590c;
   --tile-mint: #13342c;
@@ -255,35 +252,35 @@
   --verified: #6ee7c5;
   --peach-ink: #ffb48a;
 
-  --chart-1: #a99cff;
+  --chart-1: #ff7a7a;
   --chart-2: #4fd1ae;
-  --chart-3: #ff9a5c;
+  --chart-3: #ffb35c;
   --chart-4: #f472a6;
   --chart-5: #7aa7ff;
 
-  --sidebar: #110e22;
-  --sidebar-foreground: #f2f0ff;
-  --sidebar-primary: #5b45e0;
+  --sidebar: #160f0f;
+  --sidebar-foreground: #f7efed;
+  --sidebar-primary: var(--brand-red);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #262050;
-  --sidebar-accent-foreground: #d4ceff;
-  --sidebar-border: #322b5c;
-  --sidebar-ring: #a99cff;
+  --sidebar-accent: #3a1517;
+  --sidebar-accent-foreground: #ffc9c9;
+  --sidebar-border: #3d2b2b;
+  --sidebar-ring: #ff7a7a;
 }
 
 @utility gradient-hero {
-  background-image: linear-gradient(135deg, var(--primary-deep) 0%, var(--brand-500) 100%);
+  background-image: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary) 100%);
 }
 
 @utility gradient-gold {
-  background-image: linear-gradient(135deg, var(--gold) 0%, #fef3c7 100%);
+  background-image: linear-gradient(135deg, var(--orange) 0%, var(--gold) 100%);
 }
 
 @utility text-gradient-sea {
   color: var(--link);
 }
 
-/* On dark backgrounds, violet used as text takes the lighter link shade; filled buttons keep #5B45E0. */
+/* On dark backgrounds, red used as text takes the lighter link tint; filled buttons keep #DB020B. */
 .dark .text-primary {
   color: var(--link);
 }

@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { Building2, Loader2 } from "lucide-react";
+import { AlertCircle, Building2, Loader2 } from "lucide-react";
+import { BrandMark, Wordmark } from "@/components/naflis/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,10 +89,14 @@ function StaffSignIn() {
     <div className="grid min-h-screen place-items-center bg-background px-4 py-10">
       <main className="w-full max-w-sm space-y-6">
         <header className="space-y-3 text-center">
-          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary text-primary-foreground">
-            <Building2 className="h-7 w-7" strokeWidth={1.8} />
+          {/* Not a link: this page has no way into the marketplace. */}
+          <span className="flex items-center justify-center gap-2">
+            <BrandMark className="h-10 w-10" />
+            <Wordmark className="text-base" />
           </span>
-          <h1 className="text-2xl font-extrabold tracking-tight">SRC Staff</h1>
+          <h1 className="flex items-center justify-center gap-2 text-2xl font-extrabold tracking-tight">
+            <Building2 className="h-6 w-6 text-link" strokeWidth={1.8} aria-hidden /> SRC Staff
+          </h1>
           <p className="text-sm text-muted-foreground">
             Sign in with the email your staff invitation was sent to.
           </p>
@@ -146,7 +151,8 @@ function StaffSignIn() {
               />
             </div>
             {error && (
-              <p role="alert" className="text-sm font-semibold text-error">
+              <p role="alert" className="flex items-start gap-2 text-sm font-semibold text-error">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 {error}
               </p>
             )}
