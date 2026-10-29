@@ -165,7 +165,19 @@ function ProductDetail() {
             {store && (
               <span className="flex items-center gap-1">
                 <ShieldCheck className="h-4 w-4 text-link" />
-                {store.name} {store.verified && <span className="text-xs text-link">{IS_LIVE ? "(approved seller)" : "(verified)"}</span>}
+                {/* Approved shops with a public address link to their shop page. */}
+                {store.verified && (store.slug || product.storeSlug) ? (
+                  <Link
+                    to="/shops/$slug"
+                    params={{ slug: (store.slug || product.storeSlug)! }}
+                    className="font-semibold text-link underline-offset-2 hover:underline"
+                  >
+                    {store.name}
+                  </Link>
+                ) : (
+                  store.name
+                )}{" "}
+                {store.verified &&<span className="text-xs text-link">{IS_LIVE ? "(approved seller)" : "(verified)"}</span>}
               </span>
             )}
             {/* Only when the product has a delivery time (database products don't yet). */}
