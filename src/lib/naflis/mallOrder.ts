@@ -58,7 +58,7 @@ const SEED_KEY = "naflis.mallSeed";
 let sessionSeed: number | null = null;
 
 /** One seed per browser session (sessionStorage); per page load when storage is blocked. */
-function readSeed(): number {
+export function sessionShuffleSeed(): number {
   if (sessionSeed !== null) return sessionSeed;
   try {
     const stored = sessionStorage.getItem(SEED_KEY);
@@ -79,5 +79,5 @@ const noSubscribe = () => () => {};
 
 /** The session's shuffle seed. The server render uses 0 and the browser takes over on hydration. */
 export function useSessionSeed(): number {
-  return useSyncExternalStore(noSubscribe, readSeed, () => 0);
+  return useSyncExternalStore(noSubscribe, sessionShuffleSeed, () => 0);
 }
