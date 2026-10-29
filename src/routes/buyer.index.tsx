@@ -11,8 +11,12 @@ import { fetchSellerProducts } from "@/services/sellerApi";
 import { IS_LIVE } from "@/lib/appMode";
 import { CampusFilter } from "@/components/naflis/shop/CampusFilter";
 import { EmptyMarket, useMarketplace } from "@/components/naflis/shop/Marketplace";
+import { ShowMore, SortControl } from "@/components/naflis/shop/SortControl";
+import { useMallOrder, usePaged } from "@/components/naflis/shop/useMallOrder";
+import { mallSortSearch } from "@/lib/naflis/mallOrder";
 
 export const Route = createFileRoute("/buyer/")({
+  validateSearch: mallSortSearch.parse,
   component: BuyerHome,
 });
 
@@ -43,13 +47,13 @@ function BuyerHome() {
   const user = useNaflis((s) => s.users.find((u) => u.id === s.currentUserId));
 
   const flash = useMemo(() => items.filter((p) => p.flashSale).slice(0, 4), [items]);
-  // Live has no demand data, so "trending" becomes newest first.
+  // Demo: trending by demand. Live has no demand data: every approved seller's
+  // products, shuffled for the session unless a sort is picked, a page at a time.
+  const { ordered, sort, setSort } = useMallOrder(items);
+  const page = usePaged(ordered);
   const trending = useMemo(
-    () =>
-      [...items]
-        .sort((a, b) => (IS_LIVE ? (b.createdAt || 0) - (a.createdAt || 0) : b.demand - a.demand))
-        .slice(0, IS_LIVE ? 24 : 8),
-    [items],
+    () => (IS_LIVE ? page.visible : [...items].sort((a, b) => b.demand - a.demand).slice(0, 4)),
+    [items, page.visible],
   );
   // Only genuine reductions (a stored old price above today's price).
   const priceDrop = useMemo(
@@ -122,8 +126,9 @@ function BuyerHome() {
       </section>
 
       {all.length > 0 && (
-        <div className="flex justify-end">
+        <div className="flex flex-wrap justify-end gap-2">
           <CampusFilter value={campus} options={options} onChange={setCampus} />
+          {IS_LIVE && <SortControl value={sort} onChange={setSort} />}
         </div>
       )}
 
@@ -146,12 +151,15 @@ function BuyerHome() {
         <section>
           <SectionHeader
             icon={IS_LIVE ? <Package className="h-5 w-5 text-link" /> : <Flame className="h-5 w-5 text-error" />}
-            title={IS_LIVE ? "New in the mall" : "Trending now"}
-            subtitle={IS_LIVE ? "The latest products from approved sellers" : "Popular in your region"}
+            title={IS_LIVE ? "In the mall" : "Trending now"}
+            subtitle={IS_LIVE ? "Products from approved sellers" : "Popular in your region"}
           />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {trending.slice(0, IS_LIVE ? 24 : 4).map((p) => <ProductCard key={p.id} product={p} />)}
+            {trending.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
+          {IS_LIVE && page.hasMore && (
+            <ShowMore remaining={page.remaining} onClick={page.showMore} />
+          )}
         </section>
       )}
 

@@ -50,9 +50,11 @@ import {
 import { supabase } from "@/lib/supabase";
 import { IS_LIVE } from "@/lib/appMode";
 import { LiveHome } from "@/components/naflis/home/LiveHome";
+import { mallSortSearch } from "@/lib/naflis/mallOrder";
 
 export const Route = createFileRoute("/")({
   // Live: the product-first mall Home for everyone. Demo keeps its landing page.
+  validateSearch: mallSortSearch.parse,
   component: IS_LIVE ? LiveHome : Landing,
 });
 
